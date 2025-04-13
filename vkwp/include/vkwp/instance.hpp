@@ -4,11 +4,19 @@
 #include "fwd.hpp"
 #include "resource.hpp"
 
+// befor include vulkan.
+#if VKWP_SUPPORT_WIN32_SURFACE
+#    include <Windows.h>
+#    define VK_USE_PLATFORM_WIN32_KHR
+#endif
+
 #include <vulkan/vulkan.h>
 
 #include <vector>
 
+#if VKWP_SUPPORT_GLFW_SURFACE
 struct GLFWwindow;
+#endif
 
 namespace vkwp {
 
@@ -19,10 +27,12 @@ class Instance final : public Resource<VkInstance, void, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit Instance();
+    [[nodiscard]]
+    explicit Instance();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Instance(const std::string & label);
+    [[nodiscard]]
+    explicit Instance(const std::string & label);
 
     [[nodiscard]]
     static std::vector<VkExtensionProperties>
@@ -44,9 +54,17 @@ public:
     std::vector<PhysicalDevice>
     enumeratePhysicalDevices() const;
 
+#if VKWP_SUPPORT_GLFW_SURFACE
     [[nodiscard]]
     SurfaceKHR
-    createSurfaceKHR(const std::string & label, GLFWwindow * const window) const;
+    createGLFWSurfaceKHR(const std::string & label, GLFWwindow * const window) const;
+#endif
+
+#if VKWP_SUPPORT_WIN32_SURFACE
+    [[nodiscard]]
+    SurfaceKHR
+    createWin32SurfaceKHR(const std::string & label, const HINSTANCE h_instance, const HWND hwnd) const;
+#endif
 };
 
 }  // namespace vkwp

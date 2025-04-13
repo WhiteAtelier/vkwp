@@ -5,10 +5,6 @@
 #include "vkwp/surface_khr.hpp"
 #include "vkwp/vulkan_error.hpp"
 
-#if SURFLUX_ENABLE_GLFW_SUPPORT
-#    include <GLFW/glfw3.h>
-#endif
-
 vkwp::Instance::Instance() = default;
 
 vkwp::Instance::Instance(const std::string & label)
@@ -32,14 +28,14 @@ vkwp::Instance::enumerateInstanceExtensionProperties()
 /* STATIC */
 vkwp::Instance
 vkwp::Instance::createInstance(const std::string &            label,
-                                      const std::string &            application_name,
-                                      const std::uint32_t            application_version,
-                                      const std::string &            engine_name,
-                                      const std::uint32_t            engine_version,
-                                      const std::uint32_t            api_version,
-                                      const std::vector<std::string> _enabled_layer_names,
-                                      const std::vector<std::string> _enabled_extension_names,
-                                      const void * const             p_next)
+                               const std::string &            application_name,
+                               const std::uint32_t            application_version,
+                               const std::string &            engine_name,
+                               const std::uint32_t            engine_version,
+                               const std::uint32_t            api_version,
+                               const std::vector<std::string> _enabled_layer_names,
+                               const std::vector<std::string> _enabled_extension_names,
+                               const void * const             p_next)
 {
     Instance                  ret{ label };
     std::vector<const char *> enabled_layer_names;
@@ -111,16 +107,34 @@ vkwp::Instance::enumeratePhysicalDevices() const
     return ret;
 }
 
+#if VKWP_SUPPORT_GLFW_SURFACE
+#    include <GLFW/glfw3.h>
 vkwp::SurfaceKHR
-vkwp::Instance::createSurfaceKHR(const std::string & label, GLFWwindow * const window) const
+vkwp::Instance::createGLFWSurfaceKHR(const std::string & label, GLFWwindow * const window) const
 {
     SurfaceKHR ret{ label };
-#if SURFLUX_ENABLE_GLFW_SUPPORT
     VulkanError::check(  //
         glfwCreateWindowSurface(this->_ref(), window, nullptr, ret.reset(this->_ref())),
         "Failed to glfwCreateWindowSurface().");
-#else
-    throw VulkanError{ VK_ERROR_FEATURE_NOT_PRESENT, "createSurfaceKHR is not available." };
-#endif
     return ret;
 }
+#endif
+
+#if VKWP_SUPPORT_WIN32_SURFACE
+vkwp::SurfaceKHR
+vkwp::Instance::createWin32SurfaceKHR(const std::string & label, const HINSTANCE h_instance, const HWND hwnd) const
+{
+    SurfaceKHR                  ret{ label };
+    VkWin32SurfaceCreateInfoKHR ci{
+        .sType     = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+        .pNext     = nullptr,
+        .flags     = 0,
+        .hinstance = h_instance,
+        .hwnd      = hwnd,
+    };
+    VulkanError::check(  //
+        vkCreateWin32SurfaceKHR(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
+        "Failed to vkCreateWin32SurfaceKHR().");
+    return ret;
+}
+#endif
