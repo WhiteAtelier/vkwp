@@ -1,0 +1,23 @@
+{
+    "gabime.spdlog": {
+        "version": "1.15.1",
+        "options": {
+            "DisableDefaultLogger": null,
+            "Shared": null,
+            "UseFmt": null
+        }
+    },
+    "glfw.glfw": {
+        "version": "3.4.0",
+        "options": {
+            "Shared": null
+        }
+    },
+    "google.googletest": {
+        "version": "1.16.0",
+        "options": {
+            "BuildGmock": null,
+            "Shared": null
+        }
+    }
+}

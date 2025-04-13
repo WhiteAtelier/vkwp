@@ -1,0 +1,126 @@
+#include "vkwp/instance.hpp"
+
+#include "impl/assert.hpp"
+#include "vkwp/physical_device.hpp"
+#include "vkwp/surface_khr.hpp"
+#include "vkwp/vulkan_error.hpp"
+
+#if SURFLUX_ENABLE_GLFW_SUPPORT
+#    include <GLFW/glfw3.h>
+#endif
+
+vkwp::Instance::Instance() = default;
+
+vkwp::Instance::Instance(const std::string & label)
+    : Resource{ label }
+{}
+
+std::vector<VkExtensionProperties>
+vkwp::Instance::enumerateInstanceExtensionProperties()
+{
+    std::uint32_t count = 0;
+    VulkanError::check(  //
+        vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr),
+        "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
+    std::vector<VkExtensionProperties> ret(count);
+    VulkanError::check(  //
+        vkEnumerateInstanceExtensionProperties(nullptr, &count, ret.data()),
+        "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
+    return ret;
+}
+
+/* STATIC */
+vkwp::Instance
+vkwp::Instance::createInstance(const std::string &            label,
+                                      const std::string &            application_name,
+                                      const std::uint32_t            application_version,
+                                      const std::string &            engine_name,
+                                      const std::uint32_t            engine_version,
+                                      const std::uint32_t            api_version,
+                                      const std::vector<std::string> _enabled_layer_names,
+                                      const std::vector<std::string> _enabled_extension_names,
+                                      const void * const             p_next)
+{
+    Instance                  ret{ label };
+    std::vector<const char *> enabled_layer_names;
+    std::vector<const char *> enabled_extension_names;
+    enabled_layer_names.reserve(_enabled_layer_names.size());
+    enabled_extension_names.reserve(_enabled_extension_names.size());
+    for (const auto & name : _enabled_layer_names)
+    {
+        enabled_layer_names.emplace_back(name.c_str());
+    }
+    for (const auto & name : _enabled_extension_names)
+    {
+        enabled_extension_names.emplace_back(name.c_str());
+    }
+
+    const VkApplicationInfo ai{
+        .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+        .pNext              = nullptr,
+        .pApplicationName   = application_name.c_str(),
+        .applicationVersion = application_version,
+        .pEngineName        = engine_name.c_str(),
+        .engineVersion      = engine_version,
+        .apiVersion         = api_version,
+    };
+    const VkInstanceCreateInfo ci{
+        .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+        .pNext                   = p_next,
+        .flags                   = 0,
+        .pApplicationInfo        = &ai,
+        .enabledLayerCount       = static_cast<std::uint32_t>(enabled_layer_names.size()),
+        .ppEnabledLayerNames     = enabled_layer_names.data(),
+        .enabledExtensionCount   = static_cast<std::uint32_t>(enabled_extension_names.size()),
+        .ppEnabledExtensionNames = enabled_extension_names.data(),
+    };
+
+    VulkanError::check(  //
+        vkCreateInstance(&ci, nullptr, ret.reset()),
+        "Failed to vkCreateInstance().");
+
+    return ret;
+}
+
+std::vector<vkwp::PhysicalDevice>
+vkwp::Instance::enumeratePhysicalDevices() const
+{
+    SFL_CODING_ERROR(this->_ref() != nullptr);
+    std::vector<VkPhysicalDevice> phys_devs;
+    std::uint32_t                 count = 0;
+
+    VulkanError::check(  //
+        vkEnumeratePhysicalDevices(this->_ref(), &count, nullptr),
+        "Failed to vkEnumeratePhysicalDevice(). (Get array count.)");
+
+    phys_devs.resize(count);
+    VulkanError::check(  //
+        vkEnumeratePhysicalDevices(this->_ref(), &count, phys_devs.data()),
+        "Failed to vkEnumeratePhysicalDevice(). (Get array data.)");
+
+    std::vector<vkwp::PhysicalDevice> ret;
+    ret.reserve(count);
+
+    for (const auto & phys_dev : phys_devs)
+    {
+        auto & pdev     = ret.emplace_back();
+        *pdev.reset()   = phys_dev;
+        const auto prop = pdev.getProperties();
+        pdev.setLabel("/PhysicalDevice/ID" + std::to_string(prop.deviceID) + "/" + std::string{ prop.deviceName });
+    }
+    return ret;
+}
+
+vkwp::SurfaceKHR
+vkwp::Instance::createSurfaceKHR(const std::string & label, GLFWwindow * const window) const
+{
+    SurfaceKHR ret{ label };
+#if SURFLUX_ENABLE_GLFW_SUPPORT
+    VulkanError::check(  //
+        glfwCreateWindowSurface(this->_ref(), window, nullptr, ret.reset(this->_ref())),
+        "Failed to glfwCreateWindowSurface().");
+#else
+    throw VulkanError{ VK_ERROR_FEATURE_NOT_PRESENT, "createSurfaceKHR is not available." };
+#endif
+    return ret;
+}

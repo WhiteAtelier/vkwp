@@ -1,0 +1,105 @@
+#ifndef SFL_VULKAN_VULKAN_ERROR_HPP
+#define SFL_VULKAN_VULKAN_ERROR_HPP
+
+#include <stdexcept>
+#include <string>
+
+// fwd declare
+enum VkResult;
+
+namespace vkwp {
+
+///
+/// @brief Vulkan から報告されるエラーに対する例外.
+///
+/// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkResult.html
+///
+class VulkanError : public std::exception
+{
+public:
+    // ========================================================================================= //
+    /// @name Constructor / Destructor
+    /// @{
+    // ========================================================================================= //
+
+    ///
+    /// @brief コンストラクタ.
+    ///
+    /// @param result
+    ///     Vulkan からのエラーリザルトコード.
+    ///
+    /// @param message
+    ///     何をしようとしてエラーになったかなど, 詳細を表す文字列.
+    ///
+    [[nodiscard]]
+    //
+    VulkanError(const VkResult & result, const std::string & message) noexcept;
+
+    ///
+    /// @brief デストラクタ.
+    ///
+    ~VulkanError() noexcept = default;
+
+    /// @}
+    // ========================================================================================= //
+    /// @name Getter
+    /// @{
+    // ========================================================================================= //
+
+    ///
+    /// @brief エラーの内容を取得します.
+    ///
+    virtual const char *
+    what() const override;
+
+    ///
+    /// @brief エラーの内容を string で取得します.
+    ///
+    const std::string &
+    str() const noexcept;
+
+    ///
+    /// @brief エラーの内容を VkResult で取得します.
+    ///
+    VkResult
+    result() const noexcept;
+
+    /// @}
+    // ========================================================================================= //
+    /// @name Utilities
+    /// @{
+    // ========================================================================================= //
+
+    ///
+    /// @brief VkResult の値を検査し, VK_SUCCESS 以外だった場合はメッセージをつけて例外を送出します.
+    ///
+    /// VK_SUCCESS だった場合は, 何もしません.
+    ///
+    /// @param result
+    ///     Vulkan からのエラーリザルトコード.
+    ///
+    /// @param message
+    ///     何をしようとしてエラーになったかなど, 詳細を表す文字列.
+    ///
+    /// @throw VulkanError
+    ///     result が VK_SUCCESS 以外だった場合に送出される.
+    ///
+    static void
+    check(const VkResult & result, const std::string & message);
+
+    /// @}
+
+private:
+    ///
+    /// @brief VkResult, message を統合してエラーメッセージを作成します.
+    ///
+    static std::string
+    _toMessage(const VkResult & result, const std::string & message) noexcept;
+
+    const std::string message_;
+    int               result_;
+};
+
+}  // namespace vkwp
+
+#endif
