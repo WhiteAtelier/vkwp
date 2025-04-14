@@ -7,6 +7,8 @@
 #include <vulkan/vulkan.h>
 
 #include <optional>
+#include <set>
+#include <utility>
 #include <vector>
 
 namespace vkwp {
@@ -63,6 +65,10 @@ public:
     [[nodiscard]]
     std::pair<bool, std::uint32_t>
     getMemoryTypeIndex(const VkMemoryPropertyFlags memory_property_flags, const std::uint32_t memory_type_bits) const;
+
+    [[nodiscard]]
+    std::set<std::uint32_t>
+    listQueueFamilyIndexes(const VkQueueFlags & queue_flags) const;
 
 private:
     mutable std::optional<std::vector<VkQueueFamilyProperties>> queue_family_properties_cache_;

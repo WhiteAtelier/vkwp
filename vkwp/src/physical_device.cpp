@@ -77,11 +77,11 @@ vkwp::PhysicalDevice::getFormatProperties(const VkFormat format) const
 
 vkwp::Device
 vkwp::PhysicalDevice::createDevice(const std::string &                          label,
-                                          const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
-                                          const std::vector<std::string> &             _enabled_layer_names,
-                                          const std::vector<std::string> &             _enabled_extension_names,
-                                          const VkPhysicalDeviceFeatures &             enabled_features,
-                                          const void *                                 p_next)
+                                   const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
+                                   const std::vector<std::string> &             _enabled_layer_names,
+                                   const std::vector<std::string> &             _enabled_extension_names,
+                                   const VkPhysicalDeviceFeatures &             enabled_features,
+                                   const void *                                 p_next)
 {
     VKWP_ASSERTION(queue_create_infos.size() <= std::numeric_limits<std::uint32_t>::max());
     VKWP_ASSERTION(_enabled_layer_names.size() <= std::numeric_limits<std::uint32_t>::max());
@@ -147,7 +147,7 @@ vkwp::PhysicalDevice::getSurfaceCapabilities(const VkSurfaceKHR & surface) const
 
 std::pair<bool, std::uint32_t>
 vkwp::PhysicalDevice::getMemoryTypeIndex(const VkMemoryPropertyFlags memory_property_flags,
-                                                const std::uint32_t         memory_type_bits) const
+                                         const std::uint32_t         memory_type_bits) const
 {
     const auto & memory_property = this->getMemoryProperties();
     auto         request_bits    = memory_type_bits;
@@ -164,4 +164,21 @@ vkwp::PhysicalDevice::getMemoryTypeIndex(const VkMemoryPropertyFlags memory_prop
         request_bits >>= 1;
     }
     return { false, ~0u };
+}
+
+std::set<std::uint32_t>
+vkwp::PhysicalDevice::listQueueFamilyIndexes(const VkQueueFlags & queue_flags) const
+{
+    const auto &            queue_family_properties = this->getQueueFamilyProperties();
+    std::set<std::uint32_t> indexes;
+    for (std::uint32_t queue_family_index = 0;  //
+         queue_family_index < queue_family_properties.size();
+         ++queue_family_index)
+    {
+        if ((queue_family_properties[queue_family_index].queueFlags & queue_flags) == queue_flags)
+        {
+            indexes.insert(queue_family_index);
+        }
+    }
+    return indexes;
 }
