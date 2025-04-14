@@ -1,13 +1,65 @@
 #include "vkwp/debug_report_callback_resource.hpp"
 
-#if VKWP_DEBUG_REPORT_CALLBACK_RESOURCE_ENABLED
-#    include "impl/assert.hpp"
+#include "impl/assert.hpp"
+#include "vkwp/vulkan_error.hpp"
 
-#    include <spdlog/spdlog.h>
+#include <spdlog/spdlog.h>
 
+namespace vkwp {
+
+class DebugReportCallbackResource::Impl_ final
+{
+public:
+    Impl_(const VkInstance & instance);
+    ~Impl_() noexcept;
+
+    void
+    initialize();
+
+private:
+    static VkBool32 VKAPI_CALL
+    _debugReportCallback(VkDebugReportFlagsEXT      flags,
+                         VkDebugReportObjectTypeEXT object_type,
+                         uint64_t                   object,
+                         size_t                     location,
+                         int32_t                    message_code,
+                         const char *               layer_prefix,
+                         const char *               message,
+                         void *                     userData);
+
+    const VkInstance                          instance_                            = nullptr;
+    const PFN_vkCreateDebugReportCallbackEXT  pfn_vkCreateDebugReportCallbackEXT_  = nullptr;
+    const PFN_vkDebugReportMessageEXT         pfn_vkDebugReportMessageEXT_         = nullptr;
+    const PFN_vkDestroyDebugReportCallbackEXT pfn_vkDestroyDebugReportCallbackEXT_ = nullptr;
+    VkDebugReportCallbackEXT                  pfn_debugReport_                     = nullptr;
+};
+
+}  // namespace vkwp
+
+// ============================================================================================= //
+// Constructor
+// ============================================================================================= //
+#define GET_INSTANCE_PROC_ADDR(FuncName)                                                    \
+    pfn_##FuncName##_                                                                       \
+    {                                                                                       \
+        reinterpret_cast<PFN_##FuncName>(vkGetInstanceProcAddr(this->instance_, #FuncName)) \
+    }
+
+vkwp::DebugReportCallbackResource::Impl_::Impl_(const VkInstance & instance)
+    : instance_{ instance }
+    , GET_INSTANCE_PROC_ADDR(vkCreateDebugReportCallbackEXT)
+    , GET_INSTANCE_PROC_ADDR(vkDebugReportMessageEXT)
+    , GET_INSTANCE_PROC_ADDR(vkDestroyDebugReportCallbackEXT)
+{}
+#undef GET_INSTANCE_PROC_ADDR
+
+// impl_ instance is not created at DebugReportCallbackResource constructor.
 vkwp::DebugReportCallbackResource::DebugReportCallbackResource() = default;
 
-vkwp::DebugReportCallbackResource::~DebugReportCallbackResource() noexcept
+// ============================================================================================= //
+// Destructor
+// ============================================================================================= //
+vkwp::DebugReportCallbackResource::Impl_::~Impl_() noexcept
 {
     if (this->instance_ != nullptr            //
         && this->pfn_debugReport_ != nullptr  //
@@ -18,41 +70,50 @@ vkwp::DebugReportCallbackResource::~DebugReportCallbackResource() noexcept
     }
 }
 
+vkwp::DebugReportCallbackResource::~DebugReportCallbackResource() noexcept = default;
+
+// ============================================================================================= //
+// initialize()
+// ============================================================================================= //
 void
-vkwp::DebugReportCallbackResource::initialize(const VkInstance instance)
+vkwp::DebugReportCallbackResource::Impl_::initialize()
 {
-    this->instance_ = instance;
-
-#    define GET_INSTANCE_PROC_ADDR(FuncName) \
-        this->pfn_##FuncName##_ = reinterpret_cast<PFN_##FuncName>(vkGetInstanceProcAddr(this->instance_, #FuncName))
-    GET_INSTANCE_PROC_ADDR(vkCreateDebugReportCallbackEXT);
-    GET_INSTANCE_PROC_ADDR(vkDebugReportMessageEXT);
-    GET_INSTANCE_PROC_ADDR(vkDestroyDebugReportCallbackEXT);
-#    undef GET_INSTANCE_PROC_ADDR
-
     const VkDebugReportCallbackCreateInfoEXT debug_report_callback_create_info_ext{
         .sType       = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT,
         .pNext       = nullptr,
         .flags       = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT,
-        .pfnCallback = &DebugReportCallbackResource::_debugReportCallback,
+        .pfnCallback = &DebugReportCallbackResource::Impl_::_debugReportCallback,
         .pUserData   = nullptr,
     };
-    this->pfn_vkCreateDebugReportCallbackEXT_(this->instance_,
-                                              &debug_report_callback_create_info_ext,
-                                              nullptr,
-                                              &this->pfn_debugReport_);
+    VulkanError::check(  //
+        this->pfn_vkCreateDebugReportCallbackEXT_(this->instance_,
+                                                  &debug_report_callback_create_info_ext,
+                                                  nullptr,
+                                                  &this->pfn_debugReport_),
+        "Failed to vkCreateDebugReportCallbackEXT()");
     SPDLOG_DEBUG("Debug callback is setup.");
 }
 
+void
+vkwp::DebugReportCallbackResource::initialize(const VkInstance instance)
+{
+    auto impl = std::make_unique<Impl_>(instance);
+    impl->initialize();  // throwable なので impl local variable に一度受ける
+    this->impl_ = std::move(impl);
+}
+
+// ============================================================================================= //
+// [IMPL/PRIVATE] _debugReportCallback
+// ============================================================================================= //
 VkBool32
-vkwp::DebugReportCallbackResource::_debugReportCallback(VkDebugReportFlagsEXT      flags,
-                                                        VkDebugReportObjectTypeEXT object_type,
-                                                        uint64_t                   object,
-                                                        size_t                     location,
-                                                        int32_t                    message_code,
-                                                        const char *               layer_prefix,
-                                                        const char *               message,
-                                                        void *                     userData)
+vkwp::DebugReportCallbackResource::Impl_::_debugReportCallback(VkDebugReportFlagsEXT      flags,
+                                                               VkDebugReportObjectTypeEXT object_type,
+                                                               uint64_t                   object,
+                                                               size_t                     location,
+                                                               int32_t                    message_code,
+                                                               const char *               layer_prefix,
+                                                               const char *               message,
+                                                               void *                     userData)
 {
     VkBool32 ret{ VK_FALSE };
     if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT || flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
@@ -93,4 +154,3 @@ vkwp::DebugReportCallbackResource::_debugReportCallback(VkDebugReportFlagsEXT   
 
     return ret;
 }
-#endif
