@@ -182,3 +182,13 @@ vkwp::PhysicalDevice::listQueueFamilyIndexes(const VkQueueFlags & queue_flags) c
     }
     return indexes;
 }
+
+bool
+vkwp::PhysicalDevice::isSurfaceSupported(const std::uint32_t queue_index, const VkSurfaceKHR & surface) const
+{
+    VkBool32 supported = VK_FALSE;
+    vkwp::VulkanError::check(  //
+        vkGetPhysicalDeviceSurfaceSupportKHR(this->_ref(), queue_index, surface, &supported),
+        "Failed to vkGetPhysicalDeviceSurfaceSupportKHR().");
+    return supported == VK_TRUE;
+}

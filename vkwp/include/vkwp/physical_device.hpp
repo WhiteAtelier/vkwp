@@ -70,6 +70,10 @@ public:
     std::set<std::uint32_t>
     listQueueFamilyIndexes(const VkQueueFlags & queue_flags) const;
 
+    [[nodiscard]]
+    bool
+    isSurfaceSupported(const std::uint32_t queue_index, const VkSurfaceKHR & surface) const;
+
 private:
     mutable std::optional<std::vector<VkQueueFamilyProperties>> queue_family_properties_cache_;
     mutable std::optional<VkPhysicalDeviceProperties>           properties_;
