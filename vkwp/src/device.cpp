@@ -184,7 +184,7 @@ vkwp::Device::importWin32ExternalMemory(const std::string &                     
                                         void * const                             handle,
                                         const wchar_t * const                    name,
                                         const VkImage &                          image,
-                                        const VkBuffer &                         buffer)
+                                        const VkBuffer &                         buffer) const
 {
     DeviceMemory ret{ label };
 

@@ -85,7 +85,7 @@ public:
                               void * const                             handle,
                               const wchar_t * const                    name,
                               const VkImage &                          image,
-                              const VkBuffer &                         buffer);
+                              const VkBuffer &                         buffer) const;
 #endif
 
     [[nodiscard]]
