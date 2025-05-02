@@ -4,8 +4,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -16,10 +15,12 @@ class ImageView final : public Resource<VkImageView, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit ImageView();
+    [[nodiscard]]
+    explicit ImageView();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit ImageView(const std::string & label);
+    [[nodiscard]]
+    explicit ImageView(const std::string & label);
 };
 
 }  // namespace vkwp

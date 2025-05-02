@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -15,10 +14,12 @@ class DescriptorSet final : public Resource<VkDescriptorSet, VkDevice, VkDescrip
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit DescriptorSet();
+    [[nodiscard]]
+    explicit DescriptorSet();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit DescriptorSet(const std::string & label);
+    [[nodiscard]]
+    explicit DescriptorSet(const std::string & label);
 };
 
 }  // namespace vkwp

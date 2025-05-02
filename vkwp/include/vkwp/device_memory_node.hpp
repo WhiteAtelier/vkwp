@@ -2,8 +2,7 @@
 #define VKWP_DEVICE_MEMORY_NODE_HPP
 
 #include "fwd.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include <string>
 

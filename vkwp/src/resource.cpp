@@ -1,9 +1,8 @@
+#include "vkwp/resource.hpp"
+
 #include "impl/assert.hpp"
 #include "vkwp/vulkan.hpp"
 #include "vkwp/vulkan_error.hpp"
-
-#include <vulkan/vulkan.h>
-
 
 namespace {
 
@@ -437,7 +436,7 @@ vkwp::Resource<T, void, void>::release() noexcept
 }
 
 #define SFL_EXPLICIT_DEFINE(VkType, VkParentType, VkPoolType) \
-    template class vkwp::ResourceBase<VkType>;         \
+    template class vkwp::ResourceBase<VkType>;                \
     template class vkwp::Resource<VkType, VkParentType, VkPoolType>;
 
 SFL_EXPLICIT_DEFINE(VkInstance, void, void)

@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include <vector>
 
@@ -17,10 +16,12 @@ class SwapchainKHR final : public Resource<VkSwapchainKHR, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit SwapchainKHR();
+    [[nodiscard]]
+    explicit SwapchainKHR();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit SwapchainKHR(const std::string & label);
+    [[nodiscard]]
+    explicit SwapchainKHR(const std::string & label);
 
 #if defined(VK_EXT_hdr_metadata) && VK_EXT_hdr_metadata
     void

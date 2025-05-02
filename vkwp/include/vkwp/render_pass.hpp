@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -15,10 +14,12 @@ class RenderPass final : public Resource<VkRenderPass, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit RenderPass();
+    [[nodiscard]]
+    explicit RenderPass();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit RenderPass(const std::string & label);
+    [[nodiscard]]
+    explicit RenderPass(const std::string & label);
 };
 
 }  // namespace vkwp

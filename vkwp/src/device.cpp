@@ -10,6 +10,7 @@
 #include "vkwp/framebuffer.hpp"
 #include "vkwp/image.hpp"
 #include "vkwp/image_view.hpp"
+#include "vkwp/mutex.hpp"
 #include "vkwp/physical_device.hpp"
 #include "vkwp/pipeline.hpp"
 #include "vkwp/pipeline_layout.hpp"
@@ -39,21 +40,25 @@ vkwp::Device::waitIdle() const
 }
 
 vkwp::Queue
-vkwp::Device::getDeviceQueue(const std::uint32_t queue_family_index, const std::uint32_t queue_index) const
+vkwp::Device::getDeviceQueue(const std::uint32_t       queue_family_index,
+                             const std::uint32_t       queue_index,
+                             std::unique_ptr<Mutex> && mutex) const
 {
     Queue ret{ this->getLabel() + "/Queue"                        //
                + "/Family[" + std::to_string(queue_family_index)  //
                + "]/Index[" + std::to_string(queue_index) + "]" };
     vkGetDeviceQueue(this->_ref(), queue_family_index, queue_index, ret.reset());
+    ret.queue_family_index_ = queue_family_index;
+    ret.mutex_              = std::move(mutex);
     return ret;
 }
 
 vkwp::Buffer
 vkwp::Device::createBuffer(const std::string &       label,
-                                  const VkDeviceSize        size,
-                                  const VkBufferUsageFlags  usage,
-                                  const VkBufferCreateFlags flags,
-                                  const void * const        p_next) const
+                           const VkDeviceSize        size,
+                           const VkBufferUsageFlags  usage,
+                           const VkBufferCreateFlags flags,
+                           const void * const        p_next) const
 {
     Buffer                   ret{ label };
     const VkBufferCreateInfo ci{
@@ -74,16 +79,16 @@ vkwp::Device::createBuffer(const std::string &       label,
 
 vkwp::Image
 vkwp::Device::createImage(const std::string &         label,
-                                 const VkImageType           image_type,
-                                 const VkFormat              format,
-                                 const VkExtent3D            extent,
-                                 const std::uint32_t         mip_levels,
-                                 const std::uint32_t         array_layers,
-                                 const VkSampleCountFlagBits samples,
-                                 const VkImageTiling         tiling,
-                                 const VkImageUsageFlags     usage,
-                                 const VkImageCreateFlags    flags,
-                                 const void * const          p_next) const
+                          const VkImageType           image_type,
+                          const VkFormat              format,
+                          const VkExtent3D            extent,
+                          const std::uint32_t         mip_levels,
+                          const std::uint32_t         array_layers,
+                          const VkSampleCountFlagBits samples,
+                          const VkImageTiling         tiling,
+                          const VkImageUsageFlags     usage,
+                          const VkImageCreateFlags    flags,
+                          const void * const          p_next) const
 {
     Image                   ret{ label };
     const VkImageCreateInfo ci{
@@ -111,13 +116,13 @@ vkwp::Device::createImage(const std::string &         label,
 
 vkwp::ImageView
 vkwp::Device::createImageView(const std::string &             label,
-                                     const VkImage                   image,
-                                     const VkImageViewType           view_type,
-                                     const VkFormat                  format,
-                                     const VkComponentMapping &      components,
-                                     const VkImageSubresourceRange & subresource_range,
-                                     const VkImageViewCreateFlags    flags,
-                                     const void * const              p_next) const
+                              const VkImage                   image,
+                              const VkImageViewType           view_type,
+                              const VkFormat                  format,
+                              const VkComponentMapping &      components,
+                              const VkImageSubresourceRange & subresource_range,
+                              const VkImageViewCreateFlags    flags,
+                              const void * const              p_next) const
 {
     ImageView                   ret{ label };
     const VkImageViewCreateInfo ci{
@@ -138,9 +143,10 @@ vkwp::Device::createImageView(const std::string &             label,
 
 vkwp::DeviceMemory
 vkwp::Device::allocateDeviceMemory(const std::string &          label,
-                                          const PhysicalDevice &       physical_device,
-                                          const VkMemoryRequirements & memory_requirements,
-                                          const VkMemoryPropertyFlags  memory_property_flags) const
+                                   const PhysicalDevice &       physical_device,
+                                   const VkMemoryRequirements & memory_requirements,
+                                   const VkMemoryPropertyFlags  memory_property_flags,
+                                   const void * const           p_next) const
 {
     DeviceMemory ret{ label };
     const auto   memory_type_index
@@ -155,7 +161,7 @@ vkwp::Device::allocateDeviceMemory(const std::string &          label,
 
     const VkMemoryAllocateInfo ai{
         .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-        .pNext           = nullptr,
+        .pNext           = p_next,
         .allocationSize  = memory_requirements.size,
         .memoryTypeIndex = memory_type_index.second,
     };
@@ -169,11 +175,68 @@ vkwp::Device::allocateDeviceMemory(const std::string &          label,
     return ret;
 }
 
+#if defined(WIN32) && WIN32
+vkwp::DeviceMemory
+vkwp::Device::importWin32ExternalMemory(const std::string &                      label,
+                                        const PhysicalDevice &                   physical_device,
+                                        const std::size_t                        size,
+                                        const VkExternalMemoryHandleTypeFlagBits handle_type,
+                                        void * const                             handle,
+                                        const wchar_t * const                    name,
+                                        const VkImage &                          image,
+                                        const VkBuffer &                         buffer)
+{
+    DeviceMemory ret{ label };
+
+    VkMemoryWin32HandlePropertiesKHR memprops{
+        .sType          = VK_STRUCTURE_TYPE_MEMORY_WIN32_HANDLE_PROPERTIES_KHR,
+        .pNext          = nullptr,
+        .memoryTypeBits = 0,
+    };
+    const auto vkGetMemoryWin32HandlePropertiesKHR = reinterpret_cast<PFN_vkGetMemoryWin32HandlePropertiesKHR>(
+        vkGetDeviceProcAddr(this->_ref(), "vkGetMemoryWin32HandlePropertiesKHR"));
+    if (vkGetMemoryWin32HandlePropertiesKHR == nullptr)
+    {
+        SPDLOG_CRITICAL(
+            "Failed to get vkGetMemoryWin32HandlePropertiesKHR function. Missing VK_KHR_external_memory_win32 extension?");
+        throw std::runtime_error{ "Failed to get vkGetMemoryWin32HandlePropertiesKHR function." };
+    }
+    VulkanError::check(  //
+        vkGetMemoryWin32HandlePropertiesKHR(this->_ref(), handle_type, handle, &memprops),
+        "Failed to vkGetMemoryWin32HandlePropertiesKHR()");
+
+    const VkMemoryDedicatedAllocateInfo memory_dedicated_ai{
+        .sType  = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
+        .pNext  = nullptr,
+        .image  = image,
+        .buffer = buffer,
+    };
+    const VkImportMemoryWin32HandleInfoKHR import_memory_win32_handle_info_khr{
+        .sType      = VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
+        .pNext      = &memory_dedicated_ai,
+        .handleType = handle_type,
+        .handle     = handle,
+        .name       = name,
+    };
+
+    return this->allocateDeviceMemory(  //
+        label,
+        physical_device,
+        VkMemoryRequirements{
+            .size           = size,
+            .alignment      = 1,
+            .memoryTypeBits = memprops.memoryTypeBits,
+        },
+        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+        &import_memory_win32_handle_info_khr);
+}
+#endif
+
 vkwp::CommandPool
 vkwp::Device::createCommandPool(const std::string &            label,
-                                       const std::uint32_t            queue_family_index,
-                                       const VkCommandPoolCreateFlags flags,
-                                       const void * const             p_next) const
+                                const std::uint32_t            queue_family_index,
+                                const VkCommandPoolCreateFlags flags,
+                                const void * const             p_next) const
 {
     CommandPool                   ret{ label };
     const VkCommandPoolCreateInfo ci{
@@ -189,9 +252,7 @@ vkwp::Device::createCommandPool(const std::string &            label,
 }
 
 vkwp::Fence
-vkwp::Device::createFence(const std::string &      label,
-                                 const VkFenceCreateFlags flags,
-                                 const void * const       p_next) const
+vkwp::Device::createFence(const std::string & label, const VkFenceCreateFlags flags, const void * const p_next) const
 {
     Fence                   ret{ label };
     const VkFenceCreateInfo ci{
@@ -222,20 +283,20 @@ vkwp::Device::createSemaphore(const std::string & label) const
 
 vkwp::SwapchainKHR
 vkwp::Device::createSwapchainKHR(const std::string &                 label,
-                                        const VkSurfaceKHR                  surface,
-                                        const std::uint32_t                 min_image_count,
-                                        const VkFormat                      image_format,
-                                        const VkColorSpaceKHR               image_color_space,
-                                        const VkExtent2D                    image_extent,
-                                        const std::uint32_t                 image_array_layers,
-                                        const VkImageUsageFlags             image_usage,
-                                        const VkSurfaceTransformFlagBitsKHR pre_transform,
-                                        const VkCompositeAlphaFlagBitsKHR   composite_alpha,
-                                        const VkPresentModeKHR              present_mode,
-                                        const VkBool32                      clipped,
-                                        const VkSwapchainKHR                old_swapchain,
-                                        const VkSwapchainCreateFlagsKHR     flags,
-                                        const void * const                  p_next) const
+                                 const VkSurfaceKHR                  surface,
+                                 const std::uint32_t                 min_image_count,
+                                 const VkFormat                      image_format,
+                                 const VkColorSpaceKHR               image_color_space,
+                                 const VkExtent2D                    image_extent,
+                                 const std::uint32_t                 image_array_layers,
+                                 const VkImageUsageFlags             image_usage,
+                                 const VkSurfaceTransformFlagBitsKHR pre_transform,
+                                 const VkCompositeAlphaFlagBitsKHR   composite_alpha,
+                                 const VkPresentModeKHR              present_mode,
+                                 const VkBool32                      clipped,
+                                 const VkSwapchainKHR                old_swapchain,
+                                 const VkSwapchainCreateFlagsKHR     flags,
+                                 const void * const                  p_next) const
 {
     SwapchainKHR                   ret{ label };
     const VkSwapchainCreateInfoKHR ci{
@@ -266,11 +327,11 @@ vkwp::Device::createSwapchainKHR(const std::string &                 label,
 
 vkwp::RenderPass
 vkwp::Device::createRenderPass(const std::string &                          label,
-                                      const std::vector<VkAttachmentDescription> & attachments,
-                                      const std::vector<VkSubpassDescription> &    subpasses,
-                                      const std::vector<VkSubpassDependency> &     dependencies,
-                                      const VkRenderPassCreateFlags                flags,
-                                      const void * const                           p_next) const
+                               const std::vector<VkAttachmentDescription> & attachments,
+                               const std::vector<VkSubpassDescription> &    subpasses,
+                               const std::vector<VkSubpassDependency> &     dependencies,
+                               const VkRenderPassCreateFlags                flags,
+                               const void * const                           p_next) const
 {
     RenderPass                   ret{ label };
     const VkRenderPassCreateInfo ci{
@@ -292,13 +353,13 @@ vkwp::Device::createRenderPass(const std::string &                          labe
 
 vkwp::Framebuffer
 vkwp::Device::createFramebuffer(const std::string &            label,
-                                       const VkRenderPass             render_pass,
-                                       const std::vector<VkImageView> attachments,
-                                       const std::uint32_t            width,
-                                       const std::uint32_t            height,
-                                       const std::uint32_t            layers,
-                                       const VkFramebufferCreateFlags flags,
-                                       const void * const             p_next) const
+                                const VkRenderPass             render_pass,
+                                const std::vector<VkImageView> attachments,
+                                const std::uint32_t            width,
+                                const std::uint32_t            height,
+                                const std::uint32_t            layers,
+                                const VkFramebufferCreateFlags flags,
+                                const void * const             p_next) const
 {
     Framebuffer                   ret{ label };
     const VkFramebufferCreateInfo ci{
@@ -320,23 +381,23 @@ vkwp::Device::createFramebuffer(const std::string &            label,
 
 vkwp::Sampler
 vkwp::Device::createSampler(const std::string &        label,
-                                   const VkFilter             mag_filter,
-                                   const VkFilter             min_filter,
-                                   const VkSamplerMipmapMode  mipmap_mode,
-                                   const VkSamplerAddressMode address_mode_u,
-                                   const VkSamplerAddressMode address_mode_v,
-                                   const VkSamplerAddressMode address_mode_w,
-                                   const VkBool32             anisotropy_enable,
-                                   const float                max_anisotropy,
-                                   const VkBorderColor        border_color,
-                                   const float                mip_lod_bias,
-                                   const VkBool32             compare_enable,
-                                   const VkCompareOp          compare_op,
-                                   const float                min_lod,
-                                   const float                max_lod,
-                                   const VkBool32             unnormalized_coordinates,
-                                   const VkSamplerCreateFlags flags,
-                                   const void * const         p_next) const
+                            const VkFilter             mag_filter,
+                            const VkFilter             min_filter,
+                            const VkSamplerMipmapMode  mipmap_mode,
+                            const VkSamplerAddressMode address_mode_u,
+                            const VkSamplerAddressMode address_mode_v,
+                            const VkSamplerAddressMode address_mode_w,
+                            const VkBool32             anisotropy_enable,
+                            const float                max_anisotropy,
+                            const VkBorderColor        border_color,
+                            const float                mip_lod_bias,
+                            const VkBool32             compare_enable,
+                            const VkCompareOp          compare_op,
+                            const float                min_lod,
+                            const float                max_lod,
+                            const VkBool32             unnormalized_coordinates,
+                            const VkSamplerCreateFlags flags,
+                            const void * const         p_next) const
 {
     Sampler                   ret{ label };
     const VkSamplerCreateInfo ci{
@@ -367,10 +428,10 @@ vkwp::Device::createSampler(const std::string &        label,
 
 vkwp::DescriptorPool
 vkwp::Device::createDescriptorPool(const std::string &                       label,
-                                          const std::uint32_t                       max_sets,
-                                          const std::vector<VkDescriptorPoolSize> & pool_sizes,
-                                          const VkDescriptorPoolCreateFlags         flags,
-                                          const void * const                        p_next) const
+                                   const std::uint32_t                       max_sets,
+                                   const std::vector<VkDescriptorPoolSize> & pool_sizes,
+                                   const VkDescriptorPoolCreateFlags         flags,
+                                   const void * const                        p_next) const
 {
     DescriptorPool                   ret{ label };
     const VkDescriptorPoolCreateInfo ci{
@@ -389,9 +450,9 @@ vkwp::Device::createDescriptorPool(const std::string &                       lab
 
 vkwp::DescriptorSetLayout
 vkwp::Device::createDescriptorSetLayout(const std::string &                               label,
-                                               const std::vector<VkDescriptorSetLayoutBinding> & bindings,
-                                               const VkDescriptorSetLayoutCreateFlags            flags,
-                                               const void * const                                p_next) const
+                                        const std::vector<VkDescriptorSetLayoutBinding> & bindings,
+                                        const VkDescriptorSetLayoutCreateFlags            flags,
+                                        const void * const                                p_next) const
 {
     DescriptorSetLayout                   ret{ label };
     const VkDescriptorSetLayoutCreateInfo ci{
@@ -426,10 +487,10 @@ vkwp::Device::createShaderModule(const std::string & label, const std::vector<st
 
 vkwp::PipelineLayout
 vkwp::Device::createPipelineLayout(const std::string &                        label,
-                                          const std::vector<VkDescriptorSetLayout> & set_layouts,
-                                          const std::vector<VkPushConstantRange> &   push_constant_ranges,
-                                          const VkPipelineLayoutCreateFlags          flags,
-                                          const void * const                         p_next) const
+                                   const std::vector<VkDescriptorSetLayout> & set_layouts,
+                                   const std::vector<VkPushConstantRange> &   push_constant_ranges,
+                                   const VkPipelineLayoutCreateFlags          flags,
+                                   const void * const                         p_next) const
 {
     PipelineLayout                   ret{ label };
     const VkPipelineLayoutCreateInfo ci{
@@ -449,23 +510,23 @@ vkwp::Device::createPipelineLayout(const std::string &                        la
 
 vkwp::Pipeline
 vkwp::Device::createGraphicsPipeline(const std::string &                                  label,
-                                            const std::vector<VkPipelineShaderStageCreateInfo> & stages,
-                                            const VkPipelineVertexInputStateCreateInfo &         vertex_input_state,
-                                            const VkPipelineInputAssemblyStateCreateInfo &       input_assembly_state,
-                                            const VkPipelineTessellationStateCreateInfo &        tessellation_state,
-                                            const VkPipelineViewportStateCreateInfo &            viewport_state,
-                                            const VkPipelineRasterizationStateCreateInfo &       rasterization_state,
-                                            const VkPipelineMultisampleStateCreateInfo &         multisample_state,
-                                            const VkPipelineDepthStencilStateCreateInfo &        depth_stencil_state,
-                                            const VkPipelineColorBlendStateCreateInfo &          color_blend_state,
-                                            const VkPipelineDynamicStateCreateInfo &             dynamic_state,
-                                            const VkPipelineLayout                               layout,
-                                            const VkRenderPass                                   render_pass,
-                                            const std::uint32_t                                  subpass,
-                                            const VkPipeline                                     base_pipeline_handle,
-                                            const int32_t                                        base_pipeline_index,
-                                            const VkPipelineCreateFlags                          flags,
-                                            const void * const                                   p_next) const
+                                     const std::vector<VkPipelineShaderStageCreateInfo> & stages,
+                                     const VkPipelineVertexInputStateCreateInfo &         vertex_input_state,
+                                     const VkPipelineInputAssemblyStateCreateInfo &       input_assembly_state,
+                                     const VkPipelineTessellationStateCreateInfo &        tessellation_state,
+                                     const VkPipelineViewportStateCreateInfo &            viewport_state,
+                                     const VkPipelineRasterizationStateCreateInfo &       rasterization_state,
+                                     const VkPipelineMultisampleStateCreateInfo &         multisample_state,
+                                     const VkPipelineDepthStencilStateCreateInfo &        depth_stencil_state,
+                                     const VkPipelineColorBlendStateCreateInfo &          color_blend_state,
+                                     const VkPipelineDynamicStateCreateInfo &             dynamic_state,
+                                     const VkPipelineLayout                               layout,
+                                     const VkRenderPass                                   render_pass,
+                                     const std::uint32_t                                  subpass,
+                                     const VkPipeline                                     base_pipeline_handle,
+                                     const int32_t                                        base_pipeline_index,
+                                     const VkPipelineCreateFlags                          flags,
+                                     const void * const                                   p_next) const
 {
     Pipeline                           ret{ label };
     const VkGraphicsPipelineCreateInfo ci{
@@ -497,12 +558,12 @@ vkwp::Device::createGraphicsPipeline(const std::string &                        
 
 vkwp::Pipeline
 vkwp::Device::createComputePipeline(const std::string &         label,
-                                           const VkPipelineLayout      layout,
-                                           const VkShaderModule        shader_module,
-                                           const VkPipeline            base_pipeline_handle,
-                                           const int32_t               base_pipeline_index,
-                                           const VkPipelineCreateFlags flags,
-                                           const void * const          p_next) const
+                                    const VkPipelineLayout      layout,
+                                    const VkShaderModule        shader_module,
+                                    const VkPipeline            base_pipeline_handle,
+                                    const int32_t               base_pipeline_index,
+                                    const VkPipelineCreateFlags flags,
+                                    const void * const          p_next) const
 {
     Pipeline                          ret{ label };
     const VkComputePipelineCreateInfo ci{

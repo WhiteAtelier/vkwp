@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -17,10 +16,12 @@ class CommandBuffer final : public Resource<VkCommandBuffer, VkDevice, VkCommand
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit CommandBuffer();
+    [[nodiscard]]
+    explicit CommandBuffer();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit CommandBuffer(const std::string & label);
+    [[nodiscard]]
+    explicit CommandBuffer(const std::string & label);
 
     void
     beginCommandBuffer(const VkCommandBufferInheritanceInfo & inheritance_info,

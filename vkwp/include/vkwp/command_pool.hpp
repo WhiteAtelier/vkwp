@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include <vector>
 
@@ -17,10 +16,12 @@ class CommandPool final : public Resource<VkCommandPool, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit CommandPool();
+    [[nodiscard]]
+    explicit CommandPool();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit CommandPool(const std::string & label);
+    [[nodiscard]]
+    explicit CommandPool(const std::string & label);
 
     [[nodiscard]]
     std::vector<CommandBuffer>

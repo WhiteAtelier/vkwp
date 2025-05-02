@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -15,10 +14,12 @@ class Sampler final : public Resource<VkSampler, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit Sampler();
+    [[nodiscard]]
+    explicit Sampler();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Sampler(const std::string & label);
+    [[nodiscard]]
+    explicit Sampler(const std::string & label);
 };
 
 }  // namespace vkwp

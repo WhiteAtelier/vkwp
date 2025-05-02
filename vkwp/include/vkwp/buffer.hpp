@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -17,10 +16,12 @@ class Buffer final : public Resource<VkBuffer, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit Buffer();
+    [[nodiscard]]
+    explicit Buffer();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Buffer(const std::string & label);
+    [[nodiscard]]
+    explicit Buffer(const std::string & label);
 
     ///
     /// @brief このバッファが要求するデバイスメモリ要件を取得する.

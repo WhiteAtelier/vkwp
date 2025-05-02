@@ -22,6 +22,7 @@ class Framebuffer;
 class Image;
 class ImageView;
 class Instance;
+class Mutex;
 class PhysicalDevice;
 class Pipeline;
 class PipelineLayout;

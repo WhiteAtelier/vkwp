@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -15,10 +14,12 @@ class Framebuffer final : public Resource<VkFramebuffer, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit Framebuffer();
+    [[nodiscard]]
+    explicit Framebuffer();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Framebuffer(const std::string & label);
+    [[nodiscard]]
+    explicit Framebuffer(const std::string & label);
 };
 
 }  // namespace vkwp

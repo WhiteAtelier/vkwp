@@ -4,9 +4,9 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
+#include "vulkan.hpp"
 
-#include <vulkan/vulkan.h>
-
+#include <memory>
 #include <vector>
 
 namespace vkwp {
@@ -18,17 +18,21 @@ class Device final : public Resource<VkDevice, void, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit Device();
+    [[nodiscard]]
+    explicit Device();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Device(const std::string & name);
+    [[nodiscard]]
+    explicit Device(const std::string & name);
 
     void
     waitIdle() const;
 
     [[nodiscard]]
     Queue
-    getDeviceQueue(const std::uint32_t queue_family_index, const std::uint32_t queue_index) const;
+    getDeviceQueue(const std::uint32_t       queue_family_index,
+                   const std::uint32_t       queue_index,
+                   std::unique_ptr<Mutex> && mutex = nullptr) const;
 
     [[nodiscard]]
     Buffer
@@ -68,7 +72,21 @@ public:
     allocateDeviceMemory(const std::string &          label,
                          const PhysicalDevice &       physical_device,
                          const VkMemoryRequirements & memory_requirements,
-                         const VkMemoryPropertyFlags  memory_property_flags) const;
+                         const VkMemoryPropertyFlags  memory_property_flags,
+                         const void * const           p_next = nullptr) const;
+
+#if defined(WIN32) && WIN32
+    [[nodiscard]]
+    DeviceMemory
+    importWin32ExternalMemory(const std::string &                      label,
+                              const PhysicalDevice &                   physical_device,
+                              const std::size_t                        size,
+                              const VkExternalMemoryHandleTypeFlagBits handle_type,
+                              void * const                             handle,
+                              const wchar_t * const                    name,
+                              const VkImage &                          image,
+                              const VkBuffer &                         buffer);
+#endif
 
     [[nodiscard]]
     CommandPool

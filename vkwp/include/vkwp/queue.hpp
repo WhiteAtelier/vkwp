@@ -3,11 +3,9 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
+#include "vulkan.hpp"
 
-#include <vulkan/vulkan.h>
-
-#include <optional>
-#include <vector>
+#include <memory>
 
 namespace vkwp {
 
@@ -18,10 +16,43 @@ class Queue final : public Resource<VkQueue, void, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit Queue();
+    [[nodiscard]]
+    explicit Queue();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Queue(const std::string & label);
+    [[nodiscard]]
+    explicit Queue(const std::string & label);
+
+    Queue(Queue &&) noexcept;
+
+    std::uint32_t
+    getQueueFamilyIndex() const noexcept;
+
+    void
+    setExternal(const VkQueue &, std::unique_ptr<Mutex> && mutex = nullptr) & noexcept;
+
+    /// @brief Lock this queue for synchronized.
+    ///
+    /// Should not use this function directly, but use with std::lock_guard, std::unique_lock, or etc...
+    void
+    lock() const;
+
+    /// @brief Try to lock this queue for synchronized.
+    ///
+    /// Should not use this function directly, but use with std::lock_guard, std::unique_lock, or etc...
+    bool
+    try_lock() const;
+
+    /// @brief Unlock this queue for synchronized.
+    void
+    unlock() const;
+
+private:
+    using Resource<VkQueue, void, void>::setExternal;
+
+    friend Device;
+    std::uint32_t          queue_family_index_;
+    std::unique_ptr<Mutex> mutex_;
 };
 
 }  // namespace vkwp

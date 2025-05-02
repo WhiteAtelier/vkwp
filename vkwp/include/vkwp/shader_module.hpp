@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -15,10 +14,12 @@ class ShaderModule final : public Resource<VkShaderModule, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit ShaderModule();
+    [[nodiscard]]
+    explicit ShaderModule();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit ShaderModule(const std::string & label);
+    [[nodiscard]]
+    explicit ShaderModule(const std::string & label);
 };
 
 }  // namespace vkwp

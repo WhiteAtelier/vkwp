@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -15,10 +14,12 @@ class Semaphore final : public Resource<VkSemaphore, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit Semaphore();
+    [[nodiscard]]
+    explicit Semaphore();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Semaphore(const std::string & label);
+    [[nodiscard]]
+    explicit Semaphore(const std::string & label);
 };
 
 }  // namespace vkwp

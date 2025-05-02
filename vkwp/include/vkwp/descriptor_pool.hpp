@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include <vector>
 
@@ -17,7 +16,8 @@ class DescriptorPool final : public Resource<VkDescriptorPool, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit DescriptorPool();
+    [[nodiscard]]
+    explicit DescriptorPool();
 
     /// @brief Constructor with label name.
     explicit DescriptorPool(const std::string & label);

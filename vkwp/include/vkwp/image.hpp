@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -15,10 +14,12 @@ class Image final : public Resource<VkImage, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit Image();
+    [[nodiscard]]
+    explicit Image();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Image(const std::string & label);
+    [[nodiscard]]
+    explicit Image(const std::string & label);
 
     [[nodiscard]]
     VkMemoryRequirements

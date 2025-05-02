@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -15,10 +14,12 @@ class Pipeline final : public Resource<VkPipeline, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit Pipeline();
+    [[nodiscard]]
+    explicit Pipeline();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Pipeline(const std::string & label);
+    [[nodiscard]]
+    explicit Pipeline(const std::string & label);
 };
 
 }  // namespace vkwp

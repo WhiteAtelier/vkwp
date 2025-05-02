@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include <limits>
 
@@ -17,13 +16,15 @@ class Fence final : public Resource<VkFence, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit Fence();
+    [[nodiscard]]
+    explicit Fence();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Fence(const std::string & label);
+    [[nodiscard]]
+    explicit Fence(const std::string & label);
 
     bool
-    wait(const std::uint64_t timeout = std::numeric_limits<std::uint64_t>::max()) const;
+    wait(const std::uint64_t timeout = (std::numeric_limits<std::uint64_t>::max)()) const;
 
     void
     resetSignal() const;

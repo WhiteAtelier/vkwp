@@ -1,7 +1,7 @@
 #ifndef VKWP_DEBUG_REPORT_CALLBACK_RESOURCE_HPP
 #define VKWP_DEBUG_REPORT_CALLBACK_RESOURCE_HPP
 
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include <memory>
 

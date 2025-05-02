@@ -80,12 +80,12 @@ vkwp::PhysicalDevice::createDevice(const std::string &                          
                                    const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
                                    const std::vector<std::string> &             _enabled_layer_names,
                                    const std::vector<std::string> &             _enabled_extension_names,
-                                   const VkPhysicalDeviceFeatures &             enabled_features,
+                                   const VkPhysicalDeviceFeatures * const       enabled_features,
                                    const void *                                 p_next)
 {
-    VKWP_ASSERTION(queue_create_infos.size() <= std::numeric_limits<std::uint32_t>::max());
-    VKWP_ASSERTION(_enabled_layer_names.size() <= std::numeric_limits<std::uint32_t>::max());
-    VKWP_ASSERTION(_enabled_extension_names.size() <= std::numeric_limits<std::uint32_t>::max());
+    VKWP_ASSERTION(queue_create_infos.size() <= (std::numeric_limits<std::uint32_t>::max)());
+    VKWP_ASSERTION(_enabled_layer_names.size() <= (std::numeric_limits<std::uint32_t>::max)());
+    VKWP_ASSERTION(_enabled_extension_names.size() <= (std::numeric_limits<std::uint32_t>::max)());
     Device ret{ label };
 
     std::vector<const char *> enabled_layer_names;
@@ -112,7 +112,7 @@ vkwp::PhysicalDevice::createDevice(const std::string &                          
         .ppEnabledLayerNames     = enabled_layer_names.data(),
         .enabledExtensionCount   = static_cast<std::uint32_t>(enabled_extension_names.size()),
         .ppEnabledExtensionNames = enabled_extension_names.data(),
-        .pEnabledFeatures        = &enabled_features,
+        .pEnabledFeatures        = enabled_features,
     };
     VulkanError::check(  //
         vkCreateDevice(this->_ref(), &ci, nullptr, ret.reset()),

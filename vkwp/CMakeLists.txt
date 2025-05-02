@@ -63,6 +63,7 @@ vkwp_add_library(vkwp
         vkwp/image_view.hpp
         vkwp/image.hpp
         vkwp/instance.hpp
+        vkwp/mutex.hpp
         vkwp/physical_device.hpp
         vkwp/pipeline_layout.hpp
         vkwp/pipeline.hpp
@@ -105,4 +106,3 @@ target_compile_definitions(vkwp
         VKWP_SUPPORT_GLFW_SURFACE=$<BOOL:${VKWP_SUPPORT_GLFW_SURFACE}>
         VKWP_SUPPORT_WIN32_SURFACE=$<BOOL:${VKWP_SUPPORT_WIN32_SURFACE}>
 )
-

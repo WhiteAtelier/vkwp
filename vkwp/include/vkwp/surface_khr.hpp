@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 namespace vkwp {
 
@@ -15,10 +14,12 @@ class SurfaceKHR final : public Resource<VkSurfaceKHR, VkInstance, void>
 {
 public:
     /// @brief Default Constructor
-    [[nodiscard]] explicit SurfaceKHR();
+    [[nodiscard]]
+    explicit SurfaceKHR();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit SurfaceKHR(const std::string & label);
+    [[nodiscard]]
+    explicit SurfaceKHR(const std::string & label);
 };
 
 }  // namespace vkwp

@@ -3,8 +3,7 @@
 
 #include "fwd.hpp"
 #include "resource.hpp"
-
-#include <vulkan/vulkan.h>
+#include "vulkan.hpp"
 
 #include <optional>
 #include <set>
@@ -51,7 +50,7 @@ public:
                  const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
                  const std::vector<std::string> &             enabled_layer_names,
                  const std::vector<std::string> &             enabled_extension_names,
-                 const VkPhysicalDeviceFeatures &             enabled_features,
+                 const VkPhysicalDeviceFeatures * const       enabled_features,
                  const void *                                 p_next = nullptr);
 
     [[nodiscard]]
