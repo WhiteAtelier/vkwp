@@ -11,6 +11,10 @@
 struct GLFWwindow;
 #endif
 
+#if VKWP_SUPPORT_WIN32_SURFACE
+#    include <Windows.h>
+#endif
+
 namespace vkwp {
 
 ///
