@@ -2,6 +2,7 @@
 #define VKWP_QUEUE_HPP
 
 #include "fwd.hpp"
+#include "mutex.hpp"
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -22,8 +23,6 @@ public:
     /// @brief Constructor with label name.
     [[nodiscard]]
     explicit Queue(const std::string & label);
-
-    Queue(Queue &&) noexcept;
 
     std::uint32_t
     getQueueFamilyIndex() const noexcept;

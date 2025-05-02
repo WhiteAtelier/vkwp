@@ -11,8 +11,6 @@ vkwp::Queue::Queue(const std::string & label)
     , mutex_{}
 {}
 
-vkwp::Queue::Queue(Queue &&) noexcept = default;
-
 std::uint32_t
 vkwp::Queue::getQueueFamilyIndex() const noexcept
 {
