@@ -175,7 +175,7 @@ vkwp::Device::allocateDeviceMemory(const std::string &          label,
     return ret;
 }
 
-#if defined(WIN32) && WIN32
+#if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
 vkwp::DeviceMemory
 vkwp::Device::importWin32ExternalMemory(const std::string &                      label,
                                         const PhysicalDevice &                   physical_device,
