@@ -10,10 +10,10 @@ namespace vkwp {
 class Mutex
 {
 public:
-    Mutex() noexcept;
-    virtual ~Mutex() noexcept;
-    Mutex(const Mutex &) = delete;
-    Mutex(Mutex &&)      = delete;
+    Mutex() noexcept          = default;
+    virtual ~Mutex() noexcept = default;
+    Mutex(const Mutex &)      = delete;
+    Mutex(Mutex &&)           = delete;
 
     /// @brief Lock mutex.
     virtual void
