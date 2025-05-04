@@ -1,8 +1,8 @@
 #ifndef VKWP_VULKAN_HPP
 #define VKWP_VULKAN_HPP
 
-// befor include vulkan.
-#if VKWP_SUPPORT_WIN32_SURFACE
+// before include vulkan.
+#if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
 #    define VK_USE_PLATFORM_WIN32_KHR
 #endif
 
