@@ -27,11 +27,13 @@ public:
     using VkType = T;  ///< Vulkan Raw Resource Type.
 
     /// @brief Default Constructor.
-    [[nodiscard]] explicit ResourceBase();
+    [[nodiscard]]
+    explicit ResourceBase();
 
 protected:
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit ResourceBase(const std::string & label);
+    [[nodiscard]]
+    explicit ResourceBase(const std::string & label);
 
     ResourceBase<T> &
     operator=(ResourceBase &&) & noexcept;  ///< Movable assignable to lvalue.
@@ -117,10 +119,12 @@ public:
 
 protected:
     /// @brief Default Constructor.
-    [[nodiscard]] explicit Resource();
+    [[nodiscard]]
+    explicit Resource();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Resource(const std::string & label);
+    [[nodiscard]]
+    explicit Resource(const std::string & label);
 
 public:
     Resource(Resource &&) noexcept;  ///< Movable.
@@ -223,10 +227,12 @@ public:
 
 protected:
     /// @brief Default Constructor.
-    [[nodiscard]] explicit Resource();
+    [[nodiscard]]
+    explicit Resource();
 
     /// @brief Constructor with label name.
-    [[nodiscard]] explicit Resource(const std::string & label);
+    [[nodiscard]]
+    explicit Resource(const std::string & label);
 
 public:
     Resource(Resource &&) noexcept;  ///< Move Constructable.
@@ -311,8 +317,10 @@ template <::vkwp::vulkan_raw_resource T>
 class Resource<T, void, void> : public ResourceBase<T>
 {
 protected:
-    [[nodiscard]] explicit Resource();
-    [[nodiscard]] explicit Resource(const std::string & label);
+    [[nodiscard]]
+    explicit Resource();
+    [[nodiscard]]
+    explicit Resource(const std::string & label);
 
 public:
     using VkParentType = void;  ///< No Parent.

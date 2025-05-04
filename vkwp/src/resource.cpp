@@ -225,6 +225,7 @@ vkwp::Resource<T, ParentT, PoolT>::operator=(Resource && rhs) & noexcept
 {
     if (this != &rhs)
     {
+        this->_reset();
         this->parent_ = rhs.parent_;
         this->pool_   = rhs.pool_;
         rhs.parent_   = nullptr;
@@ -337,6 +338,7 @@ vkwp::Resource<T, ParentT, void>::operator=(Resource && rhs) & noexcept
 {
     if (this != &rhs)
     {
+        this->_reset();
         this->parent_ = rhs.parent_;
         rhs.parent_   = nullptr;
     }
@@ -422,6 +424,10 @@ template <::vkwp::vulkan_raw_resource T>
 vkwp::Resource<T, void, void> &
 vkwp::Resource<T, void, void>::operator=(Resource && rhs) & noexcept
 {
+    if (this != &rhs)
+    {
+        this->_reset();
+    }
     ResourceBase<T>::operator=(std::move(rhs));
     return *this;
 }
