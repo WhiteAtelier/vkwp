@@ -27,6 +27,7 @@ vkwp_add_library(vkwp
         image_view.cpp
         image.cpp
         instance.cpp
+        mutex.cpp
         physical_device.cpp
         pipeline_layout.cpp
         pipeline.cpp

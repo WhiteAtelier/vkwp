@@ -5,6 +5,8 @@
 #include "vkwp/mutex.hpp"
 #include "vkwp/vulkan_error.hpp"
 
+#include <optional>
+
 vkwp::CommandPool::CommandPool() = default;
 
 vkwp::CommandPool::CommandPool(const std::string & label)
@@ -32,14 +34,21 @@ vkwp::CommandPool::allocateCommandBuffers(const std::string &        label,
         .level              = level,
         .commandBufferCount = command_buffer_count,
     };
-    VulkanError::check(  //
-        vkAllocateCommandBuffers(this->_getParent(), &ai, cmdbufs.data()),
-        "Failed to vkAllocateCommandBuffers().");
 
-    for (std::size_t i = 0; i < cmdbufs.size(); ++i)
     {
-        *ret[i].reset(this->_getParent(), this->_ref()) = cmdbufs[i];
-        ret[i].mutex_                                   = this->mutex_.get();
+        // lock は destructor が noexcept 保証できないので,
+        // reset() しきってから unlock (scope out) する.
+        LockGuardOpt lock{ this->mutex_.get() };
+
+        VulkanError::check(  //
+            vkAllocateCommandBuffers(this->_getParent(), &ai, cmdbufs.data()),
+            "Failed to vkAllocateCommandBuffers().");
+
+        for (std::size_t i = 0; i < cmdbufs.size(); ++i)
+        {
+            *ret[i].reset(this->_getParent(), this->_ref()) = cmdbufs[i];
+            ret[i].mutex_                                   = this->mutex_.get();
+        }
     }
 
     return ret;
@@ -58,10 +67,16 @@ vkwp::CommandPool::allocateCommandBuffer(const std::string &        label,
         .level              = level,
         .commandBufferCount = 1,
     };
+
+    // lock は destructor が noexcept 保証できないので,
+    // reset() しきってから unlock (scope out) する.
+    LockGuardOpt lock{ this->mutex_.get() };
+
     VulkanError::check(  //
         vkAllocateCommandBuffers(this->_getParent(), &ai, ret.reset(this->_getParent(), this->_ref())),
         "Failed to vkAllocateCommandBuffers(). (single allocation)");
     ret.mutex_ = this->mutex_.get();
+
     return ret;
 }
 

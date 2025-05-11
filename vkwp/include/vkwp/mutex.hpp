@@ -106,6 +106,29 @@ protected:
     std::shared_ptr<MutexT> mutex_;
 };
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+///
+/// @brief mutex object としてポインタを取る lock_guard.
+///
+/// コンストラクタに渡す mutex object は nullptr でも良い.
+/// その場合, このクラスは何もしない.
+///
+/// @tparam MutexT
+///     mutex object type.
+///
+template <class MutexT>
+class LockGuardOpt
+{
+public:
+    LockGuardOpt(MutexT * const mutex);
+    ~LockGuardOpt();
+    LockGuardOpt(const LockGuardOpt &) = delete;
+    LockGuardOpt(LockGuardOpt &&)      = delete;
+
+private:
+    MutexT * const mutex_;
+};
+
 }  // namespace vkwp
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -197,6 +220,30 @@ inline bool
 vkwp::StdSharedPtrMutex<MutexT>::tryLock()
 {
     return this->mutex_->try_lock();
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// StdSharedPtrMutex class
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <typename MutexT>
+vkwp::LockGuardOpt<MutexT>::LockGuardOpt(MutexT * const mutex)
+    : mutex_{ mutex }
+{
+    if (this->mutex_ != nullptr)
+    {
+        this->mutex_->lock();
+    }
+}
+
+template <typename MutexT>
+vkwp::LockGuardOpt<MutexT>::~LockGuardOpt()
+{
+    if (this->mutex_ != nullptr)
+    {
+        this->mutex_->unlock();
+    }
 }
 
 #endif
