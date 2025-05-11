@@ -2,6 +2,7 @@
 
 #include "impl/assert.hpp"
 #include "vkwp/command_buffer.hpp"
+#include "vkwp/mutex.hpp"
 #include "vkwp/vulkan_error.hpp"
 
 vkwp::CommandPool::CommandPool() = default;
@@ -12,9 +13,9 @@ vkwp::CommandPool::CommandPool(const std::string & label)
 
 std::vector<vkwp::CommandBuffer>
 vkwp::CommandPool::allocateCommandBuffers(const std::string &        label,
-                                                 const VkCommandBufferLevel level,
-                                                 const std::uint32_t        command_buffer_count,
-                                                 const void * const         p_next) const
+                                          const VkCommandBufferLevel level,
+                                          const std::uint32_t        command_buffer_count,
+                                          const void * const         p_next) const
 {
     std::vector<CommandBuffer> ret;
     ret.reserve(command_buffer_count);
@@ -38,6 +39,7 @@ vkwp::CommandPool::allocateCommandBuffers(const std::string &        label,
     for (std::size_t i = 0; i < cmdbufs.size(); ++i)
     {
         *ret[i].reset(this->_getParent(), this->_ref()) = cmdbufs[i];
+        ret[i].mutex_                                   = this->mutex_.get();
     }
 
     return ret;
@@ -45,8 +47,8 @@ vkwp::CommandPool::allocateCommandBuffers(const std::string &        label,
 
 vkwp::CommandBuffer
 vkwp::CommandPool::allocateCommandBuffer(const std::string &        label,
-                                                const VkCommandBufferLevel level,
-                                                const void * const         p_next) const
+                                         const VkCommandBufferLevel level,
+                                         const void * const         p_next) const
 {
     CommandBuffer                     ret{ label };
     const VkCommandBufferAllocateInfo ai{
@@ -59,6 +61,7 @@ vkwp::CommandPool::allocateCommandBuffer(const std::string &        label,
     VulkanError::check(  //
         vkAllocateCommandBuffers(this->_getParent(), &ai, ret.reset(this->_getParent(), this->_ref())),
         "Failed to vkAllocateCommandBuffers(). (single allocation)");
+    ret.mutex_ = this->mutex_.get();
     return ret;
 }
 

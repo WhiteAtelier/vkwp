@@ -1,12 +1,14 @@
 #include "vkwp/command_buffer.hpp"
 
 #include "impl/assert.hpp"
+#include "vkwp/mutex.hpp"
 #include "vkwp/vulkan_error.hpp"
 
 vkwp::CommandBuffer::CommandBuffer() = default;
 
 vkwp::CommandBuffer::CommandBuffer(const std::string & label)
     : Resource{ label }
+    , mutex_{ nullptr }
 {}
 
 void
@@ -17,16 +19,16 @@ vkwp::CommandBuffer::beginCommandBuffer(const VkCommandBufferUsageFlags flags, c
 
 void
 vkwp::CommandBuffer::beginCommandBuffer(const VkCommandBufferInheritanceInfo & inheritance_info,
-                                               const VkCommandBufferUsageFlags        flags,
-                                               const void * const                     p_next) const
+                                        const VkCommandBufferUsageFlags        flags,
+                                        const void * const                     p_next) const
 {
     this->_beginCommandBuffer(&inheritance_info, flags, p_next);
 }
 
 void
 vkwp::CommandBuffer::_beginCommandBuffer(const VkCommandBufferInheritanceInfo * inheritance_info,
-                                                const VkCommandBufferUsageFlags        flags,
-                                                const void * const                     p_next) const
+                                         const VkCommandBufferUsageFlags        flags,
+                                         const void * const                     p_next) const
 {
     const VkCommandBufferBeginInfo bi{
         .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -45,4 +47,35 @@ vkwp::CommandBuffer::endCommandBuffer() const
     VulkanError::check(  //
         vkEndCommandBuffer(this->_ref()),
         "Failed to vkEndCommandBuffer().");
+}
+
+void
+vkwp::CommandBuffer::lock() const
+{
+    if (this->mutex_ != nullptr)
+    {
+        this->mutex_->lock();
+    }
+}
+
+bool
+vkwp::CommandBuffer::try_lock() const
+{
+    if (this->mutex_ != nullptr)
+    {
+        return this->mutex_->tryLock();
+    }
+    else
+    {
+        return true;
+    }
+}
+
+void
+vkwp::CommandBuffer::unlock() const
+{
+    if (this->mutex_ != nullptr)
+    {
+        this->mutex_->unlock();
+    }
 }

@@ -5,6 +5,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <memory>
 #include <vector>
 
 namespace vkwp {
@@ -39,6 +40,10 @@ public:
     [[nodiscard]]
     CommandBuffer
     allocatePrimaryCommandBuffer(const std::string & label, const void * const p_next = nullptr) const;
+
+private:
+    friend Device;
+    std::unique_ptr<Mutex> mutex_;
 };
 
 }  // namespace vkwp

@@ -92,7 +92,8 @@ public:
     CommandPool
     createCommandPool(const std::string &            label,
                       const std::uint32_t            queue_family_index,
-                      const VkCommandPoolCreateFlags flags  = 0,
+                      std::unique_ptr<Mutex> &&      mutex  = nullptr,
+                      const VkCommandPoolCreateFlags flags  = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
                       const void * const             p_next = nullptr) const;
 
     [[nodiscard]]
@@ -169,8 +170,8 @@ public:
     createDescriptorPool(const std::string &                       label,
                          const std::uint32_t                       max_sets,
                          const std::vector<VkDescriptorPoolSize> & pool_sizes,
-                         const VkDescriptorPoolCreateFlags         flags  = 0,
-                         const void * const                        p_next = nullptr) const;
+                         const VkDescriptorPoolCreateFlags flags  = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
+                         const void * const                p_next = nullptr) const;
 
     [[nodiscard]]
     DescriptorSetLayout

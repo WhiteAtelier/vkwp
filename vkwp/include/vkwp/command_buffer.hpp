@@ -34,11 +34,30 @@ public:
     void
     endCommandBuffer() const;
 
+    /// @brief Lock this queue for synchronized.
+    ///
+    /// Should not use this function directly, but use with std::lock_guard, std::unique_lock, or etc...
+    void
+    lock() const;
+
+    /// @brief Try to lock this queue for synchronized.
+    ///
+    /// Should not use this function directly, but use with std::lock_guard, std::unique_lock, or etc...
+    bool
+    try_lock() const;
+
+    /// @brief Unlock this queue for synchronized.
+    void
+    unlock() const;
+
 private:
     void
     _beginCommandBuffer(const VkCommandBufferInheritanceInfo * inheritance_info,
                         const VkCommandBufferUsageFlags        flags,
                         const void * const                     p_next) const;
+
+    friend CommandPool;
+    Mutex * mutex_;
 };
 
 }  // namespace vkwp

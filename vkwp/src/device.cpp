@@ -235,6 +235,7 @@ vkwp::Device::importWin32ExternalMemory(const std::string &                     
 vkwp::CommandPool
 vkwp::Device::createCommandPool(const std::string &            label,
                                 const std::uint32_t            queue_family_index,
+                                std::unique_ptr<Mutex> &&      mutex,
                                 const VkCommandPoolCreateFlags flags,
                                 const void * const             p_next) const
 {
@@ -248,6 +249,7 @@ vkwp::Device::createCommandPool(const std::string &            label,
     VulkanError::check(  //
         vkCreateCommandPool(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateCommandPool().");
+    ret.mutex_ = std::move(mutex);
     return ret;
 }
 
