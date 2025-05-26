@@ -185,6 +185,12 @@ public:
     createShaderModule(const std::string & label, const std::vector<std::uint32_t> & code) const;
 
     [[nodiscard]]
+    ShaderModule
+    createShaderModule(const std::string &         label,
+                       const std::uint32_t * const data,
+                       const std::size_t           data_length) const;
+
+    [[nodiscard]]
     PipelineLayout
     createPipelineLayout(const std::string &                        label,
                          const std::vector<VkDescriptorSetLayout> & set_layouts,
