@@ -11,6 +11,18 @@ vkwp::CommandBuffer::CommandBuffer(const std::string & label)
     , mutex_{ nullptr }
 {}
 
+vkwp::CommandBuffer::CommandBuffer(CommandBuffer &&) noexcept = default;
+
+vkwp::CommandBuffer::~CommandBuffer() noexcept
+{
+    LockGuardOpt lock{ this->mutex_ };
+    this->reset();
+}
+
+vkwp::CommandBuffer &
+vkwp::CommandBuffer::operator=(CommandBuffer &&) & noexcept
+    = default;
+
 void
 vkwp::CommandBuffer::beginCommandBuffer(const VkCommandBufferUsageFlags flags, const void * const p_next) const
 {

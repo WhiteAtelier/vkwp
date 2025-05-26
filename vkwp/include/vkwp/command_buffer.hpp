@@ -23,6 +23,18 @@ public:
     [[nodiscard]]
     explicit CommandBuffer(const std::string & label);
 
+    CommandBuffer(const CommandBuffer &) = delete;
+    CommandBuffer(CommandBuffer &&) noexcept;
+
+    ~CommandBuffer() noexcept;
+
+    CommandBuffer &
+    operator=(const CommandBuffer &)
+        = delete;
+
+    CommandBuffer &
+    operator=(CommandBuffer &&) & noexcept;
+
     void
     beginCommandBuffer(const VkCommandBufferInheritanceInfo & inheritance_info,
                        const VkCommandBufferUsageFlags        flags  = 0,
