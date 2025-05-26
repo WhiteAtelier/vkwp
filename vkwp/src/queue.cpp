@@ -3,7 +3,9 @@
 #include "impl/assert.hpp"
 #include "vkwp/mutex.hpp"
 
-vkwp::Queue::Queue() = default;
+vkwp::Queue::Queue()
+    : queue_family_index_{ 0 }
+{}
 
 vkwp::Queue::Queue(const std::string & label)
     : Resource{ label }
@@ -18,10 +20,13 @@ vkwp::Queue::getQueueFamilyIndex() const noexcept
 }
 
 void
-vkwp::Queue::setExternal(const VkQueue & queue, std::unique_ptr<Mutex> && mutex) & noexcept
+vkwp::Queue::setExternal(const VkQueue &           queue,
+                         const std::uint32_t       family_index,
+                         std::unique_ptr<Mutex> && mutex) & noexcept
 {
     static_cast<vkwp::Resource<VkQueue, void, void> *>(this)->setExternal(queue);
-    this->mutex_ = std::move(mutex);
+    this->queue_family_index_ = family_index;
+    this->mutex_              = std::move(mutex);
 }
 
 void

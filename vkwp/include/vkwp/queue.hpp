@@ -28,7 +28,9 @@ public:
     getQueueFamilyIndex() const noexcept;
 
     void
-    setExternal(const VkQueue &, std::unique_ptr<Mutex> && mutex = nullptr) & noexcept;
+    setExternal(const VkQueue &,
+                const std::uint32_t       family_index,
+                std::unique_ptr<Mutex> && mutex = nullptr) & noexcept;
 
     /// @brief Lock this queue for synchronized.
     ///
