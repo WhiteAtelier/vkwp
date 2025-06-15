@@ -4,14 +4,25 @@
 #include "vkwp/mutex.hpp"
 #include "vkwp/vulkan_error.hpp"
 
-vkwp::CommandBuffer::CommandBuffer() = default;
+vkwp::CommandBuffer::CommandBuffer()
+    : Resource{}
+    , mutex_{ nullptr }
+{}
 
 vkwp::CommandBuffer::CommandBuffer(const std::string & label)
     : Resource{ label }
     , mutex_{ nullptr }
 {}
 
-vkwp::CommandBuffer::CommandBuffer(CommandBuffer &&) noexcept = default;
+vkwp::CommandBuffer::CommandBuffer(CommandBuffer && m) noexcept
+    : Resource{ std::move(m) }
+    , mutex_{ m.mutex_ }
+{
+    if (this != &m)
+    {
+        m.mutex_ = nullptr;
+    }
+}
 
 vkwp::CommandBuffer::~CommandBuffer() noexcept
 {
