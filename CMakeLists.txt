@@ -24,7 +24,6 @@ endif()
 
 add_compile_options(
     "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>"
-    "$<$<CXX_COMPILER_ID:MSVC>:/EHa>"
     "$<$<CXX_COMPILER_ID:MSVC>:/EHsc>"
     "$<$<CXX_COMPILER_ID:MSVC>:/MP>"
 )

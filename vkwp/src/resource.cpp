@@ -56,7 +56,10 @@ vkwp::ResourceBase<T>::ResourceBase(ResourceBase<T> && m) noexcept
     : label_{ std::move(m.label_) }
     , instance_{ m.instance_ }
 {
-    m.instance_ = VK_NULL_HANDLE;
+    if (this != &m)
+    {
+        m.instance_ = VK_NULL_HANDLE;
+    }
 }
 
 template <::vkwp::vulkan_raw_resource T>
@@ -161,8 +164,11 @@ vkwp::Resource<T, ParentT, PoolT>::Resource(Resource && m) noexcept
     , parent_{ m.parent_ }
     , pool_{ m.pool_ }
 {
-    m.parent_ = nullptr;
-    m.pool_   = nullptr;
+    if (this != &m)
+    {
+        m.parent_ = nullptr;
+        m.pool_   = nullptr;
+    }
 }
 
 template <::vkwp::vulkan_raw_resource         T,
@@ -288,7 +294,10 @@ vkwp::Resource<T, ParentT, void>::Resource(Resource && m) noexcept
     : ResourceBase<T>{ std::move(m) }
     , parent_{ m.parent_ }
 {
-    m.parent_ = nullptr;
+    if (this != &m)
+    {
+        m.parent_ = nullptr;
+    }
 }
 
 template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
