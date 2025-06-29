@@ -6,33 +6,33 @@
 
 namespace {
 
-#define SFL_DEFINE_DELETER(VkType, VkParentType, VkPoolType) \
+#define VKWP_DEFINE_DELETER(VkType, VkParentType, VkPoolType) \
     void _deleter(const VkType & i, const VkParentType * pa, const VkPoolType * po) noexcept
 
 // clang-format off
-SFL_DEFINE_DELETER(VkInstance,            void,       void)             { vkDestroyInstance(i, nullptr); }
-SFL_DEFINE_DELETER(VkPhysicalDevice,      void,       void)             {}
-SFL_DEFINE_DELETER(VkDevice,              void,       void)             { vkDestroyDevice(i, nullptr); }
-SFL_DEFINE_DELETER(VkQueue,               VkDevice,   void)             {}
-SFL_DEFINE_DELETER(VkImage,               VkDevice,   void)             { vkDestroyImage(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkImageView,           VkDevice,   void)             { vkDestroyImageView(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkDeviceMemory,        VkDevice,   void)             { vkFreeMemory(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkSurfaceKHR,          VkInstance, void)             { vkDestroySurfaceKHR(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkSwapchainKHR,        VkDevice,   void)             { vkDestroySwapchainKHR(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkDescriptorPool,      VkDevice,   void)             { vkDestroyDescriptorPool(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkDescriptorSetLayout, VkDevice,   void)             { vkDestroyDescriptorSetLayout(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkDescriptorSet,       VkDevice,   VkDescriptorPool) { vkFreeDescriptorSets(*pa, *po, 1, &i); }
-SFL_DEFINE_DELETER(VkPipelineLayout,      VkDevice,   void)             { vkDestroyPipelineLayout(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkPipeline,            VkDevice,   void)             { vkDestroyPipeline(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkRenderPass,          VkDevice,   void)             { vkDestroyRenderPass(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkFramebuffer,         VkDevice,   void)             { vkDestroyFramebuffer(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkSampler,             VkDevice,   void)             { vkDestroySampler(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkShaderModule,        VkDevice,   void)             { vkDestroyShaderModule(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkCommandPool,         VkDevice,   void)             { vkDestroyCommandPool(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkCommandBuffer,       VkDevice,   VkCommandPool)    { vkFreeCommandBuffers(*pa, *po, 1, &i); }
-SFL_DEFINE_DELETER(VkBuffer,              VkDevice,   void)             { vkDestroyBuffer(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkFence,               VkDevice,   void)             { vkDestroyFence(*pa, i, nullptr); }
-SFL_DEFINE_DELETER(VkSemaphore,           VkDevice,   void)             { vkDestroySemaphore(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkInstance,            void,       void)             { vkDestroyInstance(i, nullptr); }
+VKWP_DEFINE_DELETER(VkPhysicalDevice,      void,       void)             {}
+VKWP_DEFINE_DELETER(VkDevice,              void,       void)             { vkDestroyDevice(i, nullptr); }
+VKWP_DEFINE_DELETER(VkQueue,               VkDevice,   void)             {}
+VKWP_DEFINE_DELETER(VkImage,               VkDevice,   void)             { vkDestroyImage(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkImageView,           VkDevice,   void)             { vkDestroyImageView(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkDeviceMemory,        VkDevice,   void)             { vkFreeMemory(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkSurfaceKHR,          VkInstance, void)             { vkDestroySurfaceKHR(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkSwapchainKHR,        VkDevice,   void)             { vkDestroySwapchainKHR(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkDescriptorPool,      VkDevice,   void)             { vkDestroyDescriptorPool(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkDescriptorSetLayout, VkDevice,   void)             { vkDestroyDescriptorSetLayout(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkDescriptorSet,       VkDevice,   VkDescriptorPool) { vkFreeDescriptorSets(*pa, *po, 1, &i); }
+VKWP_DEFINE_DELETER(VkPipelineLayout,      VkDevice,   void)             { vkDestroyPipelineLayout(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkPipeline,            VkDevice,   void)             { vkDestroyPipeline(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkRenderPass,          VkDevice,   void)             { vkDestroyRenderPass(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkFramebuffer,         VkDevice,   void)             { vkDestroyFramebuffer(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkSampler,             VkDevice,   void)             { vkDestroySampler(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkShaderModule,        VkDevice,   void)             { vkDestroyShaderModule(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkCommandPool,         VkDevice,   void)             { vkDestroyCommandPool(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkCommandBuffer,       VkDevice,   VkCommandPool)    { vkFreeCommandBuffers(*pa, *po, 1, &i); }
+VKWP_DEFINE_DELETER(VkBuffer,              VkDevice,   void)             { vkDestroyBuffer(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkFence,               VkDevice,   void)             { vkDestroyFence(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkSemaphore,           VkDevice,   void)             { vkDestroySemaphore(*pa, i, nullptr); }
 // clang-format on
 
 #undef DEFINE_DELETER
@@ -485,32 +485,32 @@ vkwp::Resource<T, void, void>::release(bool * const external) noexcept
     return ret;
 }
 
-#define SFL_EXPLICIT_DEFINE(VkType, VkParentType, VkPoolType) \
-    template class vkwp::ResourceBase<VkType>;                \
+#define VKWP_EXPLICIT_DEFINE(VkType, VkParentType, VkPoolType) \
+    template class vkwp::ResourceBase<VkType>;                 \
     template class vkwp::Resource<VkType, VkParentType, VkPoolType>;
 
-SFL_EXPLICIT_DEFINE(VkInstance, void, void)
-SFL_EXPLICIT_DEFINE(VkPhysicalDevice, void, void)
-SFL_EXPLICIT_DEFINE(VkDevice, void, void)
-SFL_EXPLICIT_DEFINE(VkQueue, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkImage, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkImageView, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkDeviceMemory, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkSurfaceKHR, VkInstance, void)
-SFL_EXPLICIT_DEFINE(VkSwapchainKHR, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkDescriptorPool, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkDescriptorSetLayout, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkDescriptorSet, VkDevice, VkDescriptorPool)
-SFL_EXPLICIT_DEFINE(VkPipelineLayout, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkPipeline, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkRenderPass, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkFramebuffer, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkSampler, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkShaderModule, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkCommandPool, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkCommandBuffer, VkDevice, VkCommandPool)
-SFL_EXPLICIT_DEFINE(VkBuffer, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkFence, VkDevice, void)
-SFL_EXPLICIT_DEFINE(VkSemaphore, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkInstance, void, void)
+VKWP_EXPLICIT_DEFINE(VkPhysicalDevice, void, void)
+VKWP_EXPLICIT_DEFINE(VkDevice, void, void)
+VKWP_EXPLICIT_DEFINE(VkQueue, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkImage, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkImageView, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkDeviceMemory, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkSurfaceKHR, VkInstance, void)
+VKWP_EXPLICIT_DEFINE(VkSwapchainKHR, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkDescriptorPool, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkDescriptorSetLayout, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkDescriptorSet, VkDevice, VkDescriptorPool)
+VKWP_EXPLICIT_DEFINE(VkPipelineLayout, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkPipeline, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkRenderPass, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkFramebuffer, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkSampler, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkShaderModule, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkCommandPool, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkCommandBuffer, VkDevice, VkCommandPool)
+VKWP_EXPLICIT_DEFINE(VkBuffer, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkFence, VkDevice, void)
+VKWP_EXPLICIT_DEFINE(VkSemaphore, VkDevice, void)
 
-#undef SFL_EXPLICIT_DEFINE
+#undef VKWP_EXPLICIT_DEFINE

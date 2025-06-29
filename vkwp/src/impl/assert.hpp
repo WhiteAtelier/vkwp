@@ -12,7 +12,7 @@ namespace vkwp::impl {
 ///
 /// このエラーは catch しないこと.
 ///
-/// SFL_CODING_ERROR(expr) の使用を推奨します.
+/// VKWP_CODING_ERROR(expr) の使用を推奨します.
 ///
 class CodingError : public std::exception
 {
@@ -143,13 +143,13 @@ private:
 #    define VKWP_ASSERTION(expr)
 #endif
 
-#define SFL_CODING_ERROR(expr)                                                           \
+#define VKWP_CODING_ERROR(expr)                                                          \
     if (!(expr))                                                                         \
     {                                                                                    \
         ::vkwp::impl::AssertionError::printMessage(#expr, __FILE__, __LINE__, __func__); \
         throw ::vkwp::impl::CodingError{ #expr, __FILE__, __LINE__, __func__ };          \
     }
-#define SFL_CODING_ERROR_M(expr, msg)                                                         \
+#define VKWP_CODING_ERROR_M(expr, msg)                                                        \
     if (!(expr))                                                                              \
     {                                                                                         \
         ::vkwp::impl::AssertionError::printMessage(#expr, __FILE__, __LINE__, __func__, msg); \

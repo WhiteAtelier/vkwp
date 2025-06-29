@@ -8,8 +8,8 @@ function(regist_doxygen_files ARG_FILES)
         return()
     endif()
 
-    get_property(SURFLUX_DOXYGEN_HEADER_FILES GLOBAL PROPERTY doxygen_source_list)
-    set_property(GLOBAL PROPERTY doxygen_source_list ${SURFLUX_DOXYGEN_HEADER_FILES} ${ARG_FILES})
+    get_property(VKWP_DOXYGEN_HEADER_FILES GLOBAL PROPERTY doxygen_source_list)
+    set_property(GLOBAL PROPERTY doxygen_source_list ${VKWP_DOXYGEN_HEADER_FILES} ${ARG_FILES})
 endfunction()
 
 function(add_doxygen_target)
@@ -19,8 +19,8 @@ function(add_doxygen_target)
 
     find_package(Doxygen REQUIRED)
 
-    get_property(SURFLUX_DOXYGEN_HEADER_FILES GLOBAL PROPERTY doxygen_source_list)
-    string(REPLACE ";" " " SURFLUX_DOXYGEN_HEADER_FILES_S "${SURFLUX_DOXYGEN_HEADER_FILES}")
+    get_property(VKWP_DOXYGEN_HEADER_FILES GLOBAL PROPERTY doxygen_source_list)
+    string(REPLACE ";" " " VKWP_DOXYGEN_HEADER_FILES_S "${VKWP_DOXYGEN_HEADER_FILES}")
 
     set(DOXYFILE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/doxygen)
     set(DOCUMENT_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/docs)
@@ -46,7 +46,7 @@ function(add_doxygen_target)
                 -D "DOXYGEN_PROJECT_NAME=${CMAKE_PROJECT_NAME}"
                 -D "DOXYGEN_PROJECT_DESC=${CMAKE_PROJECT_DESCRIPTION}"
                 -D "DOXYGEN_PROJECT_VERSION=${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}"
-                -D "DOXYGEN_INPUT_SOURCES=${SURFLUX_DOXYGEN_HEADER_FILES_S}"
+                -D "DOXYGEN_INPUT_SOURCES=${VKWP_DOXYGEN_HEADER_FILES_S}"
                 -D "DOXYGEN_PROJECT_INCLUDE_DIR=${CMAKE_SOURCE_DIR}/include"
                 -D "DOXYGEN_SOURCE_DIR=${CMAKE_CURRENT_FUNCTION_LIST_DIR}"
                 -D "DOXYGEN_README_MD=${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../../readme.md"
@@ -54,7 +54,7 @@ function(add_doxygen_target)
                 -P "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/doxygen-script.cmake"
         DEPENDS
             "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Doxyfile.in"
-            "${SURFLUX_DOXYGEN_HEADER_FILES}"
+            "${VKWP_DOXYGEN_HEADER_FILES}"
             "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/../../readme.md"
         WORKING_DIRECTORY
             "${DOXYFILE_OUTPUT_DIRECTORY}"

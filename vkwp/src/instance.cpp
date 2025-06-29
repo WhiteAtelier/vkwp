@@ -81,7 +81,7 @@ vkwp::Instance::createInstance(const std::string &            label,
 std::vector<vkwp::PhysicalDevice>
 vkwp::Instance::enumeratePhysicalDevices() const
 {
-    SFL_CODING_ERROR(this->_ref() != nullptr);
+    VKWP_CODING_ERROR(this->_ref() != nullptr);
     std::vector<VkPhysicalDevice> phys_devs;
     std::uint32_t                 count = 0;
 

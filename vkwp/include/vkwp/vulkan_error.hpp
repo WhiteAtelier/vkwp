@@ -1,5 +1,5 @@
-#ifndef SFL_VULKAN_VULKAN_ERROR_HPP
-#define SFL_VULKAN_VULKAN_ERROR_HPP
+#ifndef VKWP_VULKAN_VULKAN_ERROR_HPP
+#define VKWP_VULKAN_VULKAN_ERROR_HPP
 
 #include <stdexcept>
 #include <string>
