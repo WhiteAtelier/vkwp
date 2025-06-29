@@ -13,6 +13,12 @@ vkwp::CommandPool::CommandPool(const std::string & label)
     : Resource{ label }
 {}
 
+void
+vkwp::CommandPool::setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource)
+{
+    this->debug_utils_resource_ = debug_utils_resource;
+}
+
 std::vector<vkwp::CommandBuffer>
 vkwp::CommandPool::allocateCommandBuffers(const std::string &        label,
                                           const VkCommandBufferLevel level,
@@ -48,6 +54,7 @@ vkwp::CommandPool::allocateCommandBuffers(const std::string &        label,
         {
             *ret[i].reset(this->_getParent(), this->_ref()) = cmdbufs[i];
             ret[i].mutex_                                   = this->mutex_.get();
+            this->debug_utils_resource_.registDebugUtilsObjectName(ret[i]);
         }
     }
 
@@ -76,7 +83,7 @@ vkwp::CommandPool::allocateCommandBuffer(const std::string &        label,
         vkAllocateCommandBuffers(this->_getParent(), &ai, ret.reset(this->_getParent(), this->_ref())),
         "Failed to vkAllocateCommandBuffers(). (single allocation)");
     ret.mutex_ = this->mutex_.get();
-
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 

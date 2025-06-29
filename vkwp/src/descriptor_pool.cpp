@@ -10,10 +10,16 @@ vkwp::DescriptorPool::DescriptorPool(const std::string & label)
     : Resource{ label }
 {}
 
+void
+vkwp::DescriptorPool::setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource)
+{
+    this->debug_utils_resource_ = debug_utils_resource;
+}
+
 std::vector<vkwp::DescriptorSet>
 vkwp::DescriptorPool::allocateDescriptorSets(const std::string &                        label,
-                                                    const std::vector<VkDescriptorSetLayout> & set_layouts,
-                                                    const void * const                         p_next) const
+                                             const std::vector<VkDescriptorSetLayout> & set_layouts,
+                                             const void * const                         p_next) const
 {
     std::vector<DescriptorSet> ret;
     ret.reserve(set_layouts.size());
@@ -44,8 +50,8 @@ vkwp::DescriptorPool::allocateDescriptorSets(const std::string &                
 
 vkwp::DescriptorSet
 vkwp::DescriptorPool::allocateDescriptorSet(const std::string &           label,
-                                                   const VkDescriptorSetLayout & set_layouts,
-                                                   const void * const            p_next) const
+                                            const VkDescriptorSetLayout & set_layouts,
+                                            const void * const            p_next) const
 {
     DescriptorSet                     ret{ label };
     const VkDescriptorSetAllocateInfo ai{

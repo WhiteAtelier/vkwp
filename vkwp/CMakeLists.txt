@@ -15,6 +15,7 @@ vkwp_add_library(vkwp
         command_buffer.cpp
         command_pool.cpp
         debug_report_callback_resource.cpp
+        debug_utils_resource.cpp
         descriptor_pool.cpp
         descriptor_set_layout.cpp
         descriptor_set.cpp
@@ -51,6 +52,7 @@ vkwp_add_library(vkwp
         vkwp/command_buffer.hpp
         vkwp/command_pool.hpp
         vkwp/debug_report_callback_resource.hpp
+        vkwp/debug_utils_resource.hpp
         vkwp/descriptor_pool.hpp
         vkwp/descriptor_set_layout.hpp
         vkwp/descriptor_set.hpp

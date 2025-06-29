@@ -32,6 +32,10 @@ vkwp::Device::Device(const std::string & name)
 {}
 
 void
+vkwp::Device::setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource)
+{}
+
+void
 vkwp::Device::waitIdle() const
 {
     VulkanError::check(  //
@@ -47,9 +51,10 @@ vkwp::Device::getDeviceQueue(const std::uint32_t       queue_family_index,
     Queue ret{ this->getLabel() + "/Queue"                        //
                + "/Family[" + std::to_string(queue_family_index)  //
                + "]/Index[" + std::to_string(queue_index) + "]" };
-    vkGetDeviceQueue(this->_ref(), queue_family_index, queue_index, ret.reset());
+    vkGetDeviceQueue(this->_ref(), queue_family_index, queue_index, ret.reset(this->_ref()));
     ret.queue_family_index_ = queue_family_index;
     ret.mutex_              = std::move(mutex);
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -74,6 +79,7 @@ vkwp::Device::createBuffer(const std::string &       label,
     VulkanError::check(  //
         vkCreateBuffer(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateBuffer().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -111,6 +117,7 @@ vkwp::Device::createImage(const std::string &         label,
     VulkanError::check(  //
         vkCreateImage(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateImage().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -138,6 +145,7 @@ vkwp::Device::createImageView(const std::string &             label,
     VulkanError::check(  //
         vkCreateImageView(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateImageView().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -172,6 +180,7 @@ vkwp::Device::allocateDeviceMemory(const std::string &          label,
     VulkanError::check(  //
         vkAllocateMemory(this->_ref(), &ai, nullptr, ret.reset(this->_ref())),
         "Failed to vkAllocateMemory().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -250,6 +259,8 @@ vkwp::Device::createCommandPool(const std::string &            label,
         vkCreateCommandPool(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateCommandPool().");
     ret.mutex_ = std::move(mutex);
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
+    ret.setDebugUtilsResource(this->debug_utils_resource_);
     return ret;
 }
 
@@ -265,6 +276,7 @@ vkwp::Device::createFence(const std::string & label, const VkFenceCreateFlags fl
     VulkanError::check(  //
         vkCreateFence(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateFence().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -280,6 +292,7 @@ vkwp::Device::createSemaphore(const std::string & label) const
     VulkanError::check(  //
         vkCreateSemaphore(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateSemaphore().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -324,6 +337,7 @@ vkwp::Device::createSwapchainKHR(const std::string &                 label,
     VulkanError::check(  //
         vkCreateSwapchainKHR(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateSwapchainKHR().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -350,6 +364,7 @@ vkwp::Device::createRenderPass(const std::string &                          labe
     VulkanError::check(  //
         vkCreateRenderPass(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateRenderPass()");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -378,6 +393,7 @@ vkwp::Device::createFramebuffer(const std::string &            label,
     VulkanError::check(  //
         vkCreateFramebuffer(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateFramebuffer().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -425,6 +441,7 @@ vkwp::Device::createSampler(const std::string &        label,
     VulkanError::check(  //
         vkCreateSampler(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateSampler().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -447,6 +464,8 @@ vkwp::Device::createDescriptorPool(const std::string &                       lab
     VulkanError::check(  //
         vkCreateDescriptorPool(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateDescriptorPool().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
+    ret.setDebugUtilsResource(this->debug_utils_resource_);
     return ret;
 }
 
@@ -467,6 +486,7 @@ vkwp::Device::createDescriptorSetLayout(const std::string &                     
     VulkanError::check(  //
         vkCreateDescriptorSetLayout(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateDescriptorSetLayout().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -484,6 +504,7 @@ vkwp::Device::createShaderModule(const std::string & label, const std::vector<st
     VulkanError::check(  //
         vkCreateShaderModule(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateShaderModule().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -503,6 +524,7 @@ vkwp::Device::createShaderModule(const std::string &         label,
     VulkanError::check(  //
         vkCreateShaderModule(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateShaderModule().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -526,6 +548,7 @@ vkwp::Device::createPipelineLayout(const std::string &                        la
     VulkanError::check(  //
         vkCreatePipelineLayout(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreatePipelineLayout().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -574,6 +597,7 @@ vkwp::Device::createGraphicsPipeline(const std::string &                        
     VulkanError::check(  //
         vkCreateGraphicsPipelines(this->_ref(), nullptr, 1, &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateGraphicsPipelines().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
 
@@ -605,5 +629,6 @@ vkwp::Device::createComputePipeline(const std::string &         label,
     VulkanError::check(  //
         vkCreateComputePipelines(this->_ref(), nullptr, 1, &ci, nullptr, ret.reset(this->_ref())),
         "Failed to vkCreateGraphicsPipelines().");
+    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }

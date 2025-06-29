@@ -77,6 +77,9 @@ public:
     void
     setLabel(const std::string & label) &;
 
+    bool
+    isExternal() const & noexcept;
+
     // clang-format off
     ResourceBase<T> & operator=(ResourceBase &&) && noexcept = delete; ///< ref-qualifier: rvalue deleted.
     bool operator!()  && noexcept                            = delete; ///< ref-qualifier: rvalue deleted.
@@ -101,6 +104,9 @@ protected:
 private:
     std::string label_;
     T           instance_;
+
+protected:
+    bool external_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,7 +173,7 @@ public:
     ///
     /// また, この関数呼び出し時に有効なリソースを保持している場合, そのリソースに対しては解放処理を実行します.
     void
-    setExternal(const T &) & noexcept;
+    setExternal(const T &, const ParentT & parent) & noexcept;
 
     ///
     /// @brief 保持しているリソースを解放せずに移譲します.
@@ -183,7 +189,7 @@ public:
     ///
     [[nodiscard("Vulkan Resource Leak")]]
     T
-    release(ParentT & parent, PoolT & pool) noexcept;
+    release(ParentT & parent, PoolT & pool, bool * const external = nullptr) noexcept;
 
     // clang-format off
     Resource<T, ParentT, PoolT> & operator=(Resource &&) && noexcept = delete; ///< ref-qualifier: rvalue deleted.
@@ -205,6 +211,8 @@ protected:
     _getParent() const noexcept;
 
 private:
+    friend class DebugUtilsResource;
+
     void
     _reset() noexcept;
 
@@ -272,7 +280,7 @@ public:
     ///
     /// また, この関数呼び出し時に有効なリソースを保持している場合, そのリソースに対しては解放処理を実行します.
     void
-    setExternal(const T &) & noexcept;
+    setExternal(const T &, const ParentT & parent) & noexcept;
 
     ///
     /// @brief 保持しているリソースを解放せずに移譲します.
@@ -285,7 +293,7 @@ public:
     ///
     [[nodiscard("Vulkan Resource Leak")]]
     T
-    release(ParentT & parent) noexcept;
+    release(ParentT & parent, bool * const external = nullptr) noexcept;
 
     // clang-format off
     Resource<T, ParentT, void> & operator=(Resource &&) && noexcept = delete; ///< ref-qualifier: rvalue deleted.
@@ -302,6 +310,8 @@ protected:
     _getParent() const noexcept;
 
 private:
+    friend class DebugUtilsResource;
+
     void
     _reset() noexcept;
 
@@ -364,7 +374,7 @@ public:
     ///
     [[nodiscard("Vulkan Resource Leak")]]
     T
-    release() noexcept;
+    release(bool * const external = nullptr) noexcept;
 
     // clang-format off
     Resource<T, void, void> & operator=(Resource &&) && noexcept = delete; ///< ref-qualifier: rvalue deleted.
@@ -375,8 +385,6 @@ public:
 private:
     void
     _reset() noexcept;
-
-    bool is_external_;
 };
 
 }  // namespace vkwp

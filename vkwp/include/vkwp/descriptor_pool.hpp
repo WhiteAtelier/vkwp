@@ -4,6 +4,8 @@
 #include "fwd.hpp"
 #include "resource.hpp"
 #include "vulkan.hpp"
+//
+#include "debug_utils_resource.hpp"
 
 #include <vector>
 
@@ -22,6 +24,9 @@ public:
     /// @brief Constructor with label name.
     explicit DescriptorPool(const std::string & label);
 
+    void
+    setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource);
+
     [[nodiscard]]
     std::vector<DescriptorSet>
     allocateDescriptorSets(const std::string &                        label,
@@ -33,6 +38,9 @@ public:
     allocateDescriptorSet(const std::string &           label,
                           const VkDescriptorSetLayout & set_layouts,
                           const void * const            p_next = nullptr) const;
+
+private:
+    DebugUtilsResource debug_utils_resource_;
 };
 
 }  // namespace vkwp
