@@ -4,6 +4,8 @@
 #include "fwd.hpp"
 #include "resource.hpp"
 #include "vulkan.hpp"
+//
+#include "debug_utils_resource.hpp"
 
 #include <memory>
 #include <vector>
@@ -23,6 +25,9 @@ public:
     /// @brief Constructor with label name.
     [[nodiscard]]
     explicit CommandPool(const std::string & label);
+
+    void
+    setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource);
 
     [[nodiscard]]
     std::vector<CommandBuffer>
@@ -44,6 +49,7 @@ public:
 private:
     friend Device;
     std::unique_ptr<Mutex> mutex_;
+    DebugUtilsResource     debug_utils_resource_;
 };
 
 }  // namespace vkwp

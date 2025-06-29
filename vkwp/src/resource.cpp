@@ -13,7 +13,7 @@ namespace {
 SFL_DEFINE_DELETER(VkInstance,            void,       void)             { vkDestroyInstance(i, nullptr); }
 SFL_DEFINE_DELETER(VkPhysicalDevice,      void,       void)             {}
 SFL_DEFINE_DELETER(VkDevice,              void,       void)             { vkDestroyDevice(i, nullptr); }
-SFL_DEFINE_DELETER(VkQueue,               void,       void)             {}
+SFL_DEFINE_DELETER(VkQueue,               VkDevice,   void)             {}
 SFL_DEFINE_DELETER(VkImage,               VkDevice,   void)             { vkDestroyImage(*pa, i, nullptr); }
 SFL_DEFINE_DELETER(VkImageView,           VkDevice,   void)             { vkDestroyImageView(*pa, i, nullptr); }
 SFL_DEFINE_DELETER(VkDeviceMemory,        VkDevice,   void)             { vkFreeMemory(*pa, i, nullptr); }
@@ -43,22 +43,26 @@ template <::vkwp::vulkan_raw_resource T>
 vkwp::ResourceBase<T>::ResourceBase()
     : label_{}
     , instance_{ VK_NULL_HANDLE }
+    , external_{ false }
 {}
 
 template <::vkwp::vulkan_raw_resource T>
 vkwp::ResourceBase<T>::ResourceBase(const std::string & label)
     : label_{ label }
     , instance_{ VK_NULL_HANDLE }
+    , external_{ false }
 {}
 
 template <::vkwp::vulkan_raw_resource T>
 vkwp::ResourceBase<T>::ResourceBase(ResourceBase<T> && m) noexcept
     : label_{ std::move(m.label_) }
     , instance_{ m.instance_ }
+    , external_{ m.external_ }
 {
     if (this != &m)
     {
         m.instance_ = VK_NULL_HANDLE;
+        m.external_ = false;
     }
 }
 
@@ -75,7 +79,9 @@ vkwp::ResourceBase<T>::operator=(ResourceBase<T> && rhs) & noexcept
     {
         this->label_    = std::move(rhs.label_);
         this->instance_ = rhs.instance_;
+        this->external_ = rhs.external_;
         rhs.instance_   = nullptr;
+        rhs.external_   = false;
     }
     return *this;
 }
@@ -119,6 +125,13 @@ void
 vkwp::ResourceBase<T>::setLabel(const std::string & label) &
 {
     this->label_ = label;
+}
+
+template <::vkwp::vulkan_raw_resource T>
+bool
+vkwp::ResourceBase<T>::isExternal() const & noexcept
+{
+    return this->external_;
 }
 
 template <::vkwp::vulkan_raw_resource T>
@@ -195,9 +208,10 @@ T *
 vkwp::Resource<T, ParentT, PoolT>::reset(const ParentT & parent, const PoolT & pool) & noexcept
 {
     this->_reset();
-    this->_ref()  = nullptr;
-    this->parent_ = parent;
-    this->pool_   = pool;
+    this->_ref()    = nullptr;
+    this->parent_   = parent;
+    this->pool_     = pool;
+    this->external_ = false;
     return &this->_ref();
 }
 
@@ -205,10 +219,12 @@ template <::vkwp::vulkan_raw_resource         T,
           ::vkwp::vulkan_raw_resource_or_void ParentT,
           ::vkwp::vulkan_raw_resource_or_void PoolT>
 void
-vkwp::Resource<T, ParentT, PoolT>::setExternal(const T & instance) & noexcept
+vkwp::Resource<T, ParentT, PoolT>::setExternal(const T & instance, const ParentT & parent) & noexcept
 {
     this->_reset();
-    this->_ref() = instance;
+    this->_ref()    = instance;
+    this->parent_   = parent;
+    this->external_ = true;
 }
 
 template <::vkwp::vulkan_raw_resource         T,
@@ -217,7 +233,7 @@ template <::vkwp::vulkan_raw_resource         T,
 void
 vkwp::Resource<T, ParentT, PoolT>::_reset() noexcept
 {
-    if (this->_ref() != nullptr && this->parent_ != nullptr && this->pool_ != nullptr)
+    if (!this->external_ && this->_ref() != nullptr)
     {
         _deleter(this->_ref(), &this->parent_, &this->pool_);
     }
@@ -232,10 +248,12 @@ vkwp::Resource<T, ParentT, PoolT>::operator=(Resource && rhs) & noexcept
     if (this != &rhs)
     {
         this->_reset();
-        this->parent_ = rhs.parent_;
-        this->pool_   = rhs.pool_;
-        rhs.parent_   = nullptr;
-        rhs.pool_     = nullptr;
+        this->parent_   = rhs.parent_;
+        this->pool_     = rhs.pool_;
+        this->external_ = rhs.external_;
+        rhs.parent_     = nullptr;
+        rhs.pool_       = nullptr;
+        rhs.external_   = false;
     }
     ResourceBase<T>::operator=(std::move(rhs));
     return *this;
@@ -245,14 +263,19 @@ template <::vkwp::vulkan_raw_resource         T,
           ::vkwp::vulkan_raw_resource_or_void ParentT,
           ::vkwp::vulkan_raw_resource_or_void PoolT>
 T
-vkwp::Resource<T, ParentT, PoolT>::release(ParentT & parent, PoolT & pool) noexcept
+vkwp::Resource<T, ParentT, PoolT>::release(ParentT & parent, PoolT & pool, bool * const external) noexcept
 {
-    pool          = this->pool_;
-    parent        = this->parent_;
-    auto ret      = this->_ref();
-    this->pool_   = nullptr;
-    this->parent_ = nullptr;
-    this->_ref()  = nullptr;
+    pool     = this->pool_;
+    parent   = this->parent_;
+    auto ret = this->_ref();
+    if (external != nullptr)
+    {
+        *external = this->external_;
+    }
+    this->pool_     = nullptr;
+    this->parent_   = nullptr;
+    this->_ref()    = nullptr;
+    this->external_ = false;
     return ret;
 }
 
@@ -318,24 +341,27 @@ T *
 vkwp::Resource<T, ParentT, void>::reset(const ParentT & parent) & noexcept
 {
     this->_reset();
-    this->_ref()  = nullptr;
-    this->parent_ = parent;
+    this->_ref()    = nullptr;
+    this->parent_   = parent;
+    this->external_ = false;
     return &this->_ref();
 }
 
 template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
 void
-vkwp::Resource<T, ParentT, void>::setExternal(const T & instance) & noexcept
+vkwp::Resource<T, ParentT, void>::setExternal(const T & instance, const ParentT & parent) & noexcept
 {
     this->_reset();
-    this->_ref() = instance;
+    this->_ref()    = instance;
+    this->parent_   = parent;
+    this->external_ = true;
 }
 
 template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
 void
 vkwp::Resource<T, ParentT, void>::_reset() noexcept
 {
-    if (this->_ref() != nullptr && this->parent_ != nullptr)
+    if (!this->external_ && this->_ref() != nullptr)
     {
         _deleter(this->_ref(), &this->parent_, nullptr);
     }
@@ -348,8 +374,10 @@ vkwp::Resource<T, ParentT, void>::operator=(Resource && rhs) & noexcept
     if (this != &rhs)
     {
         this->_reset();
-        this->parent_ = rhs.parent_;
-        rhs.parent_   = nullptr;
+        this->parent_   = rhs.parent_;
+        this->external_ = rhs.external_;
+        rhs.parent_     = nullptr;
+        rhs.external_   = false;
     }
     ResourceBase<T>::operator=(std::move(rhs));
     return *this;
@@ -357,12 +385,17 @@ vkwp::Resource<T, ParentT, void>::operator=(Resource && rhs) & noexcept
 
 template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
 T
-vkwp::Resource<T, ParentT, void>::release(ParentT & parent) noexcept
+vkwp::Resource<T, ParentT, void>::release(ParentT & parent, bool * const external) noexcept
 {
-    parent        = this->parent_;
-    auto ret      = this->_ref();
-    this->parent_ = nullptr;
-    this->_ref()  = nullptr;
+    auto ret = this->_ref();
+    parent   = this->parent_;
+    if (external != nullptr)
+    {
+        *external = this->external_;
+    }
+    this->_ref()    = nullptr;
+    this->parent_   = nullptr;
+    this->external_ = false;
     return ret;
 }
 
@@ -379,19 +412,16 @@ vkwp::Resource<T, ParentT, void>::_getParent() const noexcept
 template <::vkwp::vulkan_raw_resource T>
 vkwp::Resource<T, void, void>::Resource()
     : ResourceBase<T>{}
-    , is_external_{ false }
 {}
 
 template <::vkwp::vulkan_raw_resource T>
 vkwp::Resource<T, void, void>::Resource(const std::string & label)
     : ResourceBase<T>{ label }
-    , is_external_{ false }
 {}
 
 template <::vkwp::vulkan_raw_resource T>
 vkwp::Resource<T, void, void>::Resource(Resource && m) noexcept
     : ResourceBase<T>{ std::move(m) }
-    , is_external_{ m.is_external_ }
 {}
 
 template <::vkwp::vulkan_raw_resource T>
@@ -405,8 +435,8 @@ T *
 vkwp::Resource<T, void, void>::reset() & noexcept
 {
     this->_reset();
-    this->_ref()       = nullptr;
-    this->is_external_ = false;
+    this->_ref()    = nullptr;
+    this->external_ = false;
     return &this->_ref();
 }
 
@@ -415,15 +445,15 @@ void
 vkwp::Resource<T, void, void>::setExternal(const T & instance) & noexcept
 {
     this->_reset();
-    this->_ref()       = instance;
-    this->is_external_ = true;
+    this->_ref()    = instance;
+    this->external_ = true;
 }
 
 template <::vkwp::vulkan_raw_resource T>
 void
 vkwp::Resource<T, void, void>::_reset() noexcept
 {
-    if (this->_ref() != nullptr && !this->is_external_)
+    if (!this->external_ && this->_ref() != nullptr)
     {
         _deleter(this->_ref(), nullptr, nullptr);
     }
@@ -443,10 +473,15 @@ vkwp::Resource<T, void, void>::operator=(Resource && rhs) & noexcept
 
 template <::vkwp::vulkan_raw_resource T>
 T
-vkwp::Resource<T, void, void>::release() noexcept
+vkwp::Resource<T, void, void>::release(bool * const external) noexcept
 {
-    auto ret     = this->_ref();
-    this->_ref() = nullptr;
+    auto ret = this->_ref();
+    if (external != nullptr)
+    {
+        *external = this->external_;
+    }
+    this->_ref()    = nullptr;
+    this->external_ = false;
     return ret;
 }
 
@@ -457,7 +492,7 @@ vkwp::Resource<T, void, void>::release() noexcept
 SFL_EXPLICIT_DEFINE(VkInstance, void, void)
 SFL_EXPLICIT_DEFINE(VkPhysicalDevice, void, void)
 SFL_EXPLICIT_DEFINE(VkDevice, void, void)
-SFL_EXPLICIT_DEFINE(VkQueue, void, void)
+SFL_EXPLICIT_DEFINE(VkQueue, VkDevice, void)
 SFL_EXPLICIT_DEFINE(VkImage, VkDevice, void)
 SFL_EXPLICIT_DEFINE(VkImageView, VkDevice, void)
 SFL_EXPLICIT_DEFINE(VkDeviceMemory, VkDevice, void)

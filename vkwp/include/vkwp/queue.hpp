@@ -13,7 +13,7 @@ namespace vkwp {
 ///
 /// @brief VkQueue wrapper.
 ///
-class Queue final : public Resource<VkQueue, void, void>
+class Queue final : public Resource<VkQueue, VkDevice, void>
 {
 public:
     /// @brief Default Constructor
@@ -28,7 +28,8 @@ public:
     getQueueFamilyIndex() const noexcept;
 
     void
-    setExternal(const VkQueue &,
+    setExternal(const VkQueue &           queue,
+                const VkDevice &          parent,
                 const std::uint32_t       family_index,
                 std::unique_ptr<Mutex> && mutex = nullptr) & noexcept;
 
@@ -49,7 +50,7 @@ public:
     unlock() const;
 
 private:
-    using Resource<VkQueue, void, void>::setExternal;
+    using Resource<VkQueue, VkDevice, void>::setExternal;
 
     friend Device;
     std::uint32_t          queue_family_index_;

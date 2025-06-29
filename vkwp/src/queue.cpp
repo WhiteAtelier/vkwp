@@ -21,10 +21,11 @@ vkwp::Queue::getQueueFamilyIndex() const noexcept
 
 void
 vkwp::Queue::setExternal(const VkQueue &           queue,
+                         const VkDevice &          parent,
                          const std::uint32_t       family_index,
                          std::unique_ptr<Mutex> && mutex) & noexcept
 {
-    static_cast<vkwp::Resource<VkQueue, void, void> *>(this)->setExternal(queue);
+    static_cast<vkwp::Resource<VkQueue, VkDevice, void> *>(this)->setExternal(queue, parent);
     this->queue_family_index_ = family_index;
     this->mutex_              = std::move(mutex);
 }

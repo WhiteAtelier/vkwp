@@ -10,6 +10,7 @@ class Buffer;
 class CommandBuffer;
 class CommandPool;
 class DebugReportCallbackResource;
+class DebugUtilsResource;
 class DescriptorPool;
 class DescriptorSet;
 class DescriptorSetLayout;

@@ -5,6 +5,8 @@
 #include "fwd.hpp"
 #include "resource.hpp"
 #include "vulkan.hpp"
+//
+#include "debug_utils_resource.hpp"
 
 #include <memory>
 #include <vector>
@@ -24,6 +26,9 @@ public:
     /// @brief Constructor with label name.
     [[nodiscard]]
     explicit Device(const std::string & name);
+
+    void
+    setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource);
 
     void
     waitIdle() const;
@@ -228,6 +233,9 @@ public:
                           const int32_t               base_pipeline_index  = 0,
                           const VkPipelineCreateFlags flags                = 0,
                           const void * const          p_next               = nullptr) const;
+
+private:
+    DebugUtilsResource debug_utils_resource_;
 };
 
 }  // namespace vkwp
