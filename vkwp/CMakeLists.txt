@@ -11,6 +11,7 @@ vkwp_add_library(vkwp
         Vulkan::Vulkan
    
     SOURCES
+        acceleration_structure_khr.cpp
         buffer.cpp
         command_buffer.cpp
         command_pool.cpp
@@ -48,6 +49,7 @@ vkwp_add_library(vkwp
         impl/device_memory_pool_unit.hpp
 
     HEADERS
+        vkwp/acceleration_structure_khr.hpp
         vkwp/buffer.hpp
         vkwp/command_buffer.hpp
         vkwp/command_pool.hpp
