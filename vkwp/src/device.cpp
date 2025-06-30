@@ -138,6 +138,7 @@ vkwp::Device::createImage(const std::string &         label,
                           const VkImageCreateFlags    flags,
                           const void * const          p_next) const
 {
+    // 互換性のため
     return Image::create(label,
                          *this,
                          image_type,
@@ -165,6 +166,7 @@ vkwp::Device::createImageView(const std::string &             label,
                               const VkImageViewCreateFlags    flags,
                               const void * const              p_next) const
 {
+    // 互換性のため
     return ImageView::create(label,
                              *this,
                              image,
