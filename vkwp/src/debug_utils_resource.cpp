@@ -138,7 +138,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const VkDevice &    device,
 {
     if (this->impl_)
     {
-        this->impl_->registDebugUtilsObjectName(device, VK_OBJECT_TYPE_BUFFER, ptr, name);
+        this->impl_->registDebugUtilsObjectName(device, object_type, ptr, name);
     }
 }
 
