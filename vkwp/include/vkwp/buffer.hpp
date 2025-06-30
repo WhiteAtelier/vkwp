@@ -77,6 +77,12 @@ public:
     void
     bindMemory(const DeviceMemory & device_memory, const VkDeviceSize offset) const;
 
+    /// @brief このバッファのデバイスアドレスを取得する.
+    ///
+    /// BufferDeviceAddressFeature を有効にしている必要があります.
+    VkDeviceAddress
+    getBufferDeviceAddress() const;
+
 private:
     [[nodiscard]]
     explicit Buffer(const std::string & label);

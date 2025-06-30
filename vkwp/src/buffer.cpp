@@ -66,3 +66,14 @@ vkwp::Buffer::bindMemory(const DeviceMemory & device_memory, const VkDeviceSize 
         vkBindBufferMemory(this->_getParent(), this->_ref(), static_cast<VkDeviceMemory>(device_memory), offset),
         "Failed to vkBindImageMemory().");
 }
+
+VkDeviceAddress
+vkwp::Buffer::getBufferDeviceAddress() const
+{
+    const VkBufferDeviceAddressInfo buffer_device_address_info{
+        .sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
+        .pNext  = nullptr,
+        .buffer = *this,
+    };
+    return vkGetBufferDeviceAddress(this->_getParent(), &buffer_device_address_info);
+}
