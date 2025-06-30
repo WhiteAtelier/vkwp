@@ -72,7 +72,7 @@ public:
                 const VkImageCreateFlags    flags  = 0,
                 const void * const          p_next = nullptr) const;
 
-    [[nodiscard]]
+    [[nodiscard]] [[deprecated]]
     ImageView
     createImageView(const std::string &             label,
                     const VkImage                   image,
