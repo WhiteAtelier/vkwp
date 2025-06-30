@@ -19,10 +19,10 @@ class PhysicalDevice final : public Resource<VkPhysicalDevice, void, void>
 {
 public:
     /// @brief Default Constructor
-    explicit PhysicalDevice();
+    PhysicalDevice();
 
-    /// @brief Constructor with label name.
-    explicit PhysicalDevice(const std::string & label);
+    static std::vector<PhysicalDevice>
+    enumeratePhysicalDevices(const Instance & instance);
 
     [[nodiscard]]
     const std::vector<VkQueueFamilyProperties> &
@@ -45,15 +45,6 @@ public:
     getFormatProperties(const VkFormat format) const;
 
     [[nodiscard]]
-    Device
-    createDevice(const std::string &                          label,
-                 const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
-                 const std::vector<std::string> &             enabled_layer_names,
-                 const std::vector<std::string> &             enabled_extension_names,
-                 const VkPhysicalDeviceFeatures * const       enabled_features,
-                 const void *                                 p_next = nullptr);
-
-    [[nodiscard]]
     std::vector<VkSurfaceFormatKHR>
     getSurfaceFormats(const VkSurfaceKHR & surface) const;
 
@@ -74,8 +65,11 @@ public:
     isSurfaceSupported(const std::uint32_t queue_index, const VkSurfaceKHR & surface) const;
 
 private:
+    /// @brief Constructor with label name.
+    explicit PhysicalDevice(const std::string & label, VkPhysicalDeviceProperties && pd_properties);
+
+    VkPhysicalDeviceProperties                                  properties_;
     mutable std::optional<std::vector<VkQueueFamilyProperties>> queue_family_properties_cache_;
-    mutable std::optional<VkPhysicalDeviceProperties>           properties_;
     mutable std::optional<VkPhysicalDeviceMemoryProperties>     memory_properties_;
 };
 

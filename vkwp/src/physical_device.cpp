@@ -2,15 +2,53 @@
 
 #include "impl/assert.hpp"
 #include "vkwp/device.hpp"
+#include "vkwp/instance.hpp"
 #include "vkwp/vulkan_error.hpp"
 
 #include <limits>
 
 vkwp::PhysicalDevice::PhysicalDevice() = default;
 
-vkwp::PhysicalDevice::PhysicalDevice(const std::string & label)
+vkwp::PhysicalDevice::PhysicalDevice(const std::string & label, VkPhysicalDeviceProperties && pd_properties)
     : Resource{ label }
+    , properties_{ std::move(pd_properties) }
 {}
+
+std::vector<vkwp::PhysicalDevice>
+vkwp::PhysicalDevice::enumeratePhysicalDevices(const Instance & instance)
+{
+    if (!instance)
+    {
+        throw std::invalid_argument{ "Invalid instance." };
+    }
+
+    std::vector<VkPhysicalDevice> phys_devs;
+    std::uint32_t                 count = 0;
+
+    VulkanError::check(  //
+        vkEnumeratePhysicalDevices(instance, &count, nullptr),
+        "Failed to vkEnumeratePhysicalDevice(). (Get array count.)");
+
+    phys_devs.resize(count);
+    VulkanError::check(  //
+        vkEnumeratePhysicalDevices(instance, &count, phys_devs.data()),
+        "Failed to vkEnumeratePhysicalDevice(). (Get array data.)");
+
+    std::vector<vkwp::PhysicalDevice> ret;
+    ret.reserve(count);
+
+    for (const auto & phys_dev : phys_devs)
+    {
+        VkPhysicalDeviceProperties prop;
+        vkGetPhysicalDeviceProperties(phys_dev, &prop);
+
+        const auto label = "/PhysicalDevice/ID" + std::to_string(prop.deviceID)  //
+                         + "/" + std::string{ prop.deviceName };
+        auto & pdev   = ret.emplace_back(PhysicalDevice{ label, std::move(prop) });
+        *pdev.reset() = phys_dev;
+    }
+    return ret;
+}
 
 const std::vector<VkQueueFamilyProperties> &
 vkwp::PhysicalDevice::getQueueFamilyProperties() const
@@ -34,12 +72,7 @@ vkwp::PhysicalDevice::getQueueFamilyProperties() const
 const VkPhysicalDeviceProperties &
 vkwp::PhysicalDevice::getProperties() const
 {
-    if (!this->properties_)
-    {
-        this->properties_.emplace();
-        vkGetPhysicalDeviceProperties(this->_ref(), &*this->properties_);
-    }
-    return *this->properties_;
+    return this->properties_;
 }
 
 const VkPhysicalDeviceMemoryProperties &
@@ -73,51 +106,6 @@ vkwp::PhysicalDevice::getFormatProperties(const VkFormat format) const
     VkFormatProperties prop;
     vkGetPhysicalDeviceFormatProperties(this->_ref(), format, &prop);
     return prop;
-}
-
-vkwp::Device
-vkwp::PhysicalDevice::createDevice(const std::string &                          label,
-                                   const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
-                                   const std::vector<std::string> &             _enabled_layer_names,
-                                   const std::vector<std::string> &             _enabled_extension_names,
-                                   const VkPhysicalDeviceFeatures * const       enabled_features,
-                                   const void *                                 p_next)
-{
-    VKWP_ASSERTION(queue_create_infos.size() <= (std::numeric_limits<std::uint32_t>::max)());
-    VKWP_ASSERTION(_enabled_layer_names.size() <= (std::numeric_limits<std::uint32_t>::max)());
-    VKWP_ASSERTION(_enabled_extension_names.size() <= (std::numeric_limits<std::uint32_t>::max)());
-    Device ret{ label };
-
-    std::vector<const char *> enabled_layer_names;
-    enabled_layer_names.reserve(_enabled_layer_names.size());
-    for (const auto & name : _enabled_layer_names)
-    {
-        enabled_layer_names.emplace_back(name.c_str());
-    }
-
-    std::vector<const char *> enabled_extension_names;
-    enabled_extension_names.reserve(_enabled_extension_names.size());
-    for (const auto & name : _enabled_extension_names)
-    {
-        enabled_extension_names.emplace_back(name.c_str());
-    }
-
-    const VkDeviceCreateInfo ci{
-        .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-        .pNext                   = p_next,
-        .flags                   = 0,
-        .queueCreateInfoCount    = static_cast<std::uint32_t>(queue_create_infos.size()),
-        .pQueueCreateInfos       = queue_create_infos.data(),
-        .enabledLayerCount       = static_cast<std::uint32_t>(enabled_layer_names.size()),
-        .ppEnabledLayerNames     = enabled_layer_names.data(),
-        .enabledExtensionCount   = static_cast<std::uint32_t>(enabled_extension_names.size()),
-        .ppEnabledExtensionNames = enabled_extension_names.data(),
-        .pEnabledFeatures        = enabled_features,
-    };
-    VulkanError::check(  //
-        vkCreateDevice(this->_ref(), &ci, nullptr, ret.reset()),
-        "Failed to vkCreateDevice().");
-    return ret;
 }
 
 std::vector<VkSurfaceFormatKHR>

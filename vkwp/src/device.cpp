@@ -31,9 +31,57 @@ vkwp::Device::Device(const std::string & name)
     : Resource<VkDevice, void, void>{ name }
 {}
 
+vkwp::Device
+vkwp::Device::create(const std::string &                          label,
+                     const PhysicalDevice &                       physical_device,
+                     const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
+                     const std::vector<std::string> &             _enabled_layer_names,
+                     const std::vector<std::string> &             _enabled_extension_names,
+                     const VkPhysicalDeviceFeatures * const       enabled_features,
+                     const OptionalCreateArgs &                   opt_args)
+{
+    VKWP_ASSERTION(queue_create_infos.size() <= (std::numeric_limits<std::uint32_t>::max)());
+    VKWP_ASSERTION(_enabled_layer_names.size() <= (std::numeric_limits<std::uint32_t>::max)());
+    VKWP_ASSERTION(_enabled_extension_names.size() <= (std::numeric_limits<std::uint32_t>::max)());
+    Device ret{ label };
+
+    std::vector<const char *> enabled_layer_names;
+    enabled_layer_names.reserve(_enabled_layer_names.size());
+    for (const auto & name : _enabled_layer_names)
+    {
+        enabled_layer_names.emplace_back(name.c_str());
+    }
+
+    std::vector<const char *> enabled_extension_names;
+    enabled_extension_names.reserve(_enabled_extension_names.size());
+    for (const auto & name : _enabled_extension_names)
+    {
+        enabled_extension_names.emplace_back(name.c_str());
+    }
+
+    const VkDeviceCreateInfo ci{
+        .sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+        .pNext                   = opt_args.p_next,
+        .flags                   = 0,
+        .queueCreateInfoCount    = static_cast<std::uint32_t>(queue_create_infos.size()),
+        .pQueueCreateInfos       = queue_create_infos.data(),
+        .enabledLayerCount       = static_cast<std::uint32_t>(enabled_layer_names.size()),
+        .ppEnabledLayerNames     = enabled_layer_names.data(),
+        .enabledExtensionCount   = static_cast<std::uint32_t>(enabled_extension_names.size()),
+        .ppEnabledExtensionNames = enabled_extension_names.data(),
+        .pEnabledFeatures        = enabled_features,
+    };
+    VulkanError::check(  //
+        vkCreateDevice(physical_device, &ci, nullptr, ret.reset()),
+        "Failed to vkCreateDevice().");
+    return ret;
+}
+
 void
 vkwp::Device::setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource)
-{}
+{
+    this->debug_utils_resource_ = debug_utils_resource;
+}
 
 void
 vkwp::Device::waitIdle() const
@@ -65,22 +113,16 @@ vkwp::Device::createBuffer(const std::string &       label,
                            const VkBufferCreateFlags flags,
                            const void * const        p_next) const
 {
-    Buffer                   ret{ label };
-    const VkBufferCreateInfo ci{
-        .sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
-        .pNext                 = p_next,
-        .flags                 = flags,
-        .size                  = size,
-        .usage                 = usage,
-        .sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
-        .queueFamilyIndexCount = 0,
-        .pQueueFamilyIndices   = nullptr,
-    };
-    VulkanError::check(  //
-        vkCreateBuffer(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateBuffer().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
+    // 互換性のため.
+    return Buffer::create(label,
+                          *this,
+                          size,
+                          usage,
+                          {
+                              .p_next      = p_next,
+                              .flags       = flags,
+                              .debug_utils = &this->debug_utils_resource_,
+                          });
 }
 
 vkwp::Image
@@ -96,29 +138,21 @@ vkwp::Device::createImage(const std::string &         label,
                           const VkImageCreateFlags    flags,
                           const void * const          p_next) const
 {
-    Image                   ret{ label };
-    const VkImageCreateInfo ci{
-        .sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-        .pNext                 = p_next,
-        .flags                 = flags,
-        .imageType             = image_type,
-        .format                = format,
-        .extent                = extent,
-        .mipLevels             = mip_levels,
-        .arrayLayers           = array_layers,
-        .samples               = samples,
-        .tiling                = tiling,
-        .usage                 = usage,
-        .sharingMode           = VK_SHARING_MODE_EXCLUSIVE,
-        .queueFamilyIndexCount = 0,
-        .pQueueFamilyIndices   = nullptr,
-        .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED,
-    };
-    VulkanError::check(  //
-        vkCreateImage(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateImage().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
+    return Image::create(label,
+                         *this,
+                         image_type,
+                         format,
+                         extent,
+                         usage,
+                         {
+                             .p_next       = p_next,
+                             .flags        = flags,
+                             .mip_levels   = mip_levels,
+                             .array_layers = array_layers,
+                             .samples      = samples,
+                             .tiling       = tiling,
+                             .debug_utils  = &this->debug_utils_resource_,
+                         });
 }
 
 vkwp::ImageView
@@ -131,22 +165,18 @@ vkwp::Device::createImageView(const std::string &             label,
                               const VkImageViewCreateFlags    flags,
                               const void * const              p_next) const
 {
-    ImageView                   ret{ label };
-    const VkImageViewCreateInfo ci{
-        .sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .pNext            = p_next,
-        .flags            = flags,
-        .image            = image,
-        .viewType         = view_type,
-        .format           = format,
-        .components       = components,
-        .subresourceRange = subresource_range,
-    };
-    VulkanError::check(  //
-        vkCreateImageView(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateImageView().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
+    return ImageView::create(label,
+                             *this,
+                             image,
+                             view_type,
+                             format,
+                             subresource_range,
+                             {
+                                 .p_next      = p_next,
+                                 .flags       = flags,
+                                 .components  = components,
+                                 .debug_utils = &this->debug_utils_resource_,
+                             });
 }
 
 vkwp::DeviceMemory
@@ -156,32 +186,13 @@ vkwp::Device::allocateDeviceMemory(const std::string &          label,
                                    const VkMemoryPropertyFlags  memory_property_flags,
                                    const void * const           p_next) const
 {
-    DeviceMemory ret{ label };
-    const auto   memory_type_index
-        = physical_device.getMemoryTypeIndex(memory_property_flags, memory_requirements.memoryTypeBits);
-    if (!memory_type_index.first)
-    {
-        SPDLOG_CRITICAL("Available memory is not found. memoryPropertyFlags={}, Required memoryTypeBits={}",
-                        memory_property_flags,
-                        memory_requirements.memoryTypeBits);
-        throw VulkanError{ VK_ERROR_FEATURE_NOT_PRESENT, "Available memory is not found" };
-    }
-
-    const VkMemoryAllocateInfo ai{
-        .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-        .pNext           = p_next,
-        .allocationSize  = memory_requirements.size,
-        .memoryTypeIndex = memory_type_index.second,
-    };
-    SPDLOG_DEBUG("DeviceMemory: {} - {}Bytes, {:.03f}MiB",
-                 label,
-                 memory_requirements.size,
-                 static_cast<double>(memory_requirements.size) / 1024.0 / 1024.0);
-    VulkanError::check(  //
-        vkAllocateMemory(this->_ref(), &ai, nullptr, ret.reset(this->_ref())),
-        "Failed to vkAllocateMemory().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
+    // 互換性のため
+    return DeviceMemory::allocate(label,
+                                  *this,
+                                  physical_device,
+                                  memory_requirements,
+                                  memory_property_flags,
+                                  { .p_next = p_next, .debug_utils = &this->debug_utils_resource_ });
 }
 
 #if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
@@ -195,49 +206,16 @@ vkwp::Device::importWin32ExternalMemory(const std::string &                     
                                         const VkImage &                          image,
                                         const VkBuffer &                         buffer) const
 {
-    DeviceMemory ret{ label };
-
-    VkMemoryWin32HandlePropertiesKHR memprops{
-        .sType          = VK_STRUCTURE_TYPE_MEMORY_WIN32_HANDLE_PROPERTIES_KHR,
-        .pNext          = nullptr,
-        .memoryTypeBits = 0,
-    };
-    const auto vkGetMemoryWin32HandlePropertiesKHR = reinterpret_cast<PFN_vkGetMemoryWin32HandlePropertiesKHR>(
-        vkGetDeviceProcAddr(this->_ref(), "vkGetMemoryWin32HandlePropertiesKHR"));
-    if (vkGetMemoryWin32HandlePropertiesKHR == nullptr)
-    {
-        SPDLOG_CRITICAL(
-            "Failed to get vkGetMemoryWin32HandlePropertiesKHR function. Missing VK_KHR_external_memory_win32 extension?");
-        throw std::runtime_error{ "Failed to get vkGetMemoryWin32HandlePropertiesKHR function." };
-    }
-    VulkanError::check(  //
-        vkGetMemoryWin32HandlePropertiesKHR(this->_ref(), handle_type, handle, &memprops),
-        "Failed to vkGetMemoryWin32HandlePropertiesKHR()");
-
-    const VkMemoryDedicatedAllocateInfo memory_dedicated_ai{
-        .sType  = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
-        .pNext  = nullptr,
-        .image  = image,
-        .buffer = buffer,
-    };
-    const VkImportMemoryWin32HandleInfoKHR import_memory_win32_handle_info_khr{
-        .sType      = VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
-        .pNext      = &memory_dedicated_ai,
-        .handleType = handle_type,
-        .handle     = handle,
-        .name       = name,
-    };
-
-    return this->allocateDeviceMemory(  //
-        label,
-        physical_device,
-        VkMemoryRequirements{
-            .size           = size,
-            .alignment      = 1,
-            .memoryTypeBits = memprops.memoryTypeBits,
-        },
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-        &import_memory_win32_handle_info_khr);
+    // 互換性のため
+    return DeviceMemory::importWin32ExternalMemory(label,
+                                                   *this,
+                                                   physical_device,
+                                                   size,
+                                                   handle_type,
+                                                   handle,
+                                                   name,
+                                                   image,
+                                                   buffer);
 }
 #endif
 

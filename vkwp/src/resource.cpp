@@ -10,29 +10,30 @@ namespace {
     void _deleter(const VkType & i, const VkParentType * pa, const VkPoolType * po) noexcept
 
 // clang-format off
-VKWP_DEFINE_DELETER(VkInstance,            void,       void)             { vkDestroyInstance(i, nullptr); }
-VKWP_DEFINE_DELETER(VkPhysicalDevice,      void,       void)             {}
-VKWP_DEFINE_DELETER(VkDevice,              void,       void)             { vkDestroyDevice(i, nullptr); }
-VKWP_DEFINE_DELETER(VkQueue,               VkDevice,   void)             {}
-VKWP_DEFINE_DELETER(VkImage,               VkDevice,   void)             { vkDestroyImage(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkImageView,           VkDevice,   void)             { vkDestroyImageView(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkDeviceMemory,        VkDevice,   void)             { vkFreeMemory(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkSurfaceKHR,          VkInstance, void)             { vkDestroySurfaceKHR(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkSwapchainKHR,        VkDevice,   void)             { vkDestroySwapchainKHR(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkDescriptorPool,      VkDevice,   void)             { vkDestroyDescriptorPool(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkDescriptorSetLayout, VkDevice,   void)             { vkDestroyDescriptorSetLayout(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkDescriptorSet,       VkDevice,   VkDescriptorPool) { vkFreeDescriptorSets(*pa, *po, 1, &i); }
-VKWP_DEFINE_DELETER(VkPipelineLayout,      VkDevice,   void)             { vkDestroyPipelineLayout(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkPipeline,            VkDevice,   void)             { vkDestroyPipeline(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkRenderPass,          VkDevice,   void)             { vkDestroyRenderPass(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkFramebuffer,         VkDevice,   void)             { vkDestroyFramebuffer(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkSampler,             VkDevice,   void)             { vkDestroySampler(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkShaderModule,        VkDevice,   void)             { vkDestroyShaderModule(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkCommandPool,         VkDevice,   void)             { vkDestroyCommandPool(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkCommandBuffer,       VkDevice,   VkCommandPool)    { vkFreeCommandBuffers(*pa, *po, 1, &i); }
-VKWP_DEFINE_DELETER(VkBuffer,              VkDevice,   void)             { vkDestroyBuffer(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkFence,               VkDevice,   void)             { vkDestroyFence(*pa, i, nullptr); }
-VKWP_DEFINE_DELETER(VkSemaphore,           VkDevice,   void)             { vkDestroySemaphore(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkInstance,                 void,       void)             { vkDestroyInstance(i, nullptr); }
+VKWP_DEFINE_DELETER(VkPhysicalDevice,           void,       void)             {}
+VKWP_DEFINE_DELETER(VkDevice,                   void,       void)             { vkDestroyDevice(i, nullptr); }
+VKWP_DEFINE_DELETER(VkQueue,                    VkDevice,   void)             {}
+VKWP_DEFINE_DELETER(VkImage,                    VkDevice,   void)             { vkDestroyImage(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkImageView,                VkDevice,   void)             { vkDestroyImageView(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkDeviceMemory,             VkDevice,   void)             { vkFreeMemory(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkSurfaceKHR,               VkInstance, void)             { vkDestroySurfaceKHR(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkSwapchainKHR,             VkDevice,   void)             { vkDestroySwapchainKHR(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkDescriptorPool,           VkDevice,   void)             { vkDestroyDescriptorPool(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkDescriptorSetLayout,      VkDevice,   void)             { vkDestroyDescriptorSetLayout(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkDescriptorSet,            VkDevice,   VkDescriptorPool) { vkFreeDescriptorSets(*pa, *po, 1, &i); }
+VKWP_DEFINE_DELETER(VkPipelineLayout,           VkDevice,   void)             { vkDestroyPipelineLayout(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkPipeline,                 VkDevice,   void)             { vkDestroyPipeline(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkRenderPass,               VkDevice,   void)             { vkDestroyRenderPass(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkFramebuffer,              VkDevice,   void)             { vkDestroyFramebuffer(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkSampler,                  VkDevice,   void)             { vkDestroySampler(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkShaderModule,             VkDevice,   void)             { vkDestroyShaderModule(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkCommandPool,              VkDevice,   void)             { vkDestroyCommandPool(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkCommandBuffer,            VkDevice,   VkCommandPool)    { vkFreeCommandBuffers(*pa, *po, 1, &i); }
+VKWP_DEFINE_DELETER(VkBuffer,                   VkDevice,   void)             { vkDestroyBuffer(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkFence,                    VkDevice,   void)             { vkDestroyFence(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkSemaphore,                VkDevice,   void)             { vkDestroySemaphore(*pa, i, nullptr); }
+VKWP_DEFINE_DELETER(VkAccelerationStructureKHR, VkDevice,   void)             { vkDestroyAccelerationStructureKHR(*pa, i, nullptr); }
 // clang-format on
 
 #undef DEFINE_DELETER
@@ -107,6 +108,13 @@ vkwp::ResourceBase<T>::operator T() const & noexcept
 }
 
 template <::vkwp::vulkan_raw_resource T>
+const T &
+vkwp::ResourceBase<T>::operator*() const & noexcept
+{
+    return this->instance_;
+}
+
+template <::vkwp::vulkan_raw_resource T>
 const T *
 vkwp::ResourceBase<T>::ptr() const & noexcept
 {
@@ -118,13 +126,6 @@ const std::string &
 vkwp::ResourceBase<T>::getLabel() const & noexcept
 {
     return this->label_;
-}
-
-template <::vkwp::vulkan_raw_resource T>
-void
-vkwp::ResourceBase<T>::setLabel(const std::string & label) &
-{
-    this->label_ = label;
 }
 
 template <::vkwp::vulkan_raw_resource T>

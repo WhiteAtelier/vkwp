@@ -16,11 +16,32 @@ class ImageView final : public Resource<VkImageView, VkDevice, void>
 public:
     /// @brief Default Constructor
     [[nodiscard]]
-    explicit ImageView();
+    ImageView();
 
-    /// @brief Constructor with label name.
+    struct OptionalCreateArgs
+    {
+        const void *               p_next      = nullptr;
+        VkImageViewCreateFlags     flags       = 0;
+        VkComponentMapping         components  = { .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+                                                   .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+                                                   .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+                                                   .a = VK_COMPONENT_SWIZZLE_IDENTITY };
+        const DebugUtilsResource * debug_utils = nullptr;
+    };
+
     [[nodiscard]]
-    explicit ImageView(const std::string & label);
+    static ImageView
+    create(const std::string &             label,
+           const VkDevice &                device,
+           const VkImage &                 image,
+           const VkImageViewType           view_type,
+           const VkFormat                  format,
+           const VkImageSubresourceRange & subresource_range,
+           const OptionalCreateArgs &      opt_args = {});
+
+private:
+    [[nodiscard]]
+    ImageView(const std::string & label);
 };
 
 }  // namespace vkwp

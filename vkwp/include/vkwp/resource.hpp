@@ -43,6 +43,10 @@ public:
     ResourceBase(ResourceBase &&) noexcept;       ///< Movable.
     virtual ~ResourceBase() noexcept;
 
+    ResourceBase<T> &
+    operator=(const ResourceBase &)
+        = delete;  ///< Copy unassignable.
+
     /// @brief 有効な Vulkan Resource を持っていないかどうか取得する.
     [[nodiscard]]
     bool
@@ -56,6 +60,10 @@ public:
     /// @brief Vulkan Resource を取得する.
     [[nodiscard]] operator T() const & noexcept;
 
+    [[nodiscard]]
+    const T &
+    operator*() const & noexcept;
+
     /// @brief Vulkan Resource ptr を取得する.
     [[nodiscard]]
     const T *
@@ -65,17 +73,6 @@ public:
     [[nodiscard]]
     const std::string &
     getLabel() const & noexcept;
-
-    ///
-    /// @brief この Vulkan Resource に名前を設定する.
-    ///
-    /// 名前は主にデバッグ用途として使用できます.
-    ///
-    /// @param label
-    ///     新しい名前.
-    ///
-    void
-    setLabel(const std::string & label) &;
 
     bool
     isExternal() const & noexcept;
@@ -87,7 +84,6 @@ public:
     operator T() && noexcept                                 = delete; ///< ref-qualifier: rvalue deleted.
     const T * ptr() && noexcept                              = delete; ///< ref-qualifier: rvalue deleted.
     const std::string & getLabel() && noexcept               = delete; ///< ref-qualifier: rvalue deleted.
-    void setLabel(const std::string &) &&                    = delete; ///< ref-qualifier: rvalue deleted.
     // clang-format on
 
 protected:

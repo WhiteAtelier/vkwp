@@ -6,6 +6,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 //
+// TODO: Device から外す.
 #include "debug_utils_resource.hpp"
 
 #include <memory>
@@ -23,9 +24,19 @@ public:
     [[nodiscard]]
     explicit Device();
 
-    /// @brief Constructor with label name.
-    [[nodiscard]]
-    explicit Device(const std::string & name);
+    struct OptionalCreateArgs
+    {
+        const void * p_next = nullptr;
+    };
+
+    static Device
+    create(const std::string &                          label,
+           const PhysicalDevice &                       physical_device,
+           const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
+           const std::vector<std::string> &             enabled_layer_names,
+           const std::vector<std::string> &             enabled_extension_names,
+           const VkPhysicalDeviceFeatures * const       enabled_features,
+           const OptionalCreateArgs &                   opt_args = {});
 
     void
     setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource);
@@ -39,7 +50,7 @@ public:
                    const std::uint32_t       queue_index,
                    std::unique_ptr<Mutex> && mutex = nullptr) const;
 
-    [[nodiscard]]
+    [[nodiscard]] [[deprecated]]
     Buffer
     createBuffer(const std::string &       label,
                  const VkDeviceSize        size,
@@ -47,7 +58,7 @@ public:
                  const VkBufferCreateFlags flags  = 0,
                  const void * const        p_next = nullptr) const;
 
-    [[nodiscard]]
+    [[nodiscard]] [[deprecated]]
     Image
     createImage(const std::string &         label,
                 const VkImageType           image_type,
@@ -72,7 +83,7 @@ public:
                     const VkImageViewCreateFlags    flags  = 0,
                     const void * const              p_next = nullptr) const;
 
-    [[nodiscard]]
+    [[nodiscard]] [[deprecated]]
     DeviceMemory
     allocateDeviceMemory(const std::string &          label,
                          const PhysicalDevice &       physical_device,
@@ -81,7 +92,7 @@ public:
                          const void * const           p_next = nullptr) const;
 
 #if defined(WIN32) && WIN32
-    [[nodiscard]]
+    [[nodiscard]] [[deprecated]]
     DeviceMemory
     importWin32ExternalMemory(const std::string &                      label,
                               const PhysicalDevice &                   physical_device,
@@ -235,6 +246,9 @@ public:
                           const void * const          p_next               = nullptr) const;
 
 private:
+    [[nodiscard]]
+    explicit Device(const std::string & name);
+
     DebugUtilsResource debug_utils_resource_;
 };
 

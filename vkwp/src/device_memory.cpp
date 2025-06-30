@@ -1,6 +1,10 @@
 #include "vkwp/device_memory.hpp"
 
+#include "vkwp/device.hpp"
+#include "vkwp/physical_device.hpp"
 #include "vkwp/vulkan_error.hpp"
+
+#include <spdlog/spdlog.h>
 
 #include <cstring>
 
@@ -9,6 +13,108 @@ vkwp::DeviceMemory::DeviceMemory() = default;
 vkwp::DeviceMemory::DeviceMemory(const std::string & label)
     : Resource{ label }
 {}
+
+vkwp::DeviceMemory
+vkwp::DeviceMemory::allocate(const std::string &          label,
+                             const Device &               device,
+                             const PhysicalDevice &       physical_device,
+                             const VkMemoryRequirements & memory_requirements,
+                             const VkMemoryPropertyFlags  memory_property_flags,
+                             const OptionalAllocateArgs & opt_args)
+{
+    DeviceMemory ret{ label };
+    const auto   memory_type_index
+        = physical_device.getMemoryTypeIndex(memory_property_flags, memory_requirements.memoryTypeBits);
+    if (!memory_type_index.first)
+    {
+        SPDLOG_CRITICAL("Available memory is not found. memoryPropertyFlags={}, Required memoryTypeBits={}",
+                        memory_property_flags,
+                        memory_requirements.memoryTypeBits);
+        throw VulkanError{ VK_ERROR_FEATURE_NOT_PRESENT, "Available memory is not found" };
+    }
+
+    const VkMemoryAllocateInfo ai{
+        .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+        .pNext           = opt_args.p_next,
+        .allocationSize  = memory_requirements.size,
+        .memoryTypeIndex = memory_type_index.second,
+    };
+    SPDLOG_DEBUG("DeviceMemory: {} - {}Bytes, {:.03f}MiB",
+                 label,
+                 memory_requirements.size,
+                 static_cast<double>(memory_requirements.size) / 1024.0 / 1024.0);
+    VulkanError::check(  //
+        vkAllocateMemory(device, &ai, nullptr, ret.reset(device)),
+        "Failed to vkAllocateMemory().");
+    if (opt_args.debug_utils != nullptr)
+    {
+        opt_args.debug_utils->registDebugUtilsObjectName(device,
+                                                         VK_OBJECT_TYPE_DEVICE_MEMORY,
+                                                         static_cast<VkDeviceMemory>(ret),
+                                                         label);
+    }
+    return ret;
+}
+
+#if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
+vkwp::DeviceMemory
+vkwp::DeviceMemory::importWin32ExternalMemory(const std::string &                      label,
+                                              const Device &                           device,
+                                              const PhysicalDevice &                   physical_device,
+                                              const std::size_t                        size,
+                                              const VkExternalMemoryHandleTypeFlagBits handle_type,
+                                              void * const                             handle,
+                                              const wchar_t * const                    name,
+                                              const VkImage &                          image,
+                                              const VkBuffer &                         buffer,
+                                              const OptionalAllocateArgs &             opt_args)
+{
+    VkMemoryWin32HandlePropertiesKHR memprops{
+        .sType          = VK_STRUCTURE_TYPE_MEMORY_WIN32_HANDLE_PROPERTIES_KHR,
+        .pNext          = nullptr,
+        .memoryTypeBits = 0,
+    };
+    const auto vkGetMemoryWin32HandlePropertiesKHR = reinterpret_cast<PFN_vkGetMemoryWin32HandlePropertiesKHR>(
+        vkGetDeviceProcAddr(device, "vkGetMemoryWin32HandlePropertiesKHR"));
+    if (vkGetMemoryWin32HandlePropertiesKHR == nullptr)
+    {
+        SPDLOG_CRITICAL(
+            "Failed to get vkGetMemoryWin32HandlePropertiesKHR function. Missing VK_KHR_external_memory_win32 extension?");
+        throw std::runtime_error{ "Failed to get vkGetMemoryWin32HandlePropertiesKHR function." };
+    }
+    VulkanError::check(  //
+        vkGetMemoryWin32HandlePropertiesKHR(device, handle_type, handle, &memprops),
+        "Failed to vkGetMemoryWin32HandlePropertiesKHR()");
+
+    const VkMemoryDedicatedAllocateInfo memory_dedicated_ai{
+        .sType  = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO,
+        .pNext  = opt_args.p_next,
+        .image  = image,
+        .buffer = buffer,
+    };
+    const VkImportMemoryWin32HandleInfoKHR import_memory_win32_handle_info_khr{
+        .sType      = VK_STRUCTURE_TYPE_IMPORT_MEMORY_WIN32_HANDLE_INFO_KHR,
+        .pNext      = &memory_dedicated_ai,
+        .handleType = handle_type,
+        .handle     = handle,
+        .name       = name,
+    };
+
+    return DeviceMemory::allocate(label,
+                                  device,
+                                  physical_device,
+                                  VkMemoryRequirements{
+                                      .size           = size,
+                                      .alignment      = 1,  // not used.
+                                      .memoryTypeBits = memprops.memoryTypeBits,
+                                  },
+                                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                  {
+                                      .p_next      = &import_memory_win32_handle_info_khr,
+                                      .debug_utils = opt_args.debug_utils,
+                                  });
+}
+#endif
 
 void
 vkwp::DeviceMemory::write(const void * const src, const std::size_t size, const std::size_t offset) const

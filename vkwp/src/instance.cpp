@@ -27,15 +27,15 @@ vkwp::Instance::enumerateInstanceExtensionProperties()
 
 /* STATIC */
 vkwp::Instance
-vkwp::Instance::createInstance(const std::string &            label,
-                               const std::string &            application_name,
-                               const std::uint32_t            application_version,
-                               const std::string &            engine_name,
-                               const std::uint32_t            engine_version,
-                               const std::uint32_t            api_version,
-                               const std::vector<std::string> _enabled_layer_names,
-                               const std::vector<std::string> _enabled_extension_names,
-                               const void * const             p_next)
+vkwp::Instance::create(const std::string &            label,
+                       const std::string &            application_name,
+                       const std::uint32_t            application_version,
+                       const std::string &            engine_name,
+                       const std::uint32_t            engine_version,
+                       const std::uint32_t            api_version,
+                       const std::vector<std::string> _enabled_layer_names,
+                       const std::vector<std::string> _enabled_extension_names,
+                       const void * const             p_next)
 {
     Instance                  ret{ label };
     std::vector<const char *> enabled_layer_names;
@@ -75,35 +75,6 @@ vkwp::Instance::createInstance(const std::string &            label,
         vkCreateInstance(&ci, nullptr, ret.reset()),
         "Failed to vkCreateInstance().");
 
-    return ret;
-}
-
-std::vector<vkwp::PhysicalDevice>
-vkwp::Instance::enumeratePhysicalDevices() const
-{
-    VKWP_CODING_ERROR(this->_ref() != nullptr);
-    std::vector<VkPhysicalDevice> phys_devs;
-    std::uint32_t                 count = 0;
-
-    VulkanError::check(  //
-        vkEnumeratePhysicalDevices(this->_ref(), &count, nullptr),
-        "Failed to vkEnumeratePhysicalDevice(). (Get array count.)");
-
-    phys_devs.resize(count);
-    VulkanError::check(  //
-        vkEnumeratePhysicalDevices(this->_ref(), &count, phys_devs.data()),
-        "Failed to vkEnumeratePhysicalDevice(). (Get array data.)");
-
-    std::vector<vkwp::PhysicalDevice> ret;
-    ret.reserve(count);
-
-    for (const auto & phys_dev : phys_devs)
-    {
-        auto & pdev     = ret.emplace_back();
-        *pdev.reset()   = phys_dev;
-        const auto prop = pdev.getProperties();
-        pdev.setLabel("/PhysicalDevice/ID" + std::to_string(prop.deviceID) + "/" + std::string{ prop.deviceName });
-    }
     return ret;
 }
 

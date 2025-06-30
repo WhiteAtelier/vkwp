@@ -5,6 +5,7 @@
 #include "vulkan.hpp"
 
 #include <memory>
+#include <string>
 
 namespace vkwp {
 
@@ -37,7 +38,10 @@ public:
     initialize(const VkInstance instance);
 
     void
-    registDebugUtilsObjectName(const vkwp::Buffer & buffer) const;
+    registDebugUtilsObjectName(const VkDevice &    device,
+                               const VkObjectType  object_type,
+                               const void * const  ptr,
+                               const std::string & name) const;
 
     void
     registDebugUtilsObjectName(const vkwp::CommandBuffer & command_buffer) const;
@@ -53,9 +57,6 @@ public:
 
     void
     registDebugUtilsObjectName(const vkwp::DescriptorSetLayout & descriptor_set_layout) const;
-
-    void
-    registDebugUtilsObjectName(const vkwp::Device & device) const;
 
     void
     registDebugUtilsObjectName(const vkwp::DeviceMemory & memory) const;

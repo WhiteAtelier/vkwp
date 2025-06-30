@@ -17,11 +17,42 @@ class Buffer final : public Resource<VkBuffer, VkDevice, void>
 public:
     /// @brief Default Constructor
     [[nodiscard]]
-    explicit Buffer();
+    Buffer();
 
-    /// @brief Constructor with label name.
-    [[nodiscard]]
-    explicit Buffer(const std::string & label);
+    struct OptionalCreateArgs
+    {
+        const void *                     p_next      = nullptr;  ///< Pointer to a structure extending this structure.
+        VkBufferCreateFlags              flags       = 0;        ///< Specifying additional parameters of the buffer.
+        const DebugUtilsResource * const debug_utils = nullptr;  ///< Pointer to a debug utils resource instance.
+    };
+
+    ///
+    /// @brief Create new buffer instance.
+    ///
+    /// @param label
+    ///     Label string for debugging.
+    ///
+    /// @param device
+    ///     The logical device that creates the buffer object.
+    ///
+    /// @param size
+    ///     The size in bytes of the buffer to be created.
+    ///
+    /// @param usage
+    ///     A bitmask of VkBufferUsageFlagBits specifying allowed usages of the buffer.
+    ///
+    /// @param opt_args
+    ///     Optional arguments.
+    ///
+    /// @return
+    ///     Buffer instance.
+    ///
+    static Buffer
+    create(const std::string &        label,
+           const Device &             device,
+           const VkDeviceSize         size,
+           const VkBufferUsageFlags   usage,
+           const OptionalCreateArgs & opt_args = {});
 
     ///
     /// @brief このバッファが要求するデバイスメモリ要件を取得する.
@@ -44,7 +75,11 @@ public:
     ///     メモリオフセット (Bytes).
     ///
     void
-    bindMemory(const VkDeviceMemory & device_memory, const VkDeviceSize offset) const;
+    bindMemory(const DeviceMemory & device_memory, const VkDeviceSize offset) const;
+
+private:
+    [[nodiscard]]
+    explicit Buffer(const std::string & label);
 };
 
 }  // namespace vkwp

@@ -131,14 +131,14 @@ vkwp::DebugUtilsResource::Impl_::registDebugUtilsObjectName(const VkDevice      
 }
 
 void
-vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::Buffer & buffer) const
+vkwp::DebugUtilsResource::registDebugUtilsObjectName(const VkDevice &    device,
+                                                     const VkObjectType  object_type,
+                                                     const void * const  ptr,
+                                                     const std::string & name) const
 {
     if (this->impl_)
     {
-        this->impl_->registDebugUtilsObjectName(buffer._getParent(),
-                                                VK_OBJECT_TYPE_BUFFER,
-                                                buffer.ptr(),
-                                                buffer.getLabel());
+        this->impl_->registDebugUtilsObjectName(device, VK_OBJECT_TYPE_BUFFER, ptr, name);
     }
 }
 
@@ -149,7 +149,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::CommandBuffer &
     {
         this->impl_->registDebugUtilsObjectName(command_buffer._getParent(),
                                                 VK_OBJECT_TYPE_COMMAND_BUFFER,
-                                                command_buffer.ptr(),
+                                                command_buffer,
                                                 command_buffer.getLabel());
     }
 }
@@ -161,7 +161,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::CommandPool & c
     {
         this->impl_->registDebugUtilsObjectName(command_pool._getParent(),
                                                 VK_OBJECT_TYPE_COMMAND_POOL,
-                                                command_pool.ptr(),
+                                                command_pool,
                                                 command_pool.getLabel());
     }
 }
@@ -173,7 +173,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::DescriptorPool 
     {
         this->impl_->registDebugUtilsObjectName(descriptor_pool._getParent(),
                                                 VK_OBJECT_TYPE_DESCRIPTOR_POOL,
-                                                descriptor_pool.ptr(),
+                                                descriptor_pool,
                                                 descriptor_pool.getLabel());
     }
 }
@@ -185,7 +185,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::DescriptorSet &
     {
         this->impl_->registDebugUtilsObjectName(descriptor_set._getParent(),
                                                 VK_OBJECT_TYPE_DESCRIPTOR_SET,
-                                                descriptor_set.ptr(),
+                                                descriptor_set,
                                                 descriptor_set.getLabel());
     }
 }
@@ -197,20 +197,8 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::DescriptorSetLa
     {
         this->impl_->registDebugUtilsObjectName(descriptor_set_layout._getParent(),
                                                 VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT,
-                                                descriptor_set_layout.ptr(),
+                                                descriptor_set_layout,
                                                 descriptor_set_layout.getLabel());
-    }
-}
-
-void
-vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::Device & device) const
-{
-    if (this->impl_)
-    {
-        this->impl_->registDebugUtilsObjectName(device,  //
-                                                VK_OBJECT_TYPE_DEVICE,
-                                                device.ptr(),
-                                                device.getLabel());
     }
 }
 
@@ -220,8 +208,8 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::DeviceMemory & 
     if (this->impl_)
     {
         this->impl_->registDebugUtilsObjectName(memory._getParent(),
-                                                VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT,
-                                                memory.ptr(),
+                                                VK_OBJECT_TYPE_DEVICE_MEMORY,
+                                                memory,
                                                 memory.getLabel());
     }
 }
@@ -233,7 +221,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::Fence & fence) 
     {
         this->impl_->registDebugUtilsObjectName(fence._getParent(),  //
                                                 VK_OBJECT_TYPE_FENCE,
-                                                fence.ptr(),
+                                                fence,
                                                 fence.getLabel());
     }
 }
@@ -245,7 +233,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::Framebuffer & f
     {
         this->impl_->registDebugUtilsObjectName(framebuffer._getParent(),  //
                                                 VK_OBJECT_TYPE_FRAMEBUFFER,
-                                                framebuffer.ptr(),
+                                                framebuffer,
                                                 framebuffer.getLabel());
     }
 }
@@ -257,7 +245,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::Image & image) 
     {
         this->impl_->registDebugUtilsObjectName(image._getParent(),  //
                                                 VK_OBJECT_TYPE_IMAGE,
-                                                image.ptr(),
+                                                image,
                                                 image.getLabel());
     }
 }
@@ -269,7 +257,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::ImageView & ima
     {
         this->impl_->registDebugUtilsObjectName(image_view._getParent(),  //
                                                 VK_OBJECT_TYPE_IMAGE_VIEW,
-                                                image_view.ptr(),
+                                                image_view,
                                                 image_view.getLabel());
     }
 }
@@ -281,7 +269,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::Pipeline & pipe
     {
         this->impl_->registDebugUtilsObjectName(pipeline._getParent(),  //
                                                 VK_OBJECT_TYPE_PIPELINE,
-                                                pipeline.ptr(),
+                                                pipeline,
                                                 pipeline.getLabel());
     }
 }
@@ -293,7 +281,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::PipelineLayout 
     {
         this->impl_->registDebugUtilsObjectName(pipeline_layout._getParent(),  //
                                                 VK_OBJECT_TYPE_PIPELINE_LAYOUT,
-                                                pipeline_layout.ptr(),
+                                                pipeline_layout,
                                                 pipeline_layout.getLabel());
     }
 }
@@ -305,7 +293,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::Queue & queue) 
     {
         this->impl_->registDebugUtilsObjectName(queue._getParent(),  //
                                                 VK_OBJECT_TYPE_QUEUE,
-                                                queue.ptr(),
+                                                queue,
                                                 queue.getLabel());
     }
 }
@@ -317,7 +305,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::RenderPass & re
     {
         this->impl_->registDebugUtilsObjectName(render_pass._getParent(),  //
                                                 VK_OBJECT_TYPE_RENDER_PASS,
-                                                render_pass.ptr(),
+                                                render_pass,
                                                 render_pass.getLabel());
     }
 }
@@ -329,7 +317,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::Sampler & sampl
     {
         this->impl_->registDebugUtilsObjectName(sampler._getParent(),  //
                                                 VK_OBJECT_TYPE_SAMPLER,
-                                                sampler.ptr(),
+                                                sampler,
                                                 sampler.getLabel());
     }
 }
@@ -341,7 +329,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::Semaphore & sem
     {
         this->impl_->registDebugUtilsObjectName(semaphore._getParent(),  //
                                                 VK_OBJECT_TYPE_SEMAPHORE,
-                                                semaphore.ptr(),
+                                                semaphore,
                                                 semaphore.getLabel());
     }
 }
@@ -353,7 +341,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::ShaderModule & 
     {
         this->impl_->registDebugUtilsObjectName(shader_module._getParent(),  //
                                                 VK_OBJECT_TYPE_SHADER_MODULE,
-                                                shader_module.ptr(),
+                                                shader_module,
                                                 shader_module.getLabel());
     }
 }
@@ -365,7 +353,7 @@ vkwp::DebugUtilsResource::registDebugUtilsObjectName(const vkwp::SwapchainKHR & 
     {
         this->impl_->registDebugUtilsObjectName(swapchain_khr._getParent(),  //
                                                 VK_OBJECT_TYPE_SWAPCHAIN_KHR,
-                                                swapchain_khr.ptr(),
+                                                swapchain_khr,
                                                 swapchain_khr.getLabel());
     }
 }

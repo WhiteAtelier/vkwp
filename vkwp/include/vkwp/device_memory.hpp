@@ -17,9 +17,33 @@ public:
     [[nodiscard]]
     explicit DeviceMemory();
 
-    /// @brief Constructor with label name.
+    struct OptionalAllocateArgs
+    {
+        const void *               p_next      = nullptr;
+        const DebugUtilsResource * debug_utils = nullptr;  ///< Pointer to a debug utils resource instance.
+    };
+
     [[nodiscard]]
-    explicit DeviceMemory(const std::string & label);
+    static DeviceMemory
+    allocate(const std::string &          label,
+             const Device &               device,
+             const PhysicalDevice &       physical_device,
+             const VkMemoryRequirements & memory_requirements,
+             const VkMemoryPropertyFlags  memory_property_flags,
+             const OptionalAllocateArgs & opt_args = {});
+
+    [[nodiscard]]
+    static DeviceMemory
+    importWin32ExternalMemory(const std::string &                      label,
+                              const Device &                           device,
+                              const PhysicalDevice &                   physical_device,
+                              const std::size_t                        size,
+                              const VkExternalMemoryHandleTypeFlagBits handle_type,
+                              void * const                             handle,
+                              const wchar_t * const                    name,
+                              const VkImage &                          image,
+                              const VkBuffer &                         buffer,
+                              const OptionalAllocateArgs &             opt_args = {});
 
     /// @brief Write data.
     ///
@@ -122,6 +146,10 @@ public:
     [[nodiscard]]
     MappedScope
     map(const std::size_t size, const std::size_t offset = 0) const;
+
+private:
+    [[nodiscard]]
+    explicit DeviceMemory(const std::string & label);
 };
 
 }  // namespace vkwp
