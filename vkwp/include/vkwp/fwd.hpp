@@ -6,6 +6,7 @@
 ///
 namespace vkwp {
 
+class AccelerationStructure;
 class Buffer;
 class CommandBuffer;
 class CommandPool;
