@@ -12,12 +12,10 @@ namespace vkwp {
 ///
 /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkBuffer.html
 ///
-class Buffer final : public Resource<VkBuffer, VkDevice, void>
+class Buffer final : public Resource<VkBuffer, VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    Buffer();
+    using Resource::Resource;
 
     struct OptionalCreateArgs
     {
@@ -82,10 +80,6 @@ public:
     /// BufferDeviceAddressFeature を有効にしている必要があります.
     VkDeviceAddress
     getBufferDeviceAddress() const;
-
-private:
-    [[nodiscard]]
-    explicit Buffer(const std::string & label);
 };
 
 }  // namespace vkwp

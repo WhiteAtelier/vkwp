@@ -2,16 +2,29 @@
 #include "vkwp/buffer.hpp"
 
 #include "impl/assert.hpp"
+#include "impl/deleter.hpp"
+#include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/device_memory.hpp"
 #include "vkwp/vulkan_error.hpp"
 
-vkwp::Buffer::Buffer() = default;
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// _delete() overload
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <>
+void
+vkwp::impl::_delete<VkBuffer>(VkBuffer i, const std::tuple<VkDevice> & args) noexcept
+{
+    vkDestroyBuffer(std::get<0>(args), i, nullptr);
+}
 
-vkwp::Buffer::Buffer(const std::string & label)
-    : Resource{ label }
-{}
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Buffer class
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
 vkwp::Buffer
 vkwp::Buffer::create(const std::string &        label,
                      const Device &             device,
@@ -33,17 +46,11 @@ vkwp::Buffer::create(const std::string &        label,
         .pQueueFamilyIndices   = nullptr,
     };
     VulkanError::check(  //
-        vkCreateBuffer(static_cast<VkDevice>(device),
-                       &buffer_create_info,
-                       nullptr,
-                       ret.reset(static_cast<VkDevice>(device))),
+        vkCreateBuffer(device, &buffer_create_info, nullptr, ret._reset(device)),
         "Failed to vkCreateBuffer().");
     if (opt_args.debug_utils != nullptr)
     {
-        opt_args.debug_utils->registDebugUtilsObjectName(static_cast<VkDevice>(device),
-                                                         VK_OBJECT_TYPE_BUFFER,
-                                                         static_cast<VkBuffer>(ret),
-                                                         label);
+        opt_args.debug_utils->registDebugUtilsObjectName(device, VK_OBJECT_TYPE_BUFFER, ret, label);
     }
     return ret;
 }
@@ -53,7 +60,7 @@ vkwp::Buffer::getMemoryRequirements() const
 {
     VKWP_VALIDATE_THIS;
     VkMemoryRequirements ret;
-    vkGetBufferMemoryRequirements(this->_getParent(), this->_ref(), &ret);
+    vkGetBufferMemoryRequirements(std::get<0>(this->parents_), *this, &ret);
     return ret;
 }
 
@@ -63,17 +70,18 @@ vkwp::Buffer::bindMemory(const DeviceMemory & device_memory, const VkDeviceSize 
     VKWP_VALIDATE_THIS;
     VKWP_VALIDATE_ARG(device_memory);
     VulkanError::check(  //
-        vkBindBufferMemory(this->_getParent(), this->_ref(), static_cast<VkDeviceMemory>(device_memory), offset),
+        vkBindBufferMemory(std::get<0>(this->parents_), *this, device_memory, offset),
         "Failed to vkBindImageMemory().");
 }
 
 VkDeviceAddress
 vkwp::Buffer::getBufferDeviceAddress() const
 {
+    VKWP_VALIDATE_THIS;
     const VkBufferDeviceAddressInfo buffer_device_address_info{
         .sType  = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO,
         .pNext  = nullptr,
         .buffer = *this,
     };
-    return vkGetBufferDeviceAddress(this->_getParent(), &buffer_device_address_info);
+    return vkGetBufferDeviceAddress(std::get<0>(this->parents_), &buffer_device_address_info);
 }

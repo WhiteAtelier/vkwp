@@ -20,16 +20,15 @@ namespace vkwp {
 ///
 /// @brief VkInstance wrapper.
 ///
-class Instance final : public Resource<VkInstance, void, void>
+class Instance final : public Resource<VkInstance>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit Instance();
+    Resource<VkInstance>::Resource;
 
-    [[nodiscard]]
-    static std::vector<VkExtensionProperties>
-    enumerateInstanceExtensionProperties();
+    struct OptionalCreateArgs
+    {
+        const void * p_next = nullptr;
+    };
 
     [[nodiscard]]
     static Instance
@@ -41,23 +40,25 @@ public:
            const std::uint32_t            api_version,
            const std::vector<std::string> enabled_layer_names,
            const std::vector<std::string> enabled_extension_names,
-           const void * const             p_next = nullptr);
+           const OptionalCreateArgs &     opt_args = {});
 
-#if VKWP_SUPPORT_GLFW_SURFACE
+    [[nodiscard]]
+    static std::vector<VkExtensionProperties>
+    enumerateInstanceExtensionProperties();
+
+#if 0
+#    if VKWP_SUPPORT_GLFW_SURFACE
     [[nodiscard]]
     SurfaceKHR
     createGLFWSurfaceKHR(const std::string & label, GLFWwindow * const window) const;
-#endif
+#    endif
 
-#if VKWP_SUPPORT_WIN32_SURFACE
+#    if VKWP_SUPPORT_WIN32_SURFACE
     [[nodiscard]]
     SurfaceKHR
     createWin32SurfaceKHR(const std::string & label, const HINSTANCE h_instance, const HWND hwnd) const;
+#    endif
 #endif
-
-private:
-    [[nodiscard]]
-    explicit Instance(const std::string & label);
 };
 
 }  // namespace vkwp

@@ -5,9 +5,6 @@
 #include "fwd.hpp"
 #include "resource.hpp"
 #include "vulkan.hpp"
-//
-// TODO: Device から外す.
-#include "debug_utils_resource.hpp"
 
 #include <memory>
 #include <vector>
@@ -17,12 +14,10 @@ namespace vkwp {
 ///
 /// @brief VkDevice wrapper.
 ///
-class Device final : public Resource<VkDevice, void, void>
+class Device final : public Resource<VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit Device();
+    using Resource<VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
@@ -31,7 +26,7 @@ public:
 
     static Device
     create(const std::string &                          label,
-           const PhysicalDevice &                       physical_device,
+           const VkPhysicalDevice                       physical_device,
            const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
            const std::vector<std::string> &             enabled_layer_names,
            const std::vector<std::string> &             enabled_extension_names,
@@ -39,17 +34,27 @@ public:
            const OptionalCreateArgs &                   opt_args = {});
 
     void
-    setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource);
-
-    void
     waitIdle() const;
+
+    struct DeviceQueueGetArgs
+    {
+        const DebugUtilsResource * debug_utils = nullptr;
+    };
 
     [[nodiscard]]
     Queue
-    getDeviceQueue(const std::uint32_t       queue_family_index,
-                   const std::uint32_t       queue_index,
-                   std::unique_ptr<Mutex> && mutex = nullptr) const;
+    getDeviceQueue(const std::uint32_t        queue_family_index,
+                   const std::uint32_t        queue_index,
+                   const DeviceQueueGetArgs & opt_args = {}) const;
 
+    [[nodiscard]]
+    Queue
+    getDeviceQueue(const std::uint32_t        queue_family_index,
+                   const std::uint32_t        queue_index,
+                   std::unique_ptr<Mutex> &&  mutex,
+                   const DeviceQueueGetArgs & opt_args = {}) const;
+
+#if 0
     [[nodiscard]] [[deprecated]]
     Buffer
     createBuffer(const std::string &       label,
@@ -91,7 +96,7 @@ public:
                          const VkMemoryPropertyFlags  memory_property_flags,
                          const void * const           p_next = nullptr) const;
 
-#if defined(WIN32) && WIN32
+#    if defined(WIN32) && WIN32
     [[nodiscard]] [[deprecated]]
     DeviceMemory
     importWin32ExternalMemory(const std::string &                      label,
@@ -102,15 +107,9 @@ public:
                               const wchar_t * const                    name,
                               const VkImage &                          image,
                               const VkBuffer &                         buffer) const;
-#endif
+#    endif
 
-    [[nodiscard]]
-    CommandPool
-    createCommandPool(const std::string &            label,
-                      const std::uint32_t            queue_family_index,
-                      std::unique_ptr<Mutex> &&      mutex  = nullptr,
-                      const VkCommandPoolCreateFlags flags  = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-                      const void * const             p_next = nullptr) const;
+
 
     [[nodiscard]]
     Fence
@@ -244,12 +243,7 @@ public:
                           const int32_t               base_pipeline_index  = 0,
                           const VkPipelineCreateFlags flags                = 0,
                           const void * const          p_next               = nullptr) const;
-
-private:
-    [[nodiscard]]
-    explicit Device(const std::string & name);
-
-    DebugUtilsResource debug_utils_resource_;
+#endif
 };
 
 }  // namespace vkwp

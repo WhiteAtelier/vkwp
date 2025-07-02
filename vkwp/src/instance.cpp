@@ -1,30 +1,26 @@
 #include "vkwp/instance.hpp"
 
 #include "impl/assert.hpp"
-#include "vkwp/physical_device.hpp"
-#include "vkwp/surface_khr.hpp"
+#include "impl/deleter.hpp"
 #include "vkwp/vulkan_error.hpp"
 
-vkwp::Instance::Instance() = default;
-
-vkwp::Instance::Instance(const std::string & label)
-    : Resource{ label }
-{}
-
-std::vector<VkExtensionProperties>
-vkwp::Instance::enumerateInstanceExtensionProperties()
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// _delete() overload
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <>
+void
+vkwp::impl::_delete<VkInstance>(VkInstance i, const std::tuple<> &) noexcept
 {
-    std::uint32_t count = 0;
-    VulkanError::check(  //
-        vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr),
-        "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
-    std::vector<VkExtensionProperties> ret(count);
-    VulkanError::check(  //
-        vkEnumerateInstanceExtensionProperties(nullptr, &count, ret.data()),
-        "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
-    return ret;
+    vkDestroyInstance(i, nullptr);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Instance class
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Instance
 vkwp::Instance::create(const std::string &            label,
@@ -35,7 +31,7 @@ vkwp::Instance::create(const std::string &            label,
                        const std::uint32_t            api_version,
                        const std::vector<std::string> _enabled_layer_names,
                        const std::vector<std::string> _enabled_extension_names,
-                       const void * const             p_next)
+                       const OptionalCreateArgs &     opt_args)
 {
     Instance                  ret{ label };
     std::vector<const char *> enabled_layer_names;
@@ -62,7 +58,7 @@ vkwp::Instance::create(const std::string &            label,
     };
     const VkInstanceCreateInfo ci{
         .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pNext                   = p_next,
+        .pNext                   = opt_args.p_next,
         .flags                   = 0,
         .pApplicationInfo        = &ai,
         .enabledLayerCount       = static_cast<std::uint32_t>(enabled_layer_names.size()),
@@ -72,14 +68,29 @@ vkwp::Instance::create(const std::string &            label,
     };
 
     VulkanError::check(  //
-        vkCreateInstance(&ci, nullptr, ret.reset()),
+        vkCreateInstance(&ci, nullptr, ret._reset()),
         "Failed to vkCreateInstance().");
 
     return ret;
 }
 
-#if VKWP_SUPPORT_GLFW_SURFACE
-#    include <GLFW/glfw3.h>
+std::vector<VkExtensionProperties>
+vkwp::Instance::enumerateInstanceExtensionProperties()
+{
+    std::uint32_t count = 0;
+    VulkanError::check(  //
+        vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr),
+        "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
+    std::vector<VkExtensionProperties> ret(count);
+    VulkanError::check(  //
+        vkEnumerateInstanceExtensionProperties(nullptr, &count, ret.data()),
+        "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
+    return ret;
+}
+
+#if 0
+#    if VKWP_SUPPORT_GLFW_SURFACE
+#        include <GLFW/glfw3.h>
 vkwp::SurfaceKHR
 vkwp::Instance::createGLFWSurfaceKHR(const std::string & label, GLFWwindow * const window) const
 {
@@ -89,9 +100,9 @@ vkwp::Instance::createGLFWSurfaceKHR(const std::string & label, GLFWwindow * con
         "Failed to glfwCreateWindowSurface().");
     return ret;
 }
-#endif
+#    endif
 
-#if VKWP_SUPPORT_WIN32_SURFACE
+#    if VKWP_SUPPORT_WIN32_SURFACE
 vkwp::SurfaceKHR
 vkwp::Instance::createWin32SurfaceKHR(const std::string & label, const HINSTANCE h_instance, const HWND hwnd) const
 {
@@ -108,4 +119,5 @@ vkwp::Instance::createWin32SurfaceKHR(const std::string & label, const HINSTANCE
         "Failed to vkCreateWin32SurfaceKHR().");
     return ret;
 }
+#    endif
 #endif

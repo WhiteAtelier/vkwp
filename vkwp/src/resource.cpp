@@ -1,13 +1,160 @@
 #include "vkwp/resource.hpp"
 
-#include "impl/assert.hpp"
+#include "impl/deleter.hpp"
 #include "vkwp/vulkan.hpp"
-#include "vkwp/vulkan_error.hpp"
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+vkwp::Resource<T, ParentTs...>::Resource()
+    : label_{}
+    , external_{ false }
+    , instance_{ nullptr }
+    , parents_{}
+{}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+vkwp::Resource<T, ParentTs...>::Resource(const std::string & label)
+    : label_{ label }
+    , external_{ false }
+    , instance_{ nullptr }
+    , parents_{}
+{}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+vkwp::Resource<T, ParentTs...>::Resource(const std::string & label, const T & external)
+    : label_{ label }
+    , external_{ true }
+    , instance_{ external }
+    , parents_{}
+{}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+vkwp::Resource<T, ParentTs...>::Resource(Resource && m) noexcept
+    : label_{ std::move(m.label_) }
+    , external_{ m.external_ }
+    , instance_{ m.instance_ }
+    , parents_{ std::move(m.parents_) }
+{
+    if (this != &m)
+    {
+        m.external_ = false;
+        m.instance_ = nullptr;
+        m.parents_  = std::tuple<ParentTs...>{};
+    }
+}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+vkwp::Resource<T, ParentTs...>::~Resource() noexcept
+{
+    if (this->instance_ != nullptr && !this->external_)
+    {
+        impl::_delete<T, ParentTs...>(this->instance_, this->parents_);
+    }
+}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+vkwp::Resource<T, ParentTs...> &
+vkwp::Resource<T, ParentTs...>::operator=(Resource && rhs) & noexcept
+{
+    if (this != &rhs)
+    {
+        this->label_    = std::move(rhs.label_);
+        this->external_ = rhs.external_;
+        this->instance_ = rhs.instance_;
+        this->parents_  = std::move(rhs.parents_);
+        rhs.external_   = false;
+        rhs.instance_   = nullptr;
+        rhs.parents_    = std::tuple<ParentTs...>{};
+    }
+    return *this;
+}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+vkwp::Resource<T, ParentTs...>::operator bool() const & noexcept
+{
+    return this->instance_ != nullptr;
+}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+bool
+vkwp::Resource<T, ParentTs...>::operator!() const & noexcept
+{
+    return !static_cast<bool>(*this);
+}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+const std::string &
+vkwp::Resource<T, ParentTs...>::getLabel() const & noexcept
+{
+    return this->label_;
+}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+bool
+vkwp::Resource<T, ParentTs...>::isExternal() const & noexcept
+{
+    return this->external_;
+}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+vkwp::Resource<T, ParentTs...>::operator T() const & noexcept
+{
+    return this->instance_;
+}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+const T *
+vkwp::Resource<T, ParentTs...>::ptr() const & noexcept
+{
+    return &this->instance_;
+}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+void
+vkwp::Resource<T, ParentTs...>::reset() & noexcept
+{
+    if (this->instance_ != nullptr)
+    {
+        if (!this->external_)
+        {
+            impl::_delete<T, ParentTs...>(this->instance_, this->parents_);
+        }
+        this->instance_ = nullptr;
+        this->parents_  = std::tuple<ParentTs...>{};
+        this->external_ = false;
+        this->label_.clear();
+    }
+}
+
+template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+T *
+vkwp::Resource<T, ParentTs...>::_reset(ParentTs... parents...) & noexcept
+{
+    this->reset();
+    this->parents_ = std::make_tuple<ParentTs...>(std::forward<ParentTs>(parents)...);
+    return &this->instance_;
+}
+
+#include "vkwp/acceleration_structure_khr.hpp"
+
+template class vkwp::Resource<VkAccelerationStructureKHR, VkDevice, vkwp::AccelerationStructureKHR_ExtFunctions>;
+template class vkwp::Resource<VkBuffer, VkDevice>;
+template class vkwp::Resource<VkCommandBuffer, VkDevice, VkCommandPool>;
+template class vkwp::Resource<VkCommandPool, VkDevice>;
+template class vkwp::Resource<VkDevice>;
+template class vkwp::Resource<VkDeviceMemory, VkDevice>;
+template class vkwp::Resource<VkInstance>;
+template class vkwp::Resource<VkPhysicalDevice>;
+template class vkwp::Resource<VkQueue>;
+
+#if 0
+#    include "impl/assert.hpp"
+#    include "vkwp/vulkan.hpp"
+#    include "vkwp/vulkan_error.hpp"
 
 namespace {
 
-#define VKWP_DEFINE_DELETER(VkType, VkParentType, VkPoolType) \
-    void _deleter(const VkType & i, const VkParentType * pa, const VkPoolType * po) noexcept
+#    define VKWP_DEFINE_DELETER(VkType, VkParentType, VkPoolType) \
+        void _deleter(const VkType & i, const VkParentType * pa, const VkPoolType * po) noexcept
 
 // clang-format off
 VKWP_DEFINE_DELETER(VkInstance,                 void,       void)             { vkDestroyInstance(i, nullptr); }
@@ -36,25 +183,25 @@ VKWP_DEFINE_DELETER(VkSemaphore,                VkDevice,   void)             { 
 VKWP_DEFINE_DELETER(VkAccelerationStructureKHR, VkDevice,   void)             { vkDestroyAccelerationStructureKHR(*pa, i, nullptr); }
 // clang-format on
 
-#undef DEFINE_DELETER
+#    undef DEFINE_DELETER
 
 }  // namespace
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::ResourceBase<T>::ResourceBase()
     : label_{}
     , instance_{ VK_NULL_HANDLE }
     , external_{ false }
 {}
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::ResourceBase<T>::ResourceBase(const std::string & label)
     : label_{ label }
     , instance_{ VK_NULL_HANDLE }
     , external_{ false }
 {}
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::ResourceBase<T>::ResourceBase(ResourceBase<T> && m) noexcept
     : label_{ std::move(m.label_) }
     , instance_{ m.instance_ }
@@ -67,10 +214,10 @@ vkwp::ResourceBase<T>::ResourceBase(ResourceBase<T> && m) noexcept
     }
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::ResourceBase<T>::~ResourceBase() noexcept = default;
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::ResourceBase<T> &
 vkwp::ResourceBase<T>::operator=(ResourceBase<T> && rhs) & noexcept
 {
@@ -87,62 +234,62 @@ vkwp::ResourceBase<T>::operator=(ResourceBase<T> && rhs) & noexcept
     return *this;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 bool
 vkwp::ResourceBase<T>::operator!() const & noexcept
 {
     return this->instance_ == nullptr;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::ResourceBase<T>::operator bool() const & noexcept
 {
     return this->instance_ != nullptr;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::ResourceBase<T>::operator T() const & noexcept
 {
     static_assert(std::is_nothrow_copy_assignable_v<T>);
     return this->instance_;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 const T &
 vkwp::ResourceBase<T>::operator*() const & noexcept
 {
     return this->instance_;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 const T *
 vkwp::ResourceBase<T>::ptr() const & noexcept
 {
     return &this->instance_;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 const std::string &
 vkwp::ResourceBase<T>::getLabel() const & noexcept
 {
     return this->label_;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 bool
 vkwp::ResourceBase<T>::isExternal() const & noexcept
 {
     return this->external_;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 const T &
 vkwp::ResourceBase<T>::_ref() const noexcept
 {
     return this->instance_;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 T &
 vkwp::ResourceBase<T>::_ref() noexcept
 {
@@ -152,27 +299,27 @@ vkwp::ResourceBase<T>::_ref() noexcept
 // ============================================================================================= //
 // Resource<T, ParentT, PoolT>
 // ============================================================================================= //
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 vkwp::Resource<T, ParentT, PoolT>::Resource()
     : ResourceBase<T>{}
     , parent_{ nullptr }
     , pool_{ nullptr }
 {}
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 vkwp::Resource<T, ParentT, PoolT>::Resource(const std::string & label)
     : ResourceBase<T>{ label }
     , parent_{ nullptr }
     , pool_{ nullptr }
 {}
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 vkwp::Resource<T, ParentT, PoolT>::Resource(Resource && m) noexcept
     : ResourceBase<T>{ std::move(m) }
     , parent_{ m.parent_ }
@@ -185,26 +332,27 @@ vkwp::Resource<T, ParentT, PoolT>::Resource(Resource && m) noexcept
     }
 }
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 vkwp::Resource<T, ParentT, PoolT>::~Resource() noexcept
 {
     this->_reset();
 }
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 void
 vkwp::Resource<T, ParentT, PoolT>::reset() & noexcept
 {
     this->reset(nullptr, nullptr);
 }
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 T *
 vkwp::Resource<T, ParentT, PoolT>::reset(const ParentT & parent, const PoolT & pool) & noexcept
 {
@@ -216,9 +364,9 @@ vkwp::Resource<T, ParentT, PoolT>::reset(const ParentT & parent, const PoolT & p
     return &this->_ref();
 }
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 void
 vkwp::Resource<T, ParentT, PoolT>::setExternal(const T & instance, const ParentT & parent) & noexcept
 {
@@ -228,9 +376,9 @@ vkwp::Resource<T, ParentT, PoolT>::setExternal(const T & instance, const ParentT
     this->external_ = true;
 }
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 void
 vkwp::Resource<T, ParentT, PoolT>::_reset() noexcept
 {
@@ -240,9 +388,9 @@ vkwp::Resource<T, ParentT, PoolT>::_reset() noexcept
     }
 }
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 vkwp::Resource<T, ParentT, PoolT> &
 vkwp::Resource<T, ParentT, PoolT>::operator=(Resource && rhs) & noexcept
 {
@@ -260,9 +408,9 @@ vkwp::Resource<T, ParentT, PoolT>::operator=(Resource && rhs) & noexcept
     return *this;
 }
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 T
 vkwp::Resource<T, ParentT, PoolT>::release(ParentT & parent, PoolT & pool, bool * const external) noexcept
 {
@@ -280,18 +428,18 @@ vkwp::Resource<T, ParentT, PoolT>::release(ParentT & parent, PoolT & pool, bool 
     return ret;
 }
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 const PoolT &
 vkwp::Resource<T, ParentT, PoolT>::_getPool() const noexcept
 {
     return this->pool_;
 }
 
-template <::vkwp::vulkan_raw_resource         T,
-          ::vkwp::vulkan_raw_resource_or_void ParentT,
-          ::vkwp::vulkan_raw_resource_or_void PoolT>
+template <typename         T,
+          typename_or_void ParentT,
+          typename_or_void PoolT>
 const ParentT &
 vkwp::Resource<T, ParentT, PoolT>::_getParent() const noexcept
 {
@@ -301,19 +449,19 @@ vkwp::Resource<T, ParentT, PoolT>::_getParent() const noexcept
 // ============================================================================================= //
 // Resource<T, ParentT, void>
 // ============================================================================================= //
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 vkwp::Resource<T, ParentT, void>::Resource()
     : ResourceBase<T>{}
     , parent_{ nullptr }
 {}
 
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 vkwp::Resource<T, ParentT, void>::Resource(const std::string & label)
     : ResourceBase<T>{ label }
     , parent_{ nullptr }
 {}
 
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 vkwp::Resource<T, ParentT, void>::Resource(Resource && m) noexcept
     : ResourceBase<T>{ std::move(m) }
     , parent_{ m.parent_ }
@@ -324,20 +472,20 @@ vkwp::Resource<T, ParentT, void>::Resource(Resource && m) noexcept
     }
 }
 
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 vkwp::Resource<T, ParentT, void>::~Resource() noexcept
 {
     this->_reset();
 }
 
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 void
 vkwp::Resource<T, ParentT, void>::reset() & noexcept
 {
     this->reset(nullptr);
 }
 
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 T *
 vkwp::Resource<T, ParentT, void>::reset(const ParentT & parent) & noexcept
 {
@@ -348,7 +496,7 @@ vkwp::Resource<T, ParentT, void>::reset(const ParentT & parent) & noexcept
     return &this->_ref();
 }
 
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 void
 vkwp::Resource<T, ParentT, void>::setExternal(const T & instance, const ParentT & parent) & noexcept
 {
@@ -358,7 +506,7 @@ vkwp::Resource<T, ParentT, void>::setExternal(const T & instance, const ParentT 
     this->external_ = true;
 }
 
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 void
 vkwp::Resource<T, ParentT, void>::_reset() noexcept
 {
@@ -368,7 +516,7 @@ vkwp::Resource<T, ParentT, void>::_reset() noexcept
     }
 }
 
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 vkwp::Resource<T, ParentT, void> &
 vkwp::Resource<T, ParentT, void>::operator=(Resource && rhs) & noexcept
 {
@@ -384,7 +532,7 @@ vkwp::Resource<T, ParentT, void>::operator=(Resource && rhs) & noexcept
     return *this;
 }
 
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 T
 vkwp::Resource<T, ParentT, void>::release(ParentT & parent, bool * const external) noexcept
 {
@@ -400,7 +548,7 @@ vkwp::Resource<T, ParentT, void>::release(ParentT & parent, bool * const externa
     return ret;
 }
 
-template <::vkwp::vulkan_raw_resource T, ::vkwp::vulkan_raw_resource_or_void ParentT>
+template <typename T, typename_or_void ParentT>
 const ParentT &
 vkwp::Resource<T, ParentT, void>::_getParent() const noexcept
 {
@@ -410,28 +558,28 @@ vkwp::Resource<T, ParentT, void>::_getParent() const noexcept
 // ============================================================================================= //
 // Resource<T, void, void>
 // ============================================================================================= //
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::Resource<T, void, void>::Resource()
     : ResourceBase<T>{}
 {}
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::Resource<T, void, void>::Resource(const std::string & label)
     : ResourceBase<T>{ label }
 {}
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::Resource<T, void, void>::Resource(Resource && m) noexcept
     : ResourceBase<T>{ std::move(m) }
 {}
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::Resource<T, void, void>::~Resource() noexcept
 {
     this->_reset();
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 T *
 vkwp::Resource<T, void, void>::reset() & noexcept
 {
@@ -441,7 +589,7 @@ vkwp::Resource<T, void, void>::reset() & noexcept
     return &this->_ref();
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 void
 vkwp::Resource<T, void, void>::setExternal(const T & instance) & noexcept
 {
@@ -450,7 +598,7 @@ vkwp::Resource<T, void, void>::setExternal(const T & instance) & noexcept
     this->external_ = true;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 void
 vkwp::Resource<T, void, void>::_reset() noexcept
 {
@@ -460,7 +608,7 @@ vkwp::Resource<T, void, void>::_reset() noexcept
     }
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 vkwp::Resource<T, void, void> &
 vkwp::Resource<T, void, void>::operator=(Resource && rhs) & noexcept
 {
@@ -472,7 +620,7 @@ vkwp::Resource<T, void, void>::operator=(Resource && rhs) & noexcept
     return *this;
 }
 
-template <::vkwp::vulkan_raw_resource T>
+template <typename T>
 T
 vkwp::Resource<T, void, void>::release(bool * const external) noexcept
 {
@@ -486,9 +634,9 @@ vkwp::Resource<T, void, void>::release(bool * const external) noexcept
     return ret;
 }
 
-#define VKWP_EXPLICIT_DEFINE(VkType, VkParentType, VkPoolType) \
-    template class vkwp::ResourceBase<VkType>;                 \
-    template class vkwp::Resource<VkType, VkParentType, VkPoolType>;
+#    define VKWP_EXPLICIT_DEFINE(VkType, VkParentType, VkPoolType) \
+        template class vkwp::ResourceBase<VkType>;                 \
+        template class vkwp::Resource<VkType, VkParentType, VkPoolType>;
 
 VKWP_EXPLICIT_DEFINE(VkInstance, void, void)
 VKWP_EXPLICIT_DEFINE(VkPhysicalDevice, void, void)
@@ -514,4 +662,5 @@ VKWP_EXPLICIT_DEFINE(VkBuffer, VkDevice, void)
 VKWP_EXPLICIT_DEFINE(VkFence, VkDevice, void)
 VKWP_EXPLICIT_DEFINE(VkSemaphore, VkDevice, void)
 
-#undef VKWP_EXPLICIT_DEFINE
+#    undef VKWP_EXPLICIT_DEFINE
+#endif

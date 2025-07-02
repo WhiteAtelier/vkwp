@@ -15,14 +15,13 @@ namespace vkwp {
 ///
 /// @brief VkPhysicalDevice wrapper.
 ///
-class PhysicalDevice final : public Resource<VkPhysicalDevice, void, void>
+class PhysicalDevice final : public Resource<VkPhysicalDevice>
 {
 public:
-    /// @brief Default Constructor
-    PhysicalDevice();
+    using Resource<VkPhysicalDevice>::Resource;
 
     static std::vector<PhysicalDevice>
-    enumeratePhysicalDevices(const Instance & instance);
+    enumeratePhysicalDevices(const VkInstance instance);
 
     [[nodiscard]]
     const std::vector<VkQueueFamilyProperties> &
@@ -30,7 +29,7 @@ public:
 
     [[nodiscard]]
     const VkPhysicalDeviceProperties &
-    getProperties() const;
+    getProperties() const noexcept;
 
     [[nodiscard]]
     const VkPhysicalDeviceMemoryProperties &
@@ -65,10 +64,9 @@ public:
     isSurfaceSupported(const std::uint32_t queue_index, const VkSurfaceKHR & surface) const;
 
 private:
-    /// @brief Constructor with label name.
     explicit PhysicalDevice(const std::string & label, VkPhysicalDeviceProperties && pd_properties);
 
-    VkPhysicalDeviceProperties                                  properties_;
+    VkPhysicalDeviceProperties                                  properties_{};
     mutable std::optional<std::vector<VkQueueFamilyProperties>> queue_family_properties_cache_;
     mutable std::optional<VkPhysicalDeviceMemoryProperties>     memory_properties_;
 };

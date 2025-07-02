@@ -5,6 +5,8 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <vector>
+
 namespace vkwp {
 
 ///
@@ -19,10 +21,6 @@ public:
     [[nodiscard]]
     explicit CommandBuffer();
 
-    /// @brief Constructor with label name.
-    [[nodiscard]]
-    explicit CommandBuffer(const std::string & label);
-
     CommandBuffer(const CommandBuffer &) = delete;
     CommandBuffer(CommandBuffer &&) noexcept;
 
@@ -34,6 +32,33 @@ public:
 
     CommandBuffer &
     operator=(CommandBuffer &&) & noexcept;
+
+    struct OptionalAllocateArgs
+    {
+        const void *               p_next      = nullptr;
+        const DebugUtilsResource * debug_utils = nullptr;
+    };
+
+    [[nodiscard]]
+    static std::vector<CommandBuffer>
+    allocateCommandBuffers(const std::string &          label,
+                           const CommandPool &          command_pool,
+                           const VkCommandBufferLevel   level,
+                           const std::uint32_t          command_buffer_count,
+                           const OptionalAllocateArgs & opt_args = {});
+
+    [[nodiscard]]
+    static CommandBuffer
+    allocateCommandBuffer(const std::string &          label,
+                          const CommandPool &          command_pool,
+                          const VkCommandBufferLevel   level,
+                          const OptionalAllocateArgs & opt_args = {});
+
+    [[nodiscard]]
+    static CommandBuffer
+    allocatePrimaryCommandBuffer(const std::string &          label,
+                                 const CommandPool &          command_pool,
+                                 const OptionalAllocateArgs & opt_args = {});
 
     void
     beginCommandBuffer(const VkCommandBufferInheritanceInfo & inheritance_info,
@@ -68,7 +93,9 @@ private:
                         const VkCommandBufferUsageFlags        flags,
                         const void * const                     p_next) const;
 
-    friend CommandPool;
+    [[nodiscard]]
+    explicit CommandBuffer(const std::string & label);
+
     Mutex * mutex_;
 };
 

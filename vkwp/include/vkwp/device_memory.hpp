@@ -10,12 +10,10 @@ namespace vkwp {
 ///
 /// @brief VkDeviceMemory wrapper.
 ///
-class DeviceMemory final : public Resource<VkDeviceMemory, VkDevice, void>
+class DeviceMemory final : public Resource<VkDeviceMemory, VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit DeviceMemory();
+    using Resource::Resource;
 
     struct OptionalAllocateArgs
     {
@@ -146,10 +144,6 @@ public:
     [[nodiscard]]
     MappedScope
     map(const std::size_t size, const std::size_t offset = 0) const;
-
-private:
-    [[nodiscard]]
-    explicit DeviceMemory(const std::string & label);
 };
 
 }  // namespace vkwp

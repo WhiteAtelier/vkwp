@@ -13,25 +13,17 @@ namespace vkwp {
 ///
 /// @brief VkQueue wrapper.
 ///
-class Queue final : public Resource<VkQueue, VkDevice, void>
+class Queue final : public Resource<VkQueue>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit Queue();
-
-    /// @brief Constructor with label name.
-    [[nodiscard]]
-    explicit Queue(const std::string & label);
+    Queue();
+    Queue(const std::string &       label,
+          const VkQueue             external_queue,
+          const std::uint32_t       family_index,
+          std::unique_ptr<Mutex> && mutex);
 
     std::uint32_t
     getQueueFamilyIndex() const noexcept;
-
-    void
-    setExternal(const VkQueue &           queue,
-                const VkDevice &          parent,
-                const std::uint32_t       family_index,
-                std::unique_ptr<Mutex> && mutex = nullptr) & noexcept;
 
     /// @brief Lock this queue for synchronized.
     ///
@@ -50,7 +42,7 @@ public:
     unlock() const;
 
 private:
-    using Resource<VkQueue, VkDevice, void>::setExternal;
+    Queue(const std::string & label);
 
     friend Device;
     std::uint32_t          queue_family_index_;

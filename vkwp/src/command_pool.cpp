@@ -1,94 +1,74 @@
 #include "vkwp/command_pool.hpp"
 
 #include "impl/assert.hpp"
+#include "impl/deleter.hpp"
 #include "vkwp/command_buffer.hpp"
+#include "vkwp/device.hpp"
 #include "vkwp/mutex.hpp"
 #include "vkwp/vulkan_error.hpp"
 
 #include <optional>
 
-vkwp::CommandPool::CommandPool() = default;
-
-vkwp::CommandPool::CommandPool(const std::string & label)
-    : Resource{ label }
-{}
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// _delete() overload
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <>
 void
-vkwp::CommandPool::setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource)
+vkwp::impl::_delete<VkCommandPool, VkDevice>(VkCommandPool i, const std::tuple<VkDevice> & args) noexcept
 {
-    this->debug_utils_resource_ = debug_utils_resource;
+    vkDestroyCommandPool(std::get<0>(args), i, nullptr);
 }
 
-std::vector<vkwp::CommandBuffer>
-vkwp::CommandPool::allocateCommandBuffers(const std::string &        label,
-                                          const VkCommandBufferLevel level,
-                                          const std::uint32_t        command_buffer_count,
-                                          const void * const         p_next) const
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// CommandPool class
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::CommandPool
+vkwp::CommandPool::create(const std::string &        label,
+                          const Device &             device,
+                          const std::uint32_t        queue_family_index,
+                          const OptionalCreateArgs & opt_args)
 {
-    std::vector<CommandBuffer> ret;
-    ret.reserve(command_buffer_count);
-    for (std::uint32_t i = 0; i < command_buffer_count; ++i)
-    {
-        ret.emplace_back(label + std::to_string(i));
-    }
-
-    std::vector<VkCommandBuffer>      cmdbufs(command_buffer_count, nullptr);
-    const VkCommandBufferAllocateInfo ai{
-        .sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .pNext              = p_next,
-        .commandPool        = this->_ref(),
-        .level              = level,
-        .commandBufferCount = command_buffer_count,
-    };
-
-    {
-        // lock は destructor が noexcept 保証できないので,
-        // reset() しきってから unlock (scope out) する.
-        LockGuardOpt lock{ this->mutex_.get() };
-
-        VulkanError::check(  //
-            vkAllocateCommandBuffers(this->_getParent(), &ai, cmdbufs.data()),
-            "Failed to vkAllocateCommandBuffers().");
-
-        for (std::size_t i = 0; i < cmdbufs.size(); ++i)
-        {
-            *ret[i].reset(this->_getParent(), this->_ref()) = cmdbufs[i];
-            ret[i].mutex_                                   = this->mutex_.get();
-            this->debug_utils_resource_.registDebugUtilsObjectName(ret[i]);
-        }
-    }
-
-    return ret;
+    return create(label, device, queue_family_index, nullptr, opt_args);
 }
 
-vkwp::CommandBuffer
-vkwp::CommandPool::allocateCommandBuffer(const std::string &        label,
-                                         const VkCommandBufferLevel level,
-                                         const void * const         p_next) const
+vkwp::CommandPool
+vkwp::CommandPool::create(const std::string &        label,
+                          const Device &             device,
+                          const std::uint32_t        queue_family_index,
+                          std::unique_ptr<Mutex> &&  mutex,
+                          const OptionalCreateArgs & opt_args)
 {
-    CommandBuffer                     ret{ label };
-    const VkCommandBufferAllocateInfo ai{
-        .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .pNext              = p_next,
-        .commandPool        = this->_ref(),
-        .level              = level,
-        .commandBufferCount = 1,
+    VKWP_VALIDATE_ARG(device);
+    CommandPool                   ret{ label };
+    const VkCommandPoolCreateInfo ci{
+        .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .pNext            = opt_args.p_next,
+        .flags            = opt_args.flags,
+        .queueFamilyIndex = queue_family_index,
     };
-
-    // lock は destructor が noexcept 保証できないので,
-    // reset() しきってから unlock (scope out) する.
-    LockGuardOpt lock{ this->mutex_.get() };
-
     VulkanError::check(  //
-        vkAllocateCommandBuffers(this->_getParent(), &ai, ret.reset(this->_getParent(), this->_ref())),
-        "Failed to vkAllocateCommandBuffers(). (single allocation)");
-    ret.mutex_ = this->mutex_.get();
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
+        vkCreateCommandPool(device, &ci, nullptr, ret._reset(device)),
+        "Failed to vkCreateCommandPool().");
+
+    ret.create_flags_ = opt_args.flags;
+    ret.mutex_        = std::move(mutex);
+
+    if (opt_args.debug_util != nullptr)
+    {
+        opt_args.debug_util->registDebugUtilsObjectName(device,
+                                                        VK_OBJECT_TYPE_COMMAND_POOL,
+                                                        static_cast<VkCommandPool>(ret),
+                                                        ret.getLabel());
+    }
     return ret;
 }
 
-vkwp::CommandBuffer
-vkwp::CommandPool::allocatePrimaryCommandBuffer(const std::string & label, const void * const p_next) const
+VkCommandPoolCreateFlags
+vkwp::CommandPool::getCreateFlags() const noexcept
 {
-    return this->allocateCommandBuffer(label, VK_COMMAND_BUFFER_LEVEL_PRIMARY, p_next);
+    return this->create_flags_;
 }

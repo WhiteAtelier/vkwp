@@ -1,5 +1,8 @@
 #include "vkwp/device_memory.hpp"
 
+#include "impl/assert.hpp"
+#include "impl/deleter.hpp"
+#include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/physical_device.hpp"
 #include "vkwp/vulkan_error.hpp"
@@ -8,12 +11,23 @@
 
 #include <cstring>
 
-vkwp::DeviceMemory::DeviceMemory() = default;
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// _delete() overload
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <>
+void
+vkwp::impl::_delete<VkDeviceMemory, VkDevice>(VkDeviceMemory i, const std::tuple<VkDevice> & args) noexcept
+{
+    vkFreeMemory(std::get<0>(args), i, nullptr);
+}
 
-vkwp::DeviceMemory::DeviceMemory(const std::string & label)
-    : Resource{ label }
-{}
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// CommandPool class
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
 vkwp::DeviceMemory
 vkwp::DeviceMemory::allocate(const std::string &          label,
                              const Device &               device,
@@ -22,6 +36,9 @@ vkwp::DeviceMemory::allocate(const std::string &          label,
                              const VkMemoryPropertyFlags  memory_property_flags,
                              const OptionalAllocateArgs & opt_args)
 {
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(physical_device);
+
     DeviceMemory ret{ label };
     const auto   memory_type_index
         = physical_device.getMemoryTypeIndex(memory_property_flags, memory_requirements.memoryTypeBits);
@@ -44,7 +61,7 @@ vkwp::DeviceMemory::allocate(const std::string &          label,
                  memory_requirements.size,
                  static_cast<double>(memory_requirements.size) / 1024.0 / 1024.0);
     VulkanError::check(  //
-        vkAllocateMemory(device, &ai, nullptr, ret.reset(device)),
+        vkAllocateMemory(device, &ai, nullptr, ret._reset(device)),
         "Failed to vkAllocateMemory().");
     if (opt_args.debug_utils != nullptr)
     {
@@ -69,6 +86,9 @@ vkwp::DeviceMemory::importWin32ExternalMemory(const std::string &               
                                               const VkBuffer &                         buffer,
                                               const OptionalAllocateArgs &             opt_args)
 {
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(physical_device);
+
     VkMemoryWin32HandlePropertiesKHR memprops{
         .sType          = VK_STRUCTURE_TYPE_MEMORY_WIN32_HANDLE_PROPERTIES_KHR,
         .pNext          = nullptr,
@@ -133,7 +153,8 @@ vkwp::DeviceMemory::read(void * const dst, const std::size_t size, const std::si
 vkwp::DeviceMemory::MappedScope
 vkwp::DeviceMemory::map(const std::size_t size, const std::size_t offset) const
 {
-    return MappedScope{ this->_getParent(), this->_ref(), offset, size };
+    VKWP_VALIDATE_THIS;
+    return MappedScope{ std::get<0>(this->parents_), *this, offset, size };
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////

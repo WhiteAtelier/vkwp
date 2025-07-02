@@ -1,45 +1,59 @@
 #include "vkwp/device.hpp"
 
 #include "impl/assert.hpp"
-#include "vkwp/buffer.hpp"
-#include "vkwp/command_pool.hpp"
-#include "vkwp/descriptor_pool.hpp"
-#include "vkwp/descriptor_set_layout.hpp"
-#include "vkwp/device_memory.hpp"
-#include "vkwp/fence.hpp"
-#include "vkwp/framebuffer.hpp"
-#include "vkwp/image.hpp"
-#include "vkwp/image_view.hpp"
+#include "impl/deleter.hpp"
+// #include "vkwp/buffer.hpp"
+// #include "vkwp/command_pool.hpp"
+// #include "vkwp/descriptor_pool.hpp"
+// #include "vkwp/descriptor_set_layout.hpp"
+#include "vkwp/debug_utils_resource.hpp"
+// #include "vkwp/device_memory.hpp"
+// #include "vkwp/fence.hpp"
+// #include "vkwp/framebuffer.hpp"
+// #include "vkwp/image.hpp"
+// #include "vkwp/image_view.hpp"
 #include "vkwp/mutex.hpp"
-#include "vkwp/physical_device.hpp"
-#include "vkwp/pipeline.hpp"
-#include "vkwp/pipeline_layout.hpp"
+// #include "vkwp/physical_device.hpp"
+// #include "vkwp/pipeline.hpp"
+// #include "vkwp/pipeline_layout.hpp"
 #include "vkwp/queue.hpp"
-#include "vkwp/render_pass.hpp"
-#include "vkwp/sampler.hpp"
-#include "vkwp/semaphore.hpp"
-#include "vkwp/shader_module.hpp"
-#include "vkwp/surface_khr.hpp"
-#include "vkwp/swapchain_khr.hpp"
+// #include "vkwp/render_pass.hpp"
+// #include "vkwp/sampler.hpp"
+// #include "vkwp/semaphore.hpp"
+// #include "vkwp/shader_module.hpp"
+// #include "vkwp/surface_khr.hpp"
+// #include "vkwp/swapchain_khr.hpp"
 #include "vkwp/vulkan_error.hpp"
 
 #include <spdlog/spdlog.h>
 
-vkwp::Device::Device() = default;
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// _delete() overload
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <>
+void
+vkwp::impl::_delete<VkDevice>(VkDevice i, const std::tuple<> &) noexcept
+{
+    vkDestroyDevice(i, nullptr);
+}
 
-vkwp::Device::Device(const std::string & name)
-    : Resource<VkDevice, void, void>{ name }
-{}
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Device class
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
 vkwp::Device
 vkwp::Device::create(const std::string &                          label,
-                     const PhysicalDevice &                       physical_device,
+                     const VkPhysicalDevice                       physical_device,
                      const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
                      const std::vector<std::string> &             _enabled_layer_names,
                      const std::vector<std::string> &             _enabled_extension_names,
                      const VkPhysicalDeviceFeatures * const       enabled_features,
                      const OptionalCreateArgs &                   opt_args)
 {
+    VKWP_VALIDATE_ARG(physical_device);
     VKWP_ASSERTION(queue_create_infos.size() <= (std::numeric_limits<std::uint32_t>::max)());
     VKWP_ASSERTION(_enabled_layer_names.size() <= (std::numeric_limits<std::uint32_t>::max)());
     VKWP_ASSERTION(_enabled_extension_names.size() <= (std::numeric_limits<std::uint32_t>::max)());
@@ -72,40 +86,51 @@ vkwp::Device::create(const std::string &                          label,
         .pEnabledFeatures        = enabled_features,
     };
     VulkanError::check(  //
-        vkCreateDevice(physical_device, &ci, nullptr, ret.reset()),
+        vkCreateDevice(physical_device, &ci, nullptr, ret._reset()),
         "Failed to vkCreateDevice().");
     return ret;
 }
 
 void
-vkwp::Device::setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource)
-{
-    this->debug_utils_resource_ = debug_utils_resource;
-}
-
-void
 vkwp::Device::waitIdle() const
 {
-    VulkanError::check(  //
-        vkDeviceWaitIdle(this->_ref()),
-        "Failed to vkDeviceWaitIdle().");
+    VKWP_VALIDATE_THIS;
+    VulkanError::check(vkDeviceWaitIdle(*this), "Failed to vkDeviceWaitIdle().");
 }
 
 vkwp::Queue
-vkwp::Device::getDeviceQueue(const std::uint32_t       queue_family_index,
-                             const std::uint32_t       queue_index,
-                             std::unique_ptr<Mutex> && mutex) const
+vkwp::Device::getDeviceQueue(const std::uint32_t        queue_family_index,
+                             const std::uint32_t        queue_index,
+                             const DeviceQueueGetArgs & opt_args) const
 {
+    VKWP_VALIDATE_THIS;
+    return this->getDeviceQueue(queue_family_index, queue_index, {}, opt_args);
+}
+
+vkwp::Queue
+vkwp::Device::getDeviceQueue(const std::uint32_t        queue_family_index,
+                             const std::uint32_t        queue_index,
+                             std::unique_ptr<Mutex> &&  mutex,
+                             const DeviceQueueGetArgs & opt_args) const
+{
+    VKWP_VALIDATE_THIS;
     Queue ret{ this->getLabel() + "/Queue"                        //
                + "/Family[" + std::to_string(queue_family_index)  //
                + "]/Index[" + std::to_string(queue_index) + "]" };
-    vkGetDeviceQueue(this->_ref(), queue_family_index, queue_index, ret.reset(this->_ref()));
+    vkGetDeviceQueue(*this, queue_family_index, queue_index, ret._reset());
     ret.queue_family_index_ = queue_family_index;
     ret.mutex_              = std::move(mutex);
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
+    if (opt_args.debug_utils != nullptr)
+    {
+        opt_args.debug_utils->registDebugUtilsObjectName(*this,
+                                                         VK_OBJECT_TYPE_QUEUE,
+                                                         static_cast<VkQueue>(ret),
+                                                         ret.getLabel());
+    }
     return ret;
 }
 
+#if 0
 vkwp::Buffer
 vkwp::Device::createBuffer(const std::string &       label,
                            const VkDeviceSize        size,
@@ -197,7 +222,7 @@ vkwp::Device::allocateDeviceMemory(const std::string &          label,
                                   { .p_next = p_next, .debug_utils = &this->debug_utils_resource_ });
 }
 
-#if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
+#    if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
 vkwp::DeviceMemory
 vkwp::Device::importWin32ExternalMemory(const std::string &                      label,
                                         const PhysicalDevice &                   physical_device,
@@ -219,7 +244,7 @@ vkwp::Device::importWin32ExternalMemory(const std::string &                     
                                                    image,
                                                    buffer);
 }
-#endif
+#    endif
 
 vkwp::CommandPool
 vkwp::Device::createCommandPool(const std::string &            label,
@@ -228,20 +253,6 @@ vkwp::Device::createCommandPool(const std::string &            label,
                                 const VkCommandPoolCreateFlags flags,
                                 const void * const             p_next) const
 {
-    CommandPool                   ret{ label };
-    const VkCommandPoolCreateInfo ci{
-        .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        .pNext            = p_next,
-        .flags            = flags,
-        .queueFamilyIndex = queue_family_index,
-    };
-    VulkanError::check(  //
-        vkCreateCommandPool(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateCommandPool().");
-    ret.mutex_ = std::move(mutex);
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    ret.setDebugUtilsResource(this->debug_utils_resource_);
-    return ret;
 }
 
 vkwp::Fence
@@ -612,3 +623,4 @@ vkwp::Device::createComputePipeline(const std::string &         label,
     this->debug_utils_resource_.registDebugUtilsObjectName(ret);
     return ret;
 }
+#endif
