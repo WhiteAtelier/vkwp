@@ -7,14 +7,6 @@
 
 #include <vector>
 
-#if VKWP_SUPPORT_GLFW_SURFACE
-struct GLFWwindow;
-#endif
-
-#if VKWP_SUPPORT_WIN32_SURFACE
-#    include <Windows.h>
-#endif
-
 namespace vkwp {
 
 ///
@@ -45,20 +37,6 @@ public:
     [[nodiscard]]
     static std::vector<VkExtensionProperties>
     enumerateInstanceExtensionProperties();
-
-#if 0
-#    if VKWP_SUPPORT_GLFW_SURFACE
-    [[nodiscard]]
-    SurfaceKHR
-    createGLFWSurfaceKHR(const std::string & label, GLFWwindow * const window) const;
-#    endif
-
-#    if VKWP_SUPPORT_WIN32_SURFACE
-    [[nodiscard]]
-    SurfaceKHR
-    createWin32SurfaceKHR(const std::string & label, const HINSTANCE h_instance, const HWND hwnd) const;
-#    endif
-#endif
 };
 
 }  // namespace vkwp

@@ -26,6 +26,7 @@ vkwp::impl::_delete<VkCommandPool, VkDevice>(VkCommandPool i, const std::tuple<V
 // CommandPool class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+/* STATIC */
 vkwp::CommandPool
 vkwp::CommandPool::create(const std::string &        label,
                           const Device &             device,
@@ -35,6 +36,7 @@ vkwp::CommandPool::create(const std::string &        label,
     return create(label, device, queue_family_index, nullptr, opt_args);
 }
 
+/* STATIC */
 vkwp::CommandPool
 vkwp::CommandPool::create(const std::string &        label,
                           const Device &             device,

@@ -170,17 +170,6 @@ vkwp::Device::createCommandPool(const std::string &            label,
 vkwp::Semaphore
 vkwp::Device::createSemaphore(const std::string & label) const
 {
-    Semaphore                   ret{ label };
-    const VkSemaphoreCreateInfo ci{
-        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-    };
-    VulkanError::check(  //
-        vkCreateSemaphore(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateSemaphore().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
 }
 
 vkwp::SwapchainKHR
@@ -200,32 +189,6 @@ vkwp::Device::createSwapchainKHR(const std::string &                 label,
                                  const VkSwapchainCreateFlagsKHR     flags,
                                  const void * const                  p_next) const
 {
-    SwapchainKHR                   ret{ label };
-    const VkSwapchainCreateInfoKHR ci{
-        .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-        .pNext                 = p_next,
-        .flags                 = flags,
-        .surface               = surface,
-        .minImageCount         = min_image_count,
-        .imageFormat           = image_format,
-        .imageColorSpace       = image_color_space,
-        .imageExtent           = image_extent,
-        .imageArrayLayers      = image_array_layers,
-        .imageUsage            = image_usage,
-        .imageSharingMode      = VK_SHARING_MODE_EXCLUSIVE,
-        .queueFamilyIndexCount = 0,
-        .pQueueFamilyIndices   = nullptr,
-        .preTransform          = pre_transform,
-        .compositeAlpha        = composite_alpha,
-        .presentMode           = present_mode,
-        .clipped               = clipped,
-        .oldSwapchain          = old_swapchain,
-    };
-    VulkanError::check(  //
-        vkCreateSwapchainKHR(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateSwapchainKHR().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
 }
 
 vkwp::RenderPass
@@ -270,32 +233,7 @@ vkwp::Device::createSampler(const std::string &        label,
                             const VkSamplerCreateFlags flags,
                             const void * const         p_next) const
 {
-    Sampler                   ret{ label };
-    const VkSamplerCreateInfo ci{
-        .sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-        .pNext                   = p_next,
-        .flags                   = flags,
-        .magFilter               = mag_filter,
-        .minFilter               = min_filter,
-        .mipmapMode              = mipmap_mode,
-        .addressModeU            = address_mode_u,
-        .addressModeV            = address_mode_v,
-        .addressModeW            = address_mode_w,
-        .mipLodBias              = mip_lod_bias,
-        .anisotropyEnable        = anisotropy_enable,
-        .maxAnisotropy           = max_anisotropy,
-        .compareEnable           = compare_enable,
-        .compareOp               = compare_op,
-        .minLod                  = min_lod,
-        .maxLod                  = max_lod,
-        .borderColor             = border_color,
-        .unnormalizedCoordinates = unnormalized_coordinates,
-    };
-    VulkanError::check(  //
-        vkCreateSampler(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateSampler().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
+
 }
 
 vkwp::DescriptorPool
@@ -305,21 +243,6 @@ vkwp::Device::createDescriptorPool(const std::string &                       lab
                                    const VkDescriptorPoolCreateFlags         flags,
                                    const void * const                        p_next) const
 {
-    DescriptorPool                   ret{ label };
-    const VkDescriptorPoolCreateInfo ci{
-        .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
-        .pNext         = p_next,
-        .flags         = flags,
-        .maxSets       = max_sets,
-        .poolSizeCount = static_cast<std::uint32_t>(pool_sizes.size()),
-        .pPoolSizes    = pool_sizes.data(),
-    };
-    VulkanError::check(  //
-        vkCreateDescriptorPool(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateDescriptorPool().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    ret.setDebugUtilsResource(this->debug_utils_resource_);
-    return ret;
 }
 
 vkwp::DescriptorSetLayout
@@ -328,19 +251,7 @@ vkwp::Device::createDescriptorSetLayout(const std::string &                     
                                         const VkDescriptorSetLayoutCreateFlags            flags,
                                         const void * const                                p_next) const
 {
-    DescriptorSetLayout                   ret{ label };
-    const VkDescriptorSetLayoutCreateInfo ci{
-        .sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
-        .pNext        = p_next,
-        .flags        = flags,
-        .bindingCount = static_cast<std::uint32_t>(bindings.size()),
-        .pBindings    = bindings.data(),
-    };
-    VulkanError::check(  //
-        vkCreateDescriptorSetLayout(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateDescriptorSetLayout().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
+  
 }
 
 vkwp::ShaderModule
@@ -366,19 +277,6 @@ vkwp::Device::createShaderModule(const std::string &         label,
                                  const std::uint32_t * const data,
                                  const std::size_t           data_length) const
 {
-    ShaderModule                   ret{ label };
-    const VkShaderModuleCreateInfo ci{
-        .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .pNext    = nullptr,
-        .flags    = 0,
-        .codeSize = data_length * sizeof(std::uint32_t),
-        .pCode    = data,
-    };
-    VulkanError::check(  //
-        vkCreateShaderModule(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateShaderModule().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
 }
 
 vkwp::PipelineLayout
@@ -410,33 +308,6 @@ vkwp::Device::createGraphicsPipeline(const std::string &                        
                                      const VkPipelineCreateFlags                          flags,
                                      const void * const                                   p_next) const
 {
-    Pipeline                           ret{ label };
-    const VkGraphicsPipelineCreateInfo ci{
-        .sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-        .pNext               = p_next,
-        .flags               = flags,
-        .stageCount          = static_cast<std::uint32_t>(stages.size()),
-        .pStages             = stages.data(),
-        .pVertexInputState   = &vertex_input_state,
-        .pInputAssemblyState = &input_assembly_state,
-        .pTessellationState  = &tessellation_state,
-        .pViewportState      = &viewport_state,
-        .pRasterizationState = &rasterization_state,
-        .pMultisampleState   = &multisample_state,
-        .pDepthStencilState  = &depth_stencil_state,
-        .pColorBlendState    = &color_blend_state,
-        .pDynamicState       = &dynamic_state,
-        .layout              = layout,
-        .renderPass          = render_pass,
-        .subpass             = subpass,
-        .basePipelineHandle  = base_pipeline_handle,
-        .basePipelineIndex   = base_pipeline_index,
-    };
-    VulkanError::check(  //
-        vkCreateGraphicsPipelines(this->_ref(), nullptr, 1, &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateGraphicsPipelines().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
 }
 
 vkwp::Pipeline
@@ -448,26 +319,5 @@ vkwp::Device::createComputePipeline(const std::string &         label,
                                     const VkPipelineCreateFlags flags,
                                     const void * const          p_next) const
 {
-    Pipeline                          ret{ label };
-    const VkComputePipelineCreateInfo ci{
-        .sType  = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
-        .pNext  = p_next,
-        .flags  = flags,
-        .stage  = VkPipelineShaderStageCreateInfo{ .sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-                                                   .pNext  = nullptr,
-                                                   .flags  = 0,
-                                                   .stage  = VK_SHADER_STAGE_COMPUTE_BIT,
-                                                   .module = shader_module,
-                                                   .pName  = "main",
-                                                   .pSpecializationInfo = nullptr },
-        .layout = layout,
-        .basePipelineHandle = base_pipeline_handle,
-        .basePipelineIndex  = base_pipeline_index,
-    };
-    VulkanError::check(  //
-        vkCreateComputePipelines(this->_ref(), nullptr, 1, &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateGraphicsPipelines().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
 }
 #endif

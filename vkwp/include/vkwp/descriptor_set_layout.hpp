@@ -5,21 +5,30 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <vector>
+
 namespace vkwp {
 
 ///
 /// @brief VkDescriptorSetLayout wrapper.
 ///
-class DescriptorSetLayout final : public Resource<VkDescriptorSetLayout, VkDevice, void>
+class DescriptorSetLayout final : public Resource<VkDescriptorSetLayout, VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit DescriptorSetLayout();
+    using Resource::Resource;
 
-    /// @brief Constructor with label name.
-    [[nodiscard]]
-    explicit DescriptorSetLayout(const std::string & label);
+    struct OptionalCreateArgs
+    {
+        const void *                     p_next      = nullptr;
+        VkDescriptorSetLayoutCreateFlags flags       = 0;
+        const DebugUtilsResource *       debug_utils = nullptr;
+    };
+
+    static DescriptorSetLayout
+    create(const std::string &                               label,
+           const Device &                                    device,
+           const std::vector<VkDescriptorSetLayoutBinding> & bindings,
+           const OptionalCreateArgs &                        opt_args = {});
 };
 
 }  // namespace vkwp

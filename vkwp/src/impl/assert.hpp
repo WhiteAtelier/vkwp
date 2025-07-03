@@ -164,7 +164,7 @@ private:
                                                    __LINE__,                       \
                                                    __func__,                       \
                                                    "Invalid argument: " #argName); \
-        throw std::invalid_argument{ #argName };                                   \
+        throw std::invalid_argument{ "Check Failure: " #argName };                 \
     }
 #define VKWP_VALIDATE_THIS                                                                                          \
     if (!*this)                                                                                                     \

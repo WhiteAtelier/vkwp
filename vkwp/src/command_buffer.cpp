@@ -30,42 +30,41 @@ vkwp::impl::_delete<VkCommandBuffer, VkDevice, VkCommandPool>(VkCommandBuffer   
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 std::vector<vkwp::CommandBuffer>
-vkwp::CommandBuffer::allocateCommandBuffers(const std::string &          label,
-                                            const CommandPool &          command_pool,
-                                            const VkCommandBufferLevel   level,
-                                            const std::uint32_t          command_buffer_count,
-                                            const OptionalAllocateArgs & opt_args)
+vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              command_pool,
+                                            const VkCommandBufferLevel       level,
+                                            const std::vector<std::string> & command_buffer_labels,
+                                            const OptionalAllocateArgs &     opt_args)
 {
     VKWP_VALIDATE_ARG(command_pool);
 
     std::vector<CommandBuffer> ret;
-    ret.reserve(command_buffer_count);
-    for (std::uint32_t i = 0; i < command_buffer_count; ++i)
+    ret.reserve(command_buffer_labels.size());
+    for (const auto & label : command_buffer_labels)
     {
-        ret.emplace_back(CommandBuffer{ label + std::to_string(i) });
+        ret.emplace_back(CommandBuffer{ label });
     }
 
-    std::vector<VkCommandBuffer>      cmdbufs(command_buffer_count, nullptr);
+    std::vector<VkCommandBuffer>      cmdbufs(command_buffer_labels.size(), nullptr);
     const VkCommandBufferAllocateInfo ai{
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .pNext              = opt_args.p_next,
         .commandPool        = command_pool,
         .level              = level,
-        .commandBufferCount = command_buffer_count,
+        .commandBufferCount = static_cast<std::uint32_t>(command_buffer_labels.size()),
     };
+
+    const auto device          = std::get<0>(command_pool.parents_);
+    const auto require_to_free = (command_pool.getCreateFlags() & VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) != 0;
 
     {
         // lock は destructor が noexcept 保証できないので,
         // reset() しきってから unlock (scope out) する.
         LockGuardOpt lock{ command_pool.mutex_.get() };
 
-        auto device = std::get<0>(command_pool.parents_);
         VulkanError::check(  //
             vkAllocateCommandBuffers(device, &ai, cmdbufs.data()),
             "Failed to vkAllocateCommandBuffers().");
 
-        const auto require_to_free
-            = (command_pool.getCreateFlags() & VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) != 0;
         for (std::size_t i = 0; i < cmdbufs.size(); ++i)
         {
             *ret[i]._reset(device,
@@ -74,14 +73,17 @@ vkwp::CommandBuffer::allocateCommandBuffers(const std::string &          label,
                 = cmdbufs[i];
 
             ret[i].mutex_ = command_pool.mutex_.get();
+        }
+    }
 
-            if (opt_args.debug_utils != nullptr)
-            {
-                opt_args.debug_utils->registDebugUtilsObjectName(device,
-                                                                 VK_OBJECT_TYPE_COMMAND_BUFFER,
-                                                                 static_cast<VkCommandBuffer>(ret[i]),
-                                                                 ret[i].getLabel());
-            }
+    if (opt_args.debug_utils != nullptr)
+    {
+        for (const auto & cmdbuf : ret)
+        {
+            opt_args.debug_utils->registDebugUtilsObjectName(device,
+                                                             VK_OBJECT_TYPE_COMMAND_BUFFER,
+                                                             static_cast<VkCommandBuffer>(cmdbuf),
+                                                             cmdbuf.getLabel());
         }
     }
 

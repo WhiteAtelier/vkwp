@@ -17,9 +17,9 @@ vkwp_add_library(vkwp
         command_pool.cpp
         debug_report_callback_resource.cpp
         debug_utils_resource.cpp
-        # descriptor_pool.cpp
-        # descriptor_set_layout.cpp
-        # descriptor_set.cpp
+        descriptor_pool.cpp
+        descriptor_set_layout.cpp
+        descriptor_set.cpp
         # device_memory_node.cpp
         # device_memory_pool.cpp
         device_memory.cpp
@@ -37,11 +37,11 @@ vkwp_add_library(vkwp
         queue.cpp
         render_pass.cpp
         resource.cpp
-        # sampler.cpp
-        # semaphore.cpp
-        # shader_module.cpp
-        # surface_khr.cpp
-        # swapchain_khr.cpp
+        sampler.cpp
+        semaphore.cpp
+        shader_module.cpp
+        surface_khr.cpp
+        swapchain_khr.cpp
         vulkan_error.cpp
 
         impl/assert.cpp
@@ -57,9 +57,9 @@ vkwp_add_library(vkwp
         vkwp/command_pool.hpp
         vkwp/debug_report_callback_resource.hpp
         vkwp/debug_utils_resource.hpp
-        # vkwp/descriptor_pool.hpp
-        # vkwp/descriptor_set_layout.hpp
-        # vkwp/descriptor_set.hpp
+        vkwp/descriptor_pool.hpp
+        vkwp/descriptor_set_layout.hpp
+        vkwp/descriptor_set.hpp
         # vkwp/device_memory_node.hpp
         # vkwp/device_memory_pool.hpp
         vkwp/device_memory.hpp
@@ -78,11 +78,11 @@ vkwp_add_library(vkwp
         vkwp/queue.hpp
         vkwp/render_pass.hpp
         vkwp/resource.hpp
-        # vkwp/sampler.hpp
-        # vkwp/semaphore.hpp
-        # vkwp/shader_module.hpp
-        # vkwp/surface_khr.hpp
-        # vkwp/swapchain_khr.hpp
+        vkwp/sampler.hpp
+        vkwp/semaphore.hpp
+        vkwp/shader_module.hpp
+        vkwp/surface_khr.hpp
+        vkwp/swapchain_khr.hpp
         vkwp/types.hpp
         vkwp/vk_structures.hpp
         vkwp/vulkan_error.hpp
@@ -114,4 +114,10 @@ target_compile_definitions(vkwp
     PUBLIC
         VKWP_SUPPORT_GLFW_SURFACE=$<BOOL:${VKWP_SUPPORT_GLFW_SURFACE}>
         VKWP_SUPPORT_WIN32_SURFACE=$<BOOL:${VKWP_SUPPORT_WIN32_SURFACE}>
+)
+
+target_compile_definitions(vkwp
+    PRIVATE
+        VKWP_USE_GLFW_SURFACE
+        VKWP_USE_WIN32_SURFACE
 )

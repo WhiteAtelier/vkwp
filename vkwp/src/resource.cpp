@@ -140,6 +140,9 @@ template class vkwp::Resource<VkAccelerationStructureKHR, VkDevice, vkwp::Accele
 template class vkwp::Resource<VkBuffer, VkDevice>;
 template class vkwp::Resource<VkCommandBuffer, VkDevice, VkCommandPool>;
 template class vkwp::Resource<VkCommandPool, VkDevice>;
+template class vkwp::Resource<VkDescriptorPool, VkDevice>;
+template class vkwp::Resource<VkDescriptorSet, VkDevice, VkDescriptorPool>;
+template class vkwp::Resource<VkDescriptorSetLayout, VkDevice>;
 template class vkwp::Resource<VkDevice>;
 template class vkwp::Resource<VkDeviceMemory, VkDevice>;
 template class vkwp::Resource<VkFence, VkDevice>;
@@ -149,9 +152,14 @@ template class vkwp::Resource<VkImageView, VkDevice>;
 template class vkwp::Resource<VkInstance>;
 template class vkwp::Resource<VkPhysicalDevice>;
 template class vkwp::Resource<VkPipeline, VkDevice>;
+template class vkwp::Resource<VkPipelineCache, VkDevice>;
 template class vkwp::Resource<VkPipelineLayout, VkDevice>;
-template class vkwp::Resource<VkRenderPass, VkDevice>;
 template class vkwp::Resource<VkQueue>;
+template class vkwp::Resource<VkRenderPass, VkDevice>;
+template class vkwp::Resource<VkSemaphore, VkDevice>;
+template class vkwp::Resource<VkShaderModule, VkDevice>;
+template class vkwp::Resource<VkSurfaceKHR, VkInstance>;
+template class vkwp::Resource<VkSwapchainKHR, VkDevice>;
 
 #if 0
 #    include "impl/assert.hpp"

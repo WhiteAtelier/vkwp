@@ -41,11 +41,10 @@ public:
 
     [[nodiscard]]
     static std::vector<CommandBuffer>
-    allocateCommandBuffers(const std::string &          label,
-                           const CommandPool &          command_pool,
-                           const VkCommandBufferLevel   level,
-                           const std::uint32_t          command_buffer_count,
-                           const OptionalAllocateArgs & opt_args = {});
+    allocateCommandBuffers(const CommandPool &              command_pool,
+                           const VkCommandBufferLevel       level,
+                           const std::vector<std::string> & command_buffer_labels,
+                           const OptionalAllocateArgs &     opt_args = {});
 
     [[nodiscard]]
     static CommandBuffer
