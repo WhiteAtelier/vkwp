@@ -1,21 +1,8 @@
 #include <gtest/gtest.h>
-#include <vkwp/acceleration_structure_khr.hpp>
-#include <vkwp/buffer.hpp>
-#include <vkwp/command_buffer.hpp>
-#include <vkwp/command_pool.hpp>
-#include <vkwp/device.hpp>
-#include <vkwp/device_memory.hpp>
 #include <vkwp/instance.hpp>
-#include <vkwp/queue.hpp>
 
 TEST(VkwpInstanceTest, BasicTest)
 {
-    vkwp::Buffer                   buffer;
-    vkwp::CommandBuffer            cmdbuf;
-    vkwp::AccelerationStructureKHR acceleration_structure;
-    vkwp::CommandPool              cmdpool;
-    vkwp::DeviceMemory             mem;
-
     vkwp::Instance instance1;
 
     EXPECT_FALSE(instance1);

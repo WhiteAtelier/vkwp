@@ -29,9 +29,9 @@ public:
 
     struct OptionalCreateArgs
     {
+        void * const                          p_next         = nullptr;
         VkAccelerationStructureCreateFlagsKHR create_flags   = 0;
         VkDeviceAddress                       device_address = 0;
-        void * const                          p_next         = nullptr;
         const DebugUtilsResource * const      debug_utils    = nullptr;
     };
 

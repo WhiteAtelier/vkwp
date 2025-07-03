@@ -19,9 +19,9 @@ public:
 
     struct OptionalCreateArgs
     {
-        const void *                     p_next      = nullptr;  ///< Pointer to a structure extending this structure.
-        VkBufferCreateFlags              flags       = 0;        ///< Specifying additional parameters of the buffer.
-        const DebugUtilsResource * const debug_utils = nullptr;  ///< Pointer to a debug utils resource instance.
+        const void *               p_next      = nullptr;  ///< Pointer to a structure extending this structure.
+        VkBufferCreateFlags        flags       = 0;        ///< Specifying additional parameters of the buffer.
+        const DebugUtilsResource * debug_utils = nullptr;  ///< Pointer to a debug utils resource instance.
     };
 
     ///

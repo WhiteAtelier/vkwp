@@ -2,6 +2,7 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+#include "vkwp/instance.hpp"
 #include "vkwp/vulkan_error.hpp"
 
 #include <limits>
@@ -29,7 +30,7 @@ vkwp::PhysicalDevice::PhysicalDevice(const std::string & label, VkPhysicalDevice
 {}
 
 std::vector<vkwp::PhysicalDevice>
-vkwp::PhysicalDevice::enumeratePhysicalDevices(const VkInstance instance)
+vkwp::PhysicalDevice::enumeratePhysicalDevices(const Instance & instance)
 {
     VKWP_VALIDATE_ARG(instance);
 

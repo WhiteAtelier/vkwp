@@ -21,7 +21,7 @@ public:
     using Resource<VkPhysicalDevice>::Resource;
 
     static std::vector<PhysicalDevice>
-    enumeratePhysicalDevices(const VkInstance instance);
+    enumeratePhysicalDevices(const Instance & instance);
 
     [[nodiscard]]
     const std::vector<VkQueueFamilyProperties> &

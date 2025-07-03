@@ -22,9 +22,9 @@ public:
 
     struct OptionalCreateArgs
     {
-        const VkCommandPoolCreateFlags flags      = 0;  ///< もしくは VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
-        const void *                   p_next     = nullptr;
-        const DebugUtilsResource *     debug_util = nullptr;
+        VkCommandPoolCreateFlags   flags      = 0;  ///< もしくは VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
+        const void *               p_next     = nullptr;
+        const DebugUtilsResource * debug_util = nullptr;
     };
 
     [[nodiscard]]
