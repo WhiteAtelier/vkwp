@@ -131,96 +131,6 @@ vkwp::Device::getDeviceQueue(const std::uint32_t        queue_family_index,
 }
 
 #if 0
-vkwp::Buffer
-vkwp::Device::createBuffer(const std::string &       label,
-                           const VkDeviceSize        size,
-                           const VkBufferUsageFlags  usage,
-                           const VkBufferCreateFlags flags,
-                           const void * const        p_next) const
-{
-    // 互換性のため.
-    return Buffer::create(label,
-                          *this,
-                          size,
-                          usage,
-                          {
-                              .p_next      = p_next,
-                              .flags       = flags,
-                              .debug_utils = &this->debug_utils_resource_,
-                          });
-}
-
-vkwp::Image
-vkwp::Device::createImage(const std::string &         label,
-                          const VkImageType           image_type,
-                          const VkFormat              format,
-                          const VkExtent3D            extent,
-                          const std::uint32_t         mip_levels,
-                          const std::uint32_t         array_layers,
-                          const VkSampleCountFlagBits samples,
-                          const VkImageTiling         tiling,
-                          const VkImageUsageFlags     usage,
-                          const VkImageCreateFlags    flags,
-                          const void * const          p_next) const
-{
-    // 互換性のため
-    return Image::create(label,
-                         *this,
-                         image_type,
-                         format,
-                         extent,
-                         usage,
-                         {
-                             .p_next       = p_next,
-                             .flags        = flags,
-                             .mip_levels   = mip_levels,
-                             .array_layers = array_layers,
-                             .samples      = samples,
-                             .tiling       = tiling,
-                             .debug_utils  = &this->debug_utils_resource_,
-                         });
-}
-
-vkwp::ImageView
-vkwp::Device::createImageView(const std::string &             label,
-                              const VkImage                   image,
-                              const VkImageViewType           view_type,
-                              const VkFormat                  format,
-                              const VkComponentMapping &      components,
-                              const VkImageSubresourceRange & subresource_range,
-                              const VkImageViewCreateFlags    flags,
-                              const void * const              p_next) const
-{
-    // 互換性のため
-    return ImageView::create(label,
-                             *this,
-                             image,
-                             view_type,
-                             format,
-                             subresource_range,
-                             {
-                                 .p_next      = p_next,
-                                 .flags       = flags,
-                                 .components  = components,
-                                 .debug_utils = &this->debug_utils_resource_,
-                             });
-}
-
-vkwp::DeviceMemory
-vkwp::Device::allocateDeviceMemory(const std::string &          label,
-                                   const PhysicalDevice &       physical_device,
-                                   const VkMemoryRequirements & memory_requirements,
-                                   const VkMemoryPropertyFlags  memory_property_flags,
-                                   const void * const           p_next) const
-{
-    // 互換性のため
-    return DeviceMemory::allocate(label,
-                                  *this,
-                                  physical_device,
-                                  memory_requirements,
-                                  memory_property_flags,
-                                  { .p_next = p_next, .debug_utils = &this->debug_utils_resource_ });
-}
 
 #    if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
 vkwp::DeviceMemory
@@ -255,21 +165,7 @@ vkwp::Device::createCommandPool(const std::string &            label,
 {
 }
 
-vkwp::Fence
-vkwp::Device::createFence(const std::string & label, const VkFenceCreateFlags flags, const void * const p_next) const
-{
-    Fence                   ret{ label };
-    const VkFenceCreateInfo ci{
-        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-        .pNext = p_next,
-        .flags = flags,
-    };
-    VulkanError::check(  //
-        vkCreateFence(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateFence().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
-}
+
 
 vkwp::Semaphore
 vkwp::Device::createSemaphore(const std::string & label) const
@@ -340,23 +236,6 @@ vkwp::Device::createRenderPass(const std::string &                          labe
                                const VkRenderPassCreateFlags                flags,
                                const void * const                           p_next) const
 {
-    RenderPass                   ret{ label };
-    const VkRenderPassCreateInfo ci{
-        .sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
-        .pNext           = p_next,
-        .flags           = flags,
-        .attachmentCount = static_cast<std::uint32_t>(attachments.size()),
-        .pAttachments    = attachments.data(),
-        .subpassCount    = static_cast<std::uint32_t>(subpasses.size()),
-        .pSubpasses      = subpasses.data(),
-        .dependencyCount = static_cast<std::uint32_t>(dependencies.size()),
-        .pDependencies   = dependencies.data(),
-    };
-    VulkanError::check(  //
-        vkCreateRenderPass(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateRenderPass()");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
 }
 
 vkwp::Framebuffer
@@ -369,23 +248,6 @@ vkwp::Device::createFramebuffer(const std::string &            label,
                                 const VkFramebufferCreateFlags flags,
                                 const void * const             p_next) const
 {
-    Framebuffer                   ret{ label };
-    const VkFramebufferCreateInfo ci{
-        .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
-        .pNext           = p_next,
-        .flags           = 0,
-        .renderPass      = render_pass,
-        .attachmentCount = static_cast<std::uint32_t>(attachments.size()),
-        .pAttachments    = attachments.data(),
-        .width           = width,
-        .height          = height,
-        .layers          = layers,
-    };
-    VulkanError::check(  //
-        vkCreateFramebuffer(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateFramebuffer().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
 }
 
 vkwp::Sampler
@@ -526,21 +388,6 @@ vkwp::Device::createPipelineLayout(const std::string &                        la
                                    const VkPipelineLayoutCreateFlags          flags,
                                    const void * const                         p_next) const
 {
-    PipelineLayout                   ret{ label };
-    const VkPipelineLayoutCreateInfo ci{
-        .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .pNext                  = p_next,
-        .flags                  = flags,
-        .setLayoutCount         = static_cast<std::uint32_t>(set_layouts.size()),
-        .pSetLayouts            = set_layouts.data(),
-        .pushConstantRangeCount = static_cast<std::uint32_t>(push_constant_ranges.size()),
-        .pPushConstantRanges    = push_constant_ranges.data(),
-    };
-    VulkanError::check(  //
-        vkCreatePipelineLayout(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreatePipelineLayout().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
 }
 
 vkwp::Pipeline

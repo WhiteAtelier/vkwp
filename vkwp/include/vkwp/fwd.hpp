@@ -12,6 +12,7 @@ class CommandBuffer;
 class CommandPool;
 class DebugReportCallbackResource;
 class DebugUtilsResource;
+class DeferredOperationKHR;  // 未実装
 class DescriptorPool;
 class DescriptorSet;
 class DescriptorSetLayout;
@@ -27,6 +28,7 @@ class Instance;
 class Mutex;
 class PhysicalDevice;
 class Pipeline;
+class PipelineCache;
 class PipelineLayout;
 class Queue;
 class RenderPass;

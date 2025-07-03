@@ -1,14 +1,30 @@
 #include "vkwp/image.hpp"
 
+#include "impl/assert.hpp"
+#include "impl/deleter.hpp"
+#include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
+#include "vkwp/device_memory.hpp"
 #include "vkwp/vulkan_error.hpp"
 
-vkwp::Image::Image() = default;
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// _delete() overload
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <>
+void
+vkwp::impl::_delete<VkImage, VkDevice>(VkImage i, const std::tuple<VkDevice> & args) noexcept
+{
+    vkDestroyImage(std::get<0>(args), i, nullptr);
+}
 
-vkwp::Image::Image(const std::string & label)
-    : Resource{ label }
-{}
-
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Image class
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/* STATIC */
 vkwp::Image
 vkwp::Image::create(const std::string &        label,
                     const Device &             device,
@@ -18,6 +34,10 @@ vkwp::Image::create(const std::string &        label,
                     const VkImageUsageFlags    usage,
                     const OptionalCreateArgs & opt_args)
 {
+    VKWP_VALIDATE_ARG(device);
+    VKWP_ASSERTION(extent.width >= 1);
+    VKWP_ASSERTION(extent.height >= 1);
+    VKWP_ASSERTION(extent.depth >= 1);
     Image                   ret{ label };
     const VkImageCreateInfo ci{
         .sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -37,7 +57,7 @@ vkwp::Image::create(const std::string &        label,
         .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED,
     };
     VulkanError::check(  //
-        vkCreateImage(device, &ci, nullptr, ret.reset(device)),
+        vkCreateImage(device, &ci, nullptr, ret._reset(device)),
         "Failed to vkCreateImage().");
     if (opt_args.debug_utils != nullptr)
     {
@@ -106,15 +126,32 @@ vkwp::Image::create3D(const std::string &        label,
 VkMemoryRequirements
 vkwp::Image::getMemoryRequirements() const
 {
+    VKWP_VALIDATE_THIS;
     VkMemoryRequirements ret;
-    vkGetImageMemoryRequirements(this->_getParent(), this->_ref(), &ret);
+    vkGetImageMemoryRequirements(std::get<0>(this->parents_), *this, &ret);
+    return ret;
+}
+
+VkMemoryRequirements2
+vkwp::Image::getMemoryRequirements2(const void * const p_next) const
+{
+    VKWP_VALIDATE_THIS;
+    VkImageMemoryRequirementsInfo2 image_memory_requirements_info2{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_REQUIREMENTS_INFO_2,
+        .pNext = p_next,
+        .image = *this,
+    };
+    VkMemoryRequirements2 ret;
+    vkGetImageMemoryRequirements2(std::get<0>(this->parents_), &image_memory_requirements_info2, &ret);
     return ret;
 }
 
 void
-vkwp::Image::bindMemory(const VkDeviceMemory & device_memory, const VkDeviceSize offset) const
+vkwp::Image::bindMemory(const DeviceMemory & device_memory, const VkDeviceSize offset) const
 {
+    VKWP_VALIDATE_THIS;
+    VKWP_VALIDATE_ARG(device_memory);
     VulkanError::check(  //
-        vkBindImageMemory(this->_getParent(), this->_ref(), device_memory, offset),
+        vkBindImageMemory(std::get<0>(this->parents_), *this, device_memory, offset),
         "Failed to vkBindImageMemory().");
 }

@@ -10,12 +10,10 @@ namespace vkwp {
 ///
 /// @brief VkImage wrapper.
 ///
-class Image final : public Resource<VkImage, VkDevice, void>
+class Image final : public Resource<VkImage, VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    Image();
+    using Resource::Resource;
 
     struct OptionalCreateArgs
     {
@@ -72,12 +70,12 @@ public:
     VkMemoryRequirements
     getMemoryRequirements() const;
 
-    void
-    bindMemory(const VkDeviceMemory & device_memory, const VkDeviceSize offset) const;
-
-private:
     [[nodiscard]]
-    explicit Image(const std::string & label);
+    VkMemoryRequirements2
+    getMemoryRequirements2(const void * const p_next = nullptr) const;
+
+    void
+    bindMemory(const DeviceMemory & device_memory, const VkDeviceSize offset) const;
 };
 
 }  // namespace vkwp

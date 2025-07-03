@@ -142,8 +142,15 @@ template class vkwp::Resource<VkCommandBuffer, VkDevice, VkCommandPool>;
 template class vkwp::Resource<VkCommandPool, VkDevice>;
 template class vkwp::Resource<VkDevice>;
 template class vkwp::Resource<VkDeviceMemory, VkDevice>;
+template class vkwp::Resource<VkFence, VkDevice>;
+template class vkwp::Resource<VkFramebuffer, VkDevice>;
+template class vkwp::Resource<VkImage, VkDevice>;
+template class vkwp::Resource<VkImageView, VkDevice>;
 template class vkwp::Resource<VkInstance>;
 template class vkwp::Resource<VkPhysicalDevice>;
+template class vkwp::Resource<VkPipeline, VkDevice>;
+template class vkwp::Resource<VkPipelineLayout, VkDevice>;
+template class vkwp::Resource<VkRenderPass, VkDevice>;
 template class vkwp::Resource<VkQueue>;
 
 #if 0

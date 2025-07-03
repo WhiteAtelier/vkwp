@@ -5,21 +5,32 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <vector>
+
 namespace vkwp {
 
 ///
 /// @brief VkRenderPass wrapper.
 ///
-class RenderPass final : public Resource<VkRenderPass, VkDevice, void>
+class RenderPass final : public Resource<VkRenderPass, VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit RenderPass();
+    using Resource::Resource;
 
-    /// @brief Constructor with label name.
-    [[nodiscard]]
-    explicit RenderPass(const std::string & label);
+    struct OptionalCreateArgs
+    {
+        const void *               p_next      = nullptr;
+        VkRenderPassCreateFlags    flags       = 0;
+        const DebugUtilsResource * debug_utils = nullptr;
+    };
+
+    static RenderPass
+    create(const std::string &                          label,
+           const Device &                               device,
+           const std::vector<VkAttachmentDescription> & attachments,
+           const std::vector<VkSubpassDescription> &    subpasses,
+           const std::vector<VkSubpassDependency> &     dependencies,
+           const OptionalCreateArgs &                   opt_args = {});
 };
 
 }  // namespace vkwp

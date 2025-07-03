@@ -12,16 +12,20 @@ namespace vkwp {
 ///
 /// @brief VkFence wrapper.
 ///
-class Fence final : public Resource<VkFence, VkDevice, void>
+class Fence final : public Resource<VkFence, VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit Fence();
+    using Resource::Resource;
 
-    /// @brief Constructor with label name.
-    [[nodiscard]]
-    explicit Fence(const std::string & label);
+    struct OptionalCreateArgs
+    {
+        const void *               p_next      = nullptr;
+        VkFenceCreateFlags         flags       = VK_FENCE_CREATE_SIGNALED_BIT;
+        const DebugUtilsResource * debug_utils = nullptr;
+    };
+
+    static Fence
+    create(const std::string & label, const Device & device, const OptionalCreateArgs & opt_args = {});
 
     bool
     wait(const std::uint64_t timeout = (std::numeric_limits<std::uint64_t>::max)()) const;

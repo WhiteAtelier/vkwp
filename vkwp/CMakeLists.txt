@@ -24,17 +24,18 @@ vkwp_add_library(vkwp
         # device_memory_pool.cpp
         device_memory.cpp
         device.cpp
-        # fence.cpp
-        # framebuffer.cpp
-        # image_view.cpp
-        # image.cpp
+        fence.cpp
+        framebuffer.cpp
+        image_view.cpp
+        image.cpp
         instance.cpp
         mutex.cpp
         physical_device.cpp
-        # pipeline_layout.cpp
-        # pipeline.cpp
+        pipeline_cache.cpp
+        pipeline_layout.cpp
+        pipeline.cpp
         queue.cpp
-        # render_pass.cpp
+        render_pass.cpp
         resource.cpp
         # sampler.cpp
         # semaphore.cpp
@@ -63,25 +64,26 @@ vkwp_add_library(vkwp
         # vkwp/device_memory_pool.hpp
         vkwp/device_memory.hpp
         vkwp/device.hpp
-        # vkwp/fence.hpp
-        # vkwp/framebuffer.hpp
-        # vkwp/fwd.hpp
-        # vkwp/image_view.hpp
-        # vkwp/image.hpp
+        vkwp/fence.hpp
+        vkwp/framebuffer.hpp
+        vkwp/fwd.hpp
+        vkwp/image_view.hpp
+        vkwp/image.hpp
         vkwp/instance.hpp
         vkwp/mutex.hpp
         vkwp/physical_device.hpp
-        # vkwp/pipeline_layout.hpp
-        # vkwp/pipeline.hpp
+        vkwp/pipeline_cache.hpp
+        vkwp/pipeline_layout.hpp
+        vkwp/pipeline.hpp
         vkwp/queue.hpp
-        # vkwp/render_pass.hpp
+        vkwp/render_pass.hpp
         vkwp/resource.hpp
         # vkwp/sampler.hpp
         # vkwp/semaphore.hpp
         # vkwp/shader_module.hpp
         # vkwp/surface_khr.hpp
         # vkwp/swapchain_khr.hpp
-        # vkwp/types.hpp
+        vkwp/types.hpp
         vkwp/vk_structures.hpp
         vkwp/vulkan_error.hpp
         vkwp/vulkan.hpp

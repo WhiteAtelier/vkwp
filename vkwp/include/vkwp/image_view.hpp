@@ -11,12 +11,10 @@ namespace vkwp {
 ///
 /// @brief VkImageView wrapper.
 ///
-class ImageView final : public Resource<VkImageView, VkDevice, void>
+class ImageView final : public Resource<VkImageView, VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    ImageView();
+    using Resource::Resource;
 
     struct OptionalCreateArgs
     {
@@ -32,16 +30,12 @@ public:
     [[nodiscard]]
     static ImageView
     create(const std::string &             label,
-           const VkDevice &                device,
-           const VkImage &                 image,
+           const Device &                  device,
+           const Image &                   image,
            const VkImageViewType           view_type,
            const VkFormat                  format,
            const VkImageSubresourceRange & subresource_range,
            const OptionalCreateArgs &      opt_args = {});
-
-private:
-    [[nodiscard]]
-    ImageView(const std::string & label);
 };
 
 }  // namespace vkwp
