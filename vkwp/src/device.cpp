@@ -2,27 +2,9 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
-// #include "vkwp/buffer.hpp"
-// #include "vkwp/command_pool.hpp"
-// #include "vkwp/descriptor_pool.hpp"
-// #include "vkwp/descriptor_set_layout.hpp"
 #include "vkwp/debug_utils_resource.hpp"
-// #include "vkwp/device_memory.hpp"
-// #include "vkwp/fence.hpp"
-// #include "vkwp/framebuffer.hpp"
-// #include "vkwp/image.hpp"
-// #include "vkwp/image_view.hpp"
 #include "vkwp/mutex.hpp"
-// #include "vkwp/physical_device.hpp"
-// #include "vkwp/pipeline.hpp"
-// #include "vkwp/pipeline_layout.hpp"
 #include "vkwp/queue.hpp"
-// #include "vkwp/render_pass.hpp"
-// #include "vkwp/sampler.hpp"
-// #include "vkwp/semaphore.hpp"
-// #include "vkwp/shader_module.hpp"
-// #include "vkwp/surface_khr.hpp"
-// #include "vkwp/swapchain_khr.hpp"
 #include "vkwp/vulkan_error.hpp"
 
 #include <spdlog/spdlog.h>
@@ -88,6 +70,13 @@ vkwp::Device::create(const std::string &                          label,
     VulkanError::check(  //
         vkCreateDevice(physical_device, &ci, nullptr, ret._reset()),
         "Failed to vkCreateDevice().");
+    if (opt_args.debug_utils != nullptr)
+    {
+        opt_args.debug_utils->registDebugUtilsObjectName(ret,
+                                                         VK_OBJECT_TYPE_DEVICE,
+                                                         static_cast<VkDevice>(ret),
+                                                         ret.getLabel());
+    }
     return ret;
 }
 
@@ -129,195 +118,3 @@ vkwp::Device::getDeviceQueue(const std::uint32_t        queue_family_index,
     }
     return ret;
 }
-
-#if 0
-
-#    if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
-vkwp::DeviceMemory
-vkwp::Device::importWin32ExternalMemory(const std::string &                      label,
-                                        const PhysicalDevice &                   physical_device,
-                                        const std::size_t                        size,
-                                        const VkExternalMemoryHandleTypeFlagBits handle_type,
-                                        void * const                             handle,
-                                        const wchar_t * const                    name,
-                                        const VkImage &                          image,
-                                        const VkBuffer &                         buffer) const
-{
-    // 互換性のため
-    return DeviceMemory::importWin32ExternalMemory(label,
-                                                   *this,
-                                                   physical_device,
-                                                   size,
-                                                   handle_type,
-                                                   handle,
-                                                   name,
-                                                   image,
-                                                   buffer);
-}
-#    endif
-
-vkwp::CommandPool
-vkwp::Device::createCommandPool(const std::string &            label,
-                                const std::uint32_t            queue_family_index,
-                                std::unique_ptr<Mutex> &&      mutex,
-                                const VkCommandPoolCreateFlags flags,
-                                const void * const             p_next) const
-{
-}
-
-
-
-vkwp::Semaphore
-vkwp::Device::createSemaphore(const std::string & label) const
-{
-}
-
-vkwp::SwapchainKHR
-vkwp::Device::createSwapchainKHR(const std::string &                 label,
-                                 const VkSurfaceKHR                  surface,
-                                 const std::uint32_t                 min_image_count,
-                                 const VkFormat                      image_format,
-                                 const VkColorSpaceKHR               image_color_space,
-                                 const VkExtent2D                    image_extent,
-                                 const std::uint32_t                 image_array_layers,
-                                 const VkImageUsageFlags             image_usage,
-                                 const VkSurfaceTransformFlagBitsKHR pre_transform,
-                                 const VkCompositeAlphaFlagBitsKHR   composite_alpha,
-                                 const VkPresentModeKHR              present_mode,
-                                 const VkBool32                      clipped,
-                                 const VkSwapchainKHR                old_swapchain,
-                                 const VkSwapchainCreateFlagsKHR     flags,
-                                 const void * const                  p_next) const
-{
-}
-
-vkwp::RenderPass
-vkwp::Device::createRenderPass(const std::string &                          label,
-                               const std::vector<VkAttachmentDescription> & attachments,
-                               const std::vector<VkSubpassDescription> &    subpasses,
-                               const std::vector<VkSubpassDependency> &     dependencies,
-                               const VkRenderPassCreateFlags                flags,
-                               const void * const                           p_next) const
-{
-}
-
-vkwp::Framebuffer
-vkwp::Device::createFramebuffer(const std::string &            label,
-                                const VkRenderPass             render_pass,
-                                const std::vector<VkImageView> attachments,
-                                const std::uint32_t            width,
-                                const std::uint32_t            height,
-                                const std::uint32_t            layers,
-                                const VkFramebufferCreateFlags flags,
-                                const void * const             p_next) const
-{
-}
-
-vkwp::Sampler
-vkwp::Device::createSampler(const std::string &        label,
-                            const VkFilter             mag_filter,
-                            const VkFilter             min_filter,
-                            const VkSamplerMipmapMode  mipmap_mode,
-                            const VkSamplerAddressMode address_mode_u,
-                            const VkSamplerAddressMode address_mode_v,
-                            const VkSamplerAddressMode address_mode_w,
-                            const VkBool32             anisotropy_enable,
-                            const float                max_anisotropy,
-                            const VkBorderColor        border_color,
-                            const float                mip_lod_bias,
-                            const VkBool32             compare_enable,
-                            const VkCompareOp          compare_op,
-                            const float                min_lod,
-                            const float                max_lod,
-                            const VkBool32             unnormalized_coordinates,
-                            const VkSamplerCreateFlags flags,
-                            const void * const         p_next) const
-{
-
-}
-
-vkwp::DescriptorPool
-vkwp::Device::createDescriptorPool(const std::string &                       label,
-                                   const std::uint32_t                       max_sets,
-                                   const std::vector<VkDescriptorPoolSize> & pool_sizes,
-                                   const VkDescriptorPoolCreateFlags         flags,
-                                   const void * const                        p_next) const
-{
-}
-
-vkwp::DescriptorSetLayout
-vkwp::Device::createDescriptorSetLayout(const std::string &                               label,
-                                        const std::vector<VkDescriptorSetLayoutBinding> & bindings,
-                                        const VkDescriptorSetLayoutCreateFlags            flags,
-                                        const void * const                                p_next) const
-{
-  
-}
-
-vkwp::ShaderModule
-vkwp::Device::createShaderModule(const std::string & label, const std::vector<std::uint32_t> & code) const
-{
-    ShaderModule                   ret{ label };
-    const VkShaderModuleCreateInfo ci{
-        .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .pNext    = nullptr,
-        .flags    = 0,
-        .codeSize = code.size() * sizeof(std::remove_reference_t<decltype(code)>::value_type),
-        .pCode    = code.data(),
-    };
-    VulkanError::check(  //
-        vkCreateShaderModule(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateShaderModule().");
-    this->debug_utils_resource_.registDebugUtilsObjectName(ret);
-    return ret;
-}
-
-vkwp::ShaderModule
-vkwp::Device::createShaderModule(const std::string &         label,
-                                 const std::uint32_t * const data,
-                                 const std::size_t           data_length) const
-{
-}
-
-vkwp::PipelineLayout
-vkwp::Device::createPipelineLayout(const std::string &                        label,
-                                   const std::vector<VkDescriptorSetLayout> & set_layouts,
-                                   const std::vector<VkPushConstantRange> &   push_constant_ranges,
-                                   const VkPipelineLayoutCreateFlags          flags,
-                                   const void * const                         p_next) const
-{
-}
-
-vkwp::Pipeline
-vkwp::Device::createGraphicsPipeline(const std::string &                                  label,
-                                     const std::vector<VkPipelineShaderStageCreateInfo> & stages,
-                                     const VkPipelineVertexInputStateCreateInfo &         vertex_input_state,
-                                     const VkPipelineInputAssemblyStateCreateInfo &       input_assembly_state,
-                                     const VkPipelineTessellationStateCreateInfo &        tessellation_state,
-                                     const VkPipelineViewportStateCreateInfo &            viewport_state,
-                                     const VkPipelineRasterizationStateCreateInfo &       rasterization_state,
-                                     const VkPipelineMultisampleStateCreateInfo &         multisample_state,
-                                     const VkPipelineDepthStencilStateCreateInfo &        depth_stencil_state,
-                                     const VkPipelineColorBlendStateCreateInfo &          color_blend_state,
-                                     const VkPipelineDynamicStateCreateInfo &             dynamic_state,
-                                     const VkPipelineLayout                               layout,
-                                     const VkRenderPass                                   render_pass,
-                                     const std::uint32_t                                  subpass,
-                                     const VkPipeline                                     base_pipeline_handle,
-                                     const int32_t                                        base_pipeline_index,
-                                     const VkPipelineCreateFlags                          flags,
-                                     const void * const                                   p_next) const
-{
-}
-
-vkwp::Pipeline
-vkwp::Device::createComputePipeline(const std::string &         label,
-                                    const VkPipelineLayout      layout,
-                                    const VkShaderModule        shader_module,
-                                    const VkPipeline            base_pipeline_handle,
-                                    const int32_t               base_pipeline_index,
-                                    const VkPipelineCreateFlags flags,
-                                    const void * const          p_next) const
-{
-}
-#endif

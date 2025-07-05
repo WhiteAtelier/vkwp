@@ -2,7 +2,7 @@
 #define VKWP_VULKAN_HPP
 
 // before include vulkan.
-#if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
+#if VKWP_USE_WIN32_SURFACE && defined(_WIN32) && _WIN32
 #    define VK_USE_PLATFORM_WIN32_KHR
 #endif
 

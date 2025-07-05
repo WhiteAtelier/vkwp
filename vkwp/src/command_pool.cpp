@@ -59,12 +59,12 @@ vkwp::CommandPool::create(const std::string &        label,
     ret.create_flags_ = opt_args.flags;
     ret.mutex_        = std::move(mutex);
 
-    if (opt_args.debug_util != nullptr)
+    if (opt_args.debug_utils != nullptr)
     {
-        opt_args.debug_util->registDebugUtilsObjectName(device,
-                                                        VK_OBJECT_TYPE_COMMAND_POOL,
-                                                        static_cast<VkCommandPool>(ret),
-                                                        ret.getLabel());
+        opt_args.debug_utils->registDebugUtilsObjectName(device,
+                                                         VK_OBJECT_TYPE_COMMAND_POOL,
+                                                         static_cast<VkCommandPool>(ret),
+                                                         ret.getLabel());
     }
     return ret;
 }

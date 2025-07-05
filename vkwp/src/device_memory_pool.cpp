@@ -1,8 +1,11 @@
 #include "vkwp/device_memory_pool.hpp"
 
-#include "impl/device_memory_pool_unit.hpp"
 #include "impl/assert.hpp"
+#include "impl/device_memory_block.hpp"
+#include "impl/device_memory_block_node.hpp"
+#include "vkwp/device.hpp"
 #include "vkwp/device_memory_node.hpp"
+#include "vkwp/physical_device.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -11,30 +14,32 @@
 vkwp::DeviceMemoryPool::DeviceMemoryPool()
     : label_{}
     , device_{ nullptr }
+    , memory_properties_{}
+    , mapping_alignment_{ 0 }
     , unit_size_{ 0 }
     , max_size_{ 0 }
     , current_size_{ 0 }
-    , memory_type_index_{ ~0u }
-    , memory_type_bits_{ 0 }
     , unit_index_{ 0 }
-    , memories_{}
+    , debug_util_{ nullptr }
 {}
 
-vkwp::DeviceMemoryPool::DeviceMemoryPool(const std::string & label,
-                                                const VkDevice      device,
-                                                const std::size_t   unit_size,
-                                                const std::size_t   max_size,
-                                                const std::uint32_t memory_type_index,
-                                                const std::uint32_t memory_type_bits)
+vkwp::DeviceMemoryPool::DeviceMemoryPool(const std::string &        label,
+                                         const Device &             device,
+                                         const PhysicalDevice &     physical_device,
+                                         const std::size_t          unit_size,
+                                         const std::size_t          max_size,
+                                         const DebugUtilsResource * debug_util)
     : label_{ label }
     , device_{ device }
+    , memory_properties_{ physical_device.getMemoryProperties() }
+    , mapping_alignment_{ physical_device.getProperties().limits.minMemoryMapAlignment }
     , unit_size_{ unit_size }
     , max_size_{ max_size }
     , current_size_{ 0 }
-    , memory_type_index_{ memory_type_index }
-    , memory_type_bits_{ memory_type_bits }
     , unit_index_{ 0 }
-    , memories_{}
+    , mutex_{ std::make_unique<std::mutex>() }
+    , memory_blocks_(this->memory_properties_.memoryTypeCount)
+    , debug_util_{ debug_util }
 {
     VKWP_ASSERTION(this->device_ != nullptr);
     VKWP_ASSERTION(this->unit_size_ > 0);
@@ -72,33 +77,49 @@ vkwp::DeviceMemoryPool::getUnitSize() const noexcept
 }
 
 vkwp::DeviceMemoryNode
-vkwp::DeviceMemoryPool::allocate(const std::string & label, const VkMemoryRequirements & memory_requirements)
+vkwp::DeviceMemoryPool::allocate(const std::string &          label,
+                                 const VkMemoryPropertyFlags  memory_property_flags,
+                                 const VkMemoryRequirements & memory_requirements)
 {
+    if (!*this)
+    {
+        SPDLOG_ERROR("Invalid DeviceMemoryPool instance.");
+        return DeviceMemoryNode{ label };
+    }
+
     if (memory_requirements.alignment == 0)
     {
         SPDLOG_ERROR("Invalid memory requirements. Alignment size is zero.");
         return DeviceMemoryNode{ label };
     }
 
-    // memoryTypeBits を調査
-    if ((this->memory_type_bits_ & memory_requirements.memoryTypeBits) != memory_requirements.memoryTypeBits)
+    // memory type index を取得
+    const auto [ret, index] = PhysicalDevice::getMemoryTypeIndex(this->memory_properties_,
+                                                                 memory_property_flags,
+                                                                 memory_requirements.memoryTypeBits);
+    if (!ret)
     {
-        SPDLOG_ERROR("Cannot allocate memory node. Mismatched memory type bits. Request(0x{:x}), Capability(0x{:x})",
-                     memory_requirements.memoryTypeBits,
-                     this->memory_type_bits_);
+        // ふさわしいメモリが存在しない
+        SPDLOG_ERROR("Failed to allocate memory pool. Unsupported memory type.");
         return DeviceMemoryNode{ label };
     }
 
+    VKWP_ASSERTION(index < this->memory_blocks_.size());
+    auto & memory_blocks = this->memory_blocks_[index];
+
     // ノードを確保する.
-    for (auto iter = this->memories_.lower_bound(memory_requirements.size); iter != this->memories_.end(); ++iter)
+    VKWP_ASSERTION(this->mutex_);
+    std::lock_guard lock{ *this->mutex_ };
+    for (auto iter = memory_blocks.lower_bound(memory_requirements.size); iter != memory_blocks.end(); ++iter)
     {
-        if (auto node = iter->second->allocateNode(label, memory_requirements); node)
+        if (auto node = iter->second->allocateNode(label, memory_requirements.size, memory_requirements.alignment);
+            node)
         {
             // 確保できた. allocatable node size で map を更新する.
             auto unit = std::move(iter->second);
-            this->memories_.erase(iter);
+            memory_blocks.erase(iter);
             const auto new_alloc_size = unit->getMaxAllocatableNodeSize();
-            this->memories_.emplace(new_alloc_size, std::move(unit));
+            memory_blocks.emplace(new_alloc_size, std::move(unit));
             return node;
         }
     }
@@ -122,20 +143,21 @@ vkwp::DeviceMemoryPool::allocate(const std::string & label, const VkMemoryRequir
     }
 
     // 新しいメモリを追加, まだ memories には足さない.
-    auto allocated_unit
-        = impl::DeviceMemoryPoolUnit::allocate(std::format("{}:Unit[{}]", this->label_, this->unit_index_),
-                                               this->device_,
-                                               this->memory_type_index_,
-                                               allocation_size);
+    auto allocated_unit = DeviceMemoryBlock::allocate(std::format("{}:Unit[{}]", this->label_, this->unit_index_),
+                                                      this->device_,
+                                                      this->mapping_alignment_,
+                                                      index,
+                                                      allocation_size,
+                                                      this->debug_util_);
     ++this->unit_index_;
 
     // iter に対して allocateNode する
-    auto node = allocated_unit->allocateNode(label, memory_requirements);
+    auto node = allocated_unit->allocateNode(label, memory_requirements.size, memory_requirements.alignment);
     if (node)
     {
         // 確保できた
         const auto new_alloc_size = allocated_unit->getMaxAllocatableNodeSize();
-        this->memories_.emplace(new_alloc_size, std::move(allocated_unit));
+        memory_blocks.emplace(new_alloc_size, std::move(allocated_unit));
     }
     else
     {

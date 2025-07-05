@@ -26,14 +26,14 @@ public:
     };
 
     static Framebuffer
-    create(const std::string &                                  label,
-           const Device &                                       device,
-           const RenderPass &                                   render_pass,
-           const std::vector<std::reference_wrapper<ImageView>> attachments,
-           const std::uint32_t                                  width,
-           const std::uint32_t                                  height,
-           const std::uint32_t                                  layers,
-           const OptionalCreateArgs &                           opt_args = {});
+    create(const std::string &                                        label,
+           const Device &                                             device,
+           const RenderPass &                                         render_pass,
+           const std::vector<std::reference_wrapper<const ImageView>> attachments,
+           const std::uint32_t                                        width,
+           const std::uint32_t                                        height,
+           const std::uint32_t                                        layers,
+           const OptionalCreateArgs &                                 opt_args = {});
 };
 
 }  // namespace vkwp

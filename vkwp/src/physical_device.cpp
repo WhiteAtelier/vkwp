@@ -156,13 +156,20 @@ vkwp::PhysicalDevice::getMemoryTypeIndex(const VkMemoryPropertyFlags memory_prop
                                          const std::uint32_t         memory_type_bits) const
 {
     // vulkan resource に直接アクセスしないため, validate しないが, getMemoryProperties() の中で validate される.
-    const auto & memory_property = this->getMemoryProperties();
-    auto         request_bits    = memory_type_bits;
-    for (std::uint32_t i = 0; i < memory_property.memoryTypeCount; ++i)
+    return getMemoryTypeIndex(this->getMemoryProperties(), memory_property_flags, memory_type_bits);
+}
+
+std::pair<bool, std::uint32_t>
+vkwp::PhysicalDevice::getMemoryTypeIndex(const VkPhysicalDeviceMemoryProperties & memory_properties,
+                                         const VkMemoryPropertyFlags              memory_property_flags,
+                                         const std::uint32_t                      memory_type_bits)
+{
+    auto request_bits = memory_type_bits;
+    for (std::uint32_t i = 0; i < memory_properties.memoryTypeCount; ++i)
     {
         if (request_bits & 1)
         {
-            const auto & types = memory_property.memoryTypes[i];
+            const auto & types = memory_properties.memoryTypes[i];
             if ((types.propertyFlags & memory_property_flags) == memory_property_flags)
             {
                 return { true, i };

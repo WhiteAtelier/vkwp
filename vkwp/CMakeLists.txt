@@ -20,8 +20,8 @@ vkwp_add_library(vkwp
         descriptor_pool.cpp
         descriptor_set_layout.cpp
         descriptor_set.cpp
-        # device_memory_node.cpp
-        # device_memory_pool.cpp
+        device_memory_node.cpp
+        device_memory_pool.cpp
         device_memory.cpp
         device.cpp
         fence.cpp
@@ -47,8 +47,10 @@ vkwp_add_library(vkwp
         impl/assert.cpp
         impl/assert.hpp
         impl/deleter.hpp
-        # impl/device_memory_pool_unit.cpp
-        # impl/device_memory_pool_unit.hpp
+        impl/device_memory_block_node.cpp
+        impl/device_memory_block_node.hpp
+        impl/device_memory_block.cpp
+        impl/device_memory_block.hpp
 
     HEADERS
         vkwp/acceleration_structure_khr.hpp
@@ -60,8 +62,8 @@ vkwp_add_library(vkwp
         vkwp/descriptor_pool.hpp
         vkwp/descriptor_set_layout.hpp
         vkwp/descriptor_set.hpp
-        # vkwp/device_memory_node.hpp
-        # vkwp/device_memory_pool.hpp
+        vkwp/device_memory_node.hpp
+        vkwp/device_memory_pool.hpp
         vkwp/device_memory.hpp
         vkwp/device.hpp
         vkwp/fence.hpp
@@ -84,6 +86,7 @@ vkwp_add_library(vkwp
         vkwp/surface_khr.hpp
         vkwp/swapchain_khr.hpp
         vkwp/types.hpp
+        vkwp/utils.hpp
         vkwp/vk_structures.hpp
         vkwp/vulkan_error.hpp
         vkwp/vulkan.hpp

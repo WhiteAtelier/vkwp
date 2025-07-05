@@ -21,7 +21,8 @@ public:
 
     struct OptionalCreateArgs
     {
-        const void * p_next = nullptr;
+        const void *               p_next      = nullptr;
+        const DebugUtilsResource * debug_utils = nullptr;
     };
 
     static Device

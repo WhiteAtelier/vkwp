@@ -56,6 +56,12 @@ public:
     getMemoryTypeIndex(const VkMemoryPropertyFlags memory_property_flags, const std::uint32_t memory_type_bits) const;
 
     [[nodiscard]]
+    static std::pair<bool, std::uint32_t>
+    getMemoryTypeIndex(const VkPhysicalDeviceMemoryProperties & memory_properties,
+                       const VkMemoryPropertyFlags              memory_property_flags,
+                       const std::uint32_t                      memory_type_bits);
+
+    [[nodiscard]]
     std::set<std::uint32_t>
     listQueueFamilyIndexes(const VkQueueFlags & queue_flags) const;
 

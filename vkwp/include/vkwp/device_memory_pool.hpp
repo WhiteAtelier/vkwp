@@ -6,14 +6,11 @@
 
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
 namespace vkwp {
-
-namespace impl {
-class DeviceMemoryPoolUnit;
-}  // namespace impl
 
 ///
 /// @brief Device Memory Pool.
@@ -25,7 +22,7 @@ public:
     ///
     /// Create an invalid pool instance.
     [[nodiscard]]
-    explicit DeviceMemoryPool();
+    DeviceMemoryPool();
 
     /// @brief Move constructor.
     DeviceMemoryPool(DeviceMemoryPool &&) noexcept;
@@ -74,31 +71,35 @@ public:
 
     [[nodiscard]]
     DeviceMemoryNode
-    allocate(const std::string & label, const VkMemoryRequirements & memory_requirements);
+    allocate(const std::string &          label,
+             const VkMemoryPropertyFlags  memory_property_flags,
+             const VkMemoryRequirements & memory_requirements);
 
 private:
     friend Device;
 
     /// @brief Constructor with label name.
     [[nodiscard]]
-    explicit DeviceMemoryPool(const std::string & label,
-                              const VkDevice      device,
-                              const std::size_t   unit_size,
-                              const std::size_t   max_size,
-                              const std::uint32_t memory_type_index,
-                              const std::uint32_t memory_type_bits);
+    DeviceMemoryPool(const std::string &        label,
+                     const Device &             device,
+                     const PhysicalDevice &     physical_device,
+                     const std::size_t          unit_size,
+                     const std::size_t          max_size,
+                     const DebugUtilsResource * debug_util = nullptr);
 
-    using DeviceMemoryUnitPtr = std::unique_ptr<impl::DeviceMemoryPoolUnit>;
+    using DeviceMemoryBlockPtr = std::unique_ptr<class DeviceMemoryBlock>;
 
-    std::string                                     label_;
-    VkDevice                                        device_;
-    std::size_t                                     unit_size_;     // memory unit size [Bytes]
-    std::size_t                                     max_size_;      // max memories size [Bytes]
-    std::size_t                                     current_size_;  // current amount size [Bytes]
-    std::uint32_t                                   memory_type_index_;
-    std::uint32_t                                   memory_type_bits_;
-    std::uint32_t                                   unit_index_;
-    std::multimap<std::size_t, DeviceMemoryUnitPtr> memories_;  // memory instances
+    std::string                                                   label_;
+    VkDevice                                                      device_;
+    VkPhysicalDeviceMemoryProperties                              memory_properties_;
+    std::size_t                                                   mapping_alignment_;
+    std::size_t                                                   unit_size_;     // memory unit size [Bytes]
+    std::size_t                                                   max_size_;      // max memories size [Bytes]
+    std::size_t                                                   current_size_;  // current amount size [Bytes]
+    std::uint32_t                                                 unit_index_;
+    std::unique_ptr<std::mutex>                                   mutex_;
+    std::vector<std::multimap<std::size_t, DeviceMemoryBlockPtr>> memory_blocks_;  // memory instances
+    const DebugUtilsResource *                                    debug_util_;
 };
 
 }  // namespace vkwp

@@ -8,10 +8,6 @@
 
 namespace vkwp {
 
-namespace impl {
-class DeviceMemoryPoolUnit;
-}  // namespace impl
-
 class DeviceMemoryNode final
 {
 public:
@@ -39,21 +35,15 @@ public:
     const std::string &
     getLabel() const & noexcept;
 
-    /// @brief VkMemoryRequirements を取得する.
-    [[nodiscard]]
-    const VkMemoryRequirements &
-    getMemoryRequirements() const & noexcept;
-
     /// @brief ノードを解放する.
     ///
     /// 解放後は invalid node になります.
     void
     reset() & noexcept;
 
-    /// @brief ノードオフセット.
-    [[nodiscard]]
+    /// @brief ノードサイズ.
     std::size_t
-    getNodeOffset() const & noexcept;
+    getSize() const & noexcept;
 
     void
     write(const void * const src, const std::size_t size, const std::size_t offset = 0);
@@ -65,27 +55,27 @@ public:
     bool operator!() && = delete;
     explicit operator bool() && = delete;
     const std::string & getLabel() && = delete;
-    const VkMemoryRequirements & getMemoryRequirements() && = delete;
     void reset() && = delete;
     std::size_t getNodeOffset() && = delete;
     std::size_t getNodeSize() && = delete;
     // clang-format on
 
 private:
-    friend impl::DeviceMemoryPoolUnit;
+    friend class DeviceMemoryBlock;
 
     [[nodiscard]]
-    explicit DeviceMemoryNode(const std::string &                label,
-                              impl::DeviceMemoryPoolUnit * const unit,
-                              void *                             node_ptr,
-                              const VkMemoryRequirements &       memory_requirements,
-                              const std::size_t                  node_offset);
+    explicit DeviceMemoryNode(const std::string &                 label,
+                              const std::size_t                   mapping_alignment,
+                              class DeviceMemoryBlock * const     block,
+                              class DeviceMemoryBlockNode * const node);
 
-    std::string                  label_;
-    impl::DeviceMemoryPoolUnit * unit_;
-    void *                       node_ptr_;
-    VkMemoryRequirements         memory_requirements_;
-    std::size_t                  node_offset_;
+    std::size_t
+    _alignMappingRange(std::size_t & size, std::size_t & offset) const;
+
+    std::string                   label_;
+    std::size_t                   mapping_alignment_;
+    class DeviceMemoryBlock *     block_;
+    class DeviceMemoryBlockNode * node_;
 };
 
 }  // namespace vkwp
