@@ -21,7 +21,12 @@ vkwp::DeviceMemoryBlock::DeviceMemoryBlock(const std::string & label,
     VKWP_ASSERTION(size > 0);
 }
 
-vkwp::DeviceMemoryBlock::~DeviceMemoryBlock() noexcept = default;
+vkwp::DeviceMemoryBlock::~DeviceMemoryBlock() noexcept
+{
+    // この時点で Node はひとつのはず
+    VKWP_ASSERTION(!this->root_node_->isUsed());
+    VKWP_ASSERTION(this->root_node_->getNext() == nullptr);
+}
 
 /* STATIC */
 std::unique_ptr<vkwp::DeviceMemoryBlock>
@@ -30,6 +35,7 @@ vkwp::DeviceMemoryBlock::allocate(const std::string &        label,
                                   const std::size_t          mapping_alignment,
                                   const std::uint32_t        memory_type_index,
                                   const std::size_t          size,
+                                  const void * const         allocate_memory_p_next,
                                   const DebugUtilsResource * debug_utils)
 {
     class DeviceMemoryBlock_ final : public DeviceMemoryBlock
@@ -44,7 +50,7 @@ vkwp::DeviceMemoryBlock::allocate(const std::string &        label,
 
     const VkMemoryAllocateInfo ai{
         .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-        .pNext           = nullptr,
+        .pNext           = allocate_memory_p_next,
         .allocationSize  = size,
         .memoryTypeIndex = memory_type_index,
     };
@@ -131,6 +137,9 @@ vkwp::DeviceMemoryBlock::releaseNode(DeviceMemoryBlockNode * const node) noexcep
             }
         }
     };
+
+    // まず node を free にする
+    node->setUsed(false);
 
     // まず node に対して.
     if (auto erased_node = node->tryToMergeNextNode(); erased_node)

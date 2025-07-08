@@ -76,6 +76,9 @@ public:
 
     void
     bindMemory(const DeviceMemory & device_memory, const VkDeviceSize offset) const;
+
+    void
+    bindMemory(const DeviceMemoryNode & device_memory_node, const VkDeviceSize offset) const;
 };
 
 }  // namespace vkwp

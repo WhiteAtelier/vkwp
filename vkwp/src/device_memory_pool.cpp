@@ -11,41 +11,57 @@
 
 #include <format>
 
+/* STATIC */
+vkwp::DeviceMemoryPool
+vkwp::DeviceMemoryPool::create(const std::string &        label,
+                               const Device &             device,
+                               const PhysicalDevice &     physical_device,
+                               const std::size_t          block_size,
+                               const std::size_t          max_size,
+                               const void *               allocate_memory_p_next,
+                               const DebugUtilsResource * debug_util)
+{
+    return DeviceMemoryPool{ label, device, physical_device, block_size, max_size, allocate_memory_p_next, debug_util };
+}
+
 vkwp::DeviceMemoryPool::DeviceMemoryPool()
     : label_{}
     , device_{ nullptr }
     , memory_properties_{}
     , mapping_alignment_{ 0 }
-    , unit_size_{ 0 }
+    , block_size_{ 0 }
     , max_size_{ 0 }
     , current_size_{ 0 }
     , unit_index_{ 0 }
+    , allocate_memory_p_next_{ nullptr }
     , debug_util_{ nullptr }
 {}
 
 vkwp::DeviceMemoryPool::DeviceMemoryPool(const std::string &        label,
                                          const Device &             device,
                                          const PhysicalDevice &     physical_device,
-                                         const std::size_t          unit_size,
+                                         const std::size_t          block_size,
                                          const std::size_t          max_size,
+                                         const void *               allocate_memory_p_next,
                                          const DebugUtilsResource * debug_util)
     : label_{ label }
     , device_{ device }
     , memory_properties_{ physical_device.getMemoryProperties() }
     , mapping_alignment_{ physical_device.getProperties().limits.minMemoryMapAlignment }
-    , unit_size_{ unit_size }
+    , block_size_{ block_size }
     , max_size_{ max_size }
     , current_size_{ 0 }
     , unit_index_{ 0 }
     , mutex_{ std::make_unique<std::mutex>() }
     , memory_blocks_(this->memory_properties_.memoryTypeCount)
+    , allocate_memory_p_next_{ allocate_memory_p_next }
     , debug_util_{ debug_util }
 {
     VKWP_ASSERTION(this->device_ != nullptr);
-    VKWP_ASSERTION(this->unit_size_ > 0);
+    VKWP_ASSERTION(this->block_size_ > 0);
 }
 
-vkwp::DeviceMemoryPool::DeviceMemoryPool(DeviceMemoryPool && m) noexcept = default;
+vkwp::DeviceMemoryPool::DeviceMemoryPool(DeviceMemoryPool &&) noexcept = default;
 
 vkwp::DeviceMemoryPool::~DeviceMemoryPool() noexcept = default;
 
@@ -73,7 +89,7 @@ vkwp::DeviceMemoryPool::getLabel() const noexcept
 std::size_t
 vkwp::DeviceMemoryPool::getUnitSize() const noexcept
 {
-    return this->unit_size_;
+    return this->block_size_;
 }
 
 vkwp::DeviceMemoryNode
@@ -127,7 +143,7 @@ vkwp::DeviceMemoryPool::allocate(const std::string &          label,
     // 確保できなかったので, 新たにメモリユニットを足す.
     // メモリユニットサイズを計算
     const auto allocation_size
-        = ((((std::max)(memory_requirements.size, this->unit_size_) - 1) / memory_requirements.alignment) + 1)
+        = ((((std::max)(memory_requirements.size, this->block_size_) - 1) / memory_requirements.alignment) + 1)
         * memory_requirements.alignment;
 
     // 新規メモリユニットを作成
@@ -148,6 +164,7 @@ vkwp::DeviceMemoryPool::allocate(const std::string &          label,
                                                       this->mapping_alignment_,
                                                       index,
                                                       allocation_size,
+                                                      this->allocate_memory_p_next_,
                                                       this->debug_util_);
     ++this->unit_index_;
 

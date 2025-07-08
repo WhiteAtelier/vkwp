@@ -3,6 +3,8 @@
 #include "impl/assert.hpp"
 #include "impl/device_memory_block.hpp"
 #include "impl/device_memory_block_node.hpp"
+#include "vkwp/buffer.hpp"
+#include "vkwp/image.hpp"
 #include "vkwp/utils.hpp"
 #include "vkwp/vulkan_error.hpp"
 
@@ -43,6 +45,22 @@ vkwp::DeviceMemoryNode::DeviceMemoryNode(DeviceMemoryNode && m) noexcept
 vkwp::DeviceMemoryNode::~DeviceMemoryNode() noexcept
 {
     this->reset();
+}
+
+vkwp::DeviceMemoryNode &
+vkwp::DeviceMemoryNode::operator=(DeviceMemoryNode && m) noexcept
+{
+    if (this != &m)
+    {
+        this->label_             = std::move(m.label_);
+        this->mapping_alignment_ = m.mapping_alignment_;
+        this->block_             = m.block_;
+        this->node_              = m.node_;
+        m.mapping_alignment_     = 0;
+        m.block_                 = nullptr;
+        m.node_                  = nullptr;
+    }
+    return *this;
 }
 
 bool
@@ -124,6 +142,18 @@ vkwp::DeviceMemoryNode::_alignMappingRange(std::size_t & size, std::size_t & off
     size            = utils::align(dst_offset + size, this->mapping_alignment_);
     offset          = new_offset;
     return dst_offset;
+}
+
+VkDeviceMemory
+vkwp::DeviceMemoryNode::_getDeviceMemory() const
+{
+    return *this->block_;
+}
+
+std::size_t
+vkwp::DeviceMemoryNode::_getOffset() const
+{
+    return this->node_->getOffset();
 }
 
 void

@@ -5,6 +5,7 @@
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/device_memory.hpp"
+#include "vkwp/device_memory_node.hpp"
 #include "vkwp/vulkan_error.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,5 +154,18 @@ vkwp::Image::bindMemory(const DeviceMemory & device_memory, const VkDeviceSize o
     VKWP_VALIDATE_ARG(device_memory);
     VulkanError::check(  //
         vkBindImageMemory(std::get<0>(this->parents_), *this, device_memory, offset),
+        "Failed to vkBindImageMemory().");
+}
+
+void
+vkwp::Image::bindMemory(const DeviceMemoryNode & device_memory_node, const VkDeviceSize offset) const
+{
+    VKWP_VALIDATE_THIS;
+    VKWP_VALIDATE_ARG(device_memory_node);
+    VulkanError::check(  //
+        vkBindImageMemory(std::get<0>(this->parents_),
+                          *this,
+                          device_memory_node._getDeviceMemory(),
+                          device_memory_node._getOffset() + offset),
         "Failed to vkBindImageMemory().");
 }

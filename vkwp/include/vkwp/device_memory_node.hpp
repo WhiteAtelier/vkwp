@@ -20,6 +20,15 @@ public:
     DeviceMemoryNode(DeviceMemoryNode &&) noexcept;
     ~DeviceMemoryNode() noexcept;
 
+    /// @brief Move assigner.
+    DeviceMemoryNode &
+    operator=(DeviceMemoryNode &&) noexcept;
+
+    DeviceMemoryNode(const DeviceMemoryNode &) = delete;  // Uncopyable
+    DeviceMemoryNode &
+    operator=(const DeviceMemoryNode &)
+        = delete;  // Unassignable
+
     /// @brief 有効な Vulkan Resource を持っていないかどうか取得する.
     [[nodiscard]]
     bool
@@ -56,12 +65,13 @@ public:
     explicit operator bool() && = delete;
     const std::string & getLabel() && = delete;
     void reset() && = delete;
-    std::size_t getNodeOffset() && = delete;
-    std::size_t getNodeSize() && = delete;
+    std::size_t getSize() && = delete;
     // clang-format on
 
 private:
     friend class DeviceMemoryBlock;
+    friend Buffer;
+    friend Image;
 
     [[nodiscard]]
     explicit DeviceMemoryNode(const std::string &                 label,
@@ -71,6 +81,12 @@ private:
 
     std::size_t
     _alignMappingRange(std::size_t & size, std::size_t & offset) const;
+
+    VkDeviceMemory
+    _getDeviceMemory() const;
+
+    std::size_t
+    _getOffset() const;
 
     std::string                   label_;
     std::size_t                   mapping_alignment_;

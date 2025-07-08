@@ -35,7 +35,8 @@ public:
              const std::size_t          mapping_alignment,
              const std::uint32_t        memory_type_index,
              const std::size_t          size,
-             const DebugUtilsResource * debug_utils = nullptr);
+             const void * const         allocate_memory_p_next = nullptr,
+             const DebugUtilsResource * debug_utils            = nullptr);
 
     /// @brief この Block から指定した size の Node を確保する.
     ///

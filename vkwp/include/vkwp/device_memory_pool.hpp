@@ -39,6 +39,15 @@ public:
     operator=(const DeviceMemoryPool &)
         = delete;  // Unassignable
 
+    static DeviceMemoryPool
+    create(const std::string &        label,
+           const Device &             device,
+           const PhysicalDevice &     physical_device,
+           const std::size_t          block_size,
+           const std::size_t          max_size,
+           const void *               allocate_memory_p_next = nullptr,
+           const DebugUtilsResource * debug_util             = nullptr);
+
     /// @brief 有効な Vulkan Resource を持っていないかどうか取得する.
     [[nodiscard]]
     bool
@@ -83,9 +92,10 @@ private:
     DeviceMemoryPool(const std::string &        label,
                      const Device &             device,
                      const PhysicalDevice &     physical_device,
-                     const std::size_t          unit_size,
+                     const std::size_t          block_size,
                      const std::size_t          max_size,
-                     const DebugUtilsResource * debug_util = nullptr);
+                     const void *               allocate_memory_p_next = nullptr,
+                     const DebugUtilsResource * debug_util             = nullptr);
 
     using DeviceMemoryBlockPtr = std::unique_ptr<class DeviceMemoryBlock>;
 
@@ -93,12 +103,13 @@ private:
     VkDevice                                                      device_;
     VkPhysicalDeviceMemoryProperties                              memory_properties_;
     std::size_t                                                   mapping_alignment_;
-    std::size_t                                                   unit_size_;     // memory unit size [Bytes]
+    std::size_t                                                   block_size_;    // memory unit size [Bytes]
     std::size_t                                                   max_size_;      // max memories size [Bytes]
     std::size_t                                                   current_size_;  // current amount size [Bytes]
     std::uint32_t                                                 unit_index_;
     std::unique_ptr<std::mutex>                                   mutex_;
     std::vector<std::multimap<std::size_t, DeviceMemoryBlockPtr>> memory_blocks_;  // memory instances
+    const void *                                                  allocate_memory_p_next_;
     const DebugUtilsResource *                                    debug_util_;
 };
 
