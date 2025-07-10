@@ -25,20 +25,20 @@ vkwp::impl::_delete<VkShaderModule, VkDevice>(VkShaderModule i, const std::tuple
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::ShaderModule
-vkwp::ShaderModule::createShaderModule(const std::string &                label,
-                                       const Device &                     device,
-                                       const std::vector<std::uint32_t> & code,
-                                       const OptionalCreateArgs &         opt_args)
+vkwp::ShaderModule::create(const std::string &                label,
+                           const Device &                     device,
+                           const std::vector<std::uint32_t> & code,
+                           const OptionalCreateArgs &         opt_args)
 {
-    return createShaderModule(label, device, code.data(), code.size(), opt_args);
+    return create(label, device, code.data(), code.size(), opt_args);
 }
 
 vkwp::ShaderModule
-vkwp::ShaderModule::createShaderModule(const std::string &         label,
-                                       const Device &              device,
-                                       const std::uint32_t * const data,
-                                       const std::size_t           data_length,
-                                       const OptionalCreateArgs &  opt_args)
+vkwp::ShaderModule::create(const std::string &         label,
+                           const Device &              device,
+                           const std::uint32_t * const data,
+                           const std::size_t           data_length,
+                           const OptionalCreateArgs &  opt_args)
 {
     VKWP_VALIDATE_ARG(device);
     ShaderModule                   ret{ label };

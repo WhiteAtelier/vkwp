@@ -26,18 +26,18 @@ public:
 
     [[nodiscard]]
     static ShaderModule
-    createShaderModule(const std::string &                label,
-                       const Device &                     device,
-                       const std::vector<std::uint32_t> & code,
-                       const OptionalCreateArgs &         opt_args = {});
+    create(const std::string &                label,
+           const Device &                     device,
+           const std::vector<std::uint32_t> & code,
+           const OptionalCreateArgs &         opt_args = {});
 
     [[nodiscard]]
     static ShaderModule
-    createShaderModule(const std::string &         label,
-                       const Device &              device,
-                       const std::uint32_t * const data,
-                       const std::size_t           data_length,
-                       const OptionalCreateArgs &  opt_args = {});
+    create(const std::string &         label,
+           const Device &              device,
+           const std::uint32_t * const data,
+           const std::size_t           data_length,
+           const OptionalCreateArgs &  opt_args = {});
 };
 
 }  // namespace vkwp

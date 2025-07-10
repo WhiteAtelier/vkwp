@@ -44,9 +44,9 @@ vkwp::RayTracingPipelineKHR_ExtFunctions::create(const VkInstance instance)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 std::vector<vkwp::Pipeline>
-vkwp::Pipeline::createGraphicsPipelines(const Device &                                  device,
-                                        const std::vector<GraphicsPipelineCreateInfo> & create_info_list,
-                                        const OptionalCreateArgs &                      opt_args)
+vkwp::Pipeline::create(const Device &                                  device,
+                       const std::vector<GraphicsPipelineCreateInfo> & create_info_list,
+                       const OptionalCreateArgs &                      opt_args)
 {
     VKWP_VALIDATE_ARG(device);
     std::vector<Pipeline>                     ret;
@@ -91,9 +91,9 @@ vkwp::Pipeline::createGraphicsPipelines(const Device &                          
 }
 
 std::vector<vkwp::Pipeline>
-vkwp::Pipeline::createComputePipelines(const Device &                                 device,
-                                       const std::vector<ComputePipelineCreateInfo> & create_info_list,
-                                       const OptionalCreateArgs &                     opt_args)
+vkwp::Pipeline::create(const Device &                                 device,
+                       const std::vector<ComputePipelineCreateInfo> & create_info_list,
+                       const OptionalCreateArgs &                     opt_args)
 {
     VKWP_VALIDATE_ARG(device);
     std::vector<Pipeline>                    ret;
@@ -138,10 +138,10 @@ vkwp::Pipeline::createComputePipelines(const Device &                           
 }
 
 std::vector<vkwp::Pipeline>
-vkwp::Pipeline::createRayTracingPipelines(const Device &                                       device,
-                                          const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
-                                          const RayTracingPipelineKHR_ExtFunctions &           ext_functions,
-                                          const OptionalCreateRTPipelineArgs &                 opt_args)
+vkwp::Pipeline::create(const Device &                                       device,
+                       const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
+                       const RayTracingPipelineKHR_ExtFunctions &           ext_functions,
+                       const OptionalCreateRTPipelineArgs &                 opt_args)
 {
     VKWP_VALIDATE_ARG(device);
     std::vector<Pipeline>                          ret;

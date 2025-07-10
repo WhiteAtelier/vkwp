@@ -100,20 +100,20 @@ public:
     };
 
     static std::vector<Pipeline>
-    createGraphicsPipelines(const Device &                                  device,
-                            const std::vector<GraphicsPipelineCreateInfo> & create_info_list,
-                            const OptionalCreateArgs &                      opt_args = {});
+    create(const Device &                                  device,
+           const std::vector<GraphicsPipelineCreateInfo> & create_info_list,
+           const OptionalCreateArgs &                      opt_args = {});
 
     static std::vector<Pipeline>
-    createComputePipelines(const Device &                                 device,
-                           const std::vector<ComputePipelineCreateInfo> & create_info_list,
-                           const OptionalCreateArgs &                     opt_args = {});
+    create(const Device &                                 device,
+           const std::vector<ComputePipelineCreateInfo> & create_info_list,
+           const OptionalCreateArgs &                     opt_args = {});
 
     static std::vector<Pipeline>
-    createRayTracingPipelines(const Device &                                       device,
-                              const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
-                              const RayTracingPipelineKHR_ExtFunctions &           ext_functions,
-                              const OptionalCreateRTPipelineArgs &                 opt_args = {});
+    create(const Device &                                       device,
+           const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
+           const RayTracingPipelineKHR_ExtFunctions &           ext_functions,
+           const OptionalCreateRTPipelineArgs &                 opt_args = {});
 };
 
 }  // namespace vkwp

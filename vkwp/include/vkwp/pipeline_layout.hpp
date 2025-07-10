@@ -26,11 +26,11 @@ public:
     };
 
     static PipelineLayout
-    createPipelineLayout(const std::string &                                              label,
-                         const Device &                                                   device,
-                         const std::vector<std::reference_wrapper<DescriptorSetLayout>> & set_layouts,
-                         const std::vector<VkPushConstantRange> &                         push_constant_ranges,
-                         const OptionalCreateArgs &                                       opt_args = {});
+    create(const std::string &                                              label,
+           const Device &                                                   device,
+           const std::vector<std::reference_wrapper<DescriptorSetLayout>> & set_layouts,
+           const std::vector<VkPushConstantRange> &                         push_constant_ranges,
+           const OptionalCreateArgs &                                       opt_args = {});
 };
 
 }  // namespace vkwp
