@@ -127,7 +127,7 @@ vkwp::Resource<T, ParentTs...>::reset() & noexcept
 
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
 T *
-vkwp::Resource<T, ParentTs...>::_reset(ParentTs... parents...) & noexcept
+vkwp::Resource<T, ParentTs...>::_reset(ParentTs... parents) & noexcept
 {
     this->reset();
     this->parents_ = std::make_tuple<ParentTs...>(std::forward<ParentTs>(parents)...);

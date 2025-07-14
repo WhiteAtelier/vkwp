@@ -78,7 +78,7 @@ protected:
     Resource(const std::string & label);
 
     T *
-    _reset(ParentTs... parents...) & noexcept;
+    _reset(ParentTs... parents) & noexcept;
 
 private:
     std::string label_;

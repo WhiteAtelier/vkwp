@@ -45,6 +45,10 @@ public:
     VkCommandPoolCreateFlags
     getCreateFlags() const noexcept;
 
+    /// @brief vkResetCommandPool - Reset a command pool
+    void
+    resetCommandPool(const VkCommandPoolResetFlags flags = 0) const;
+
 private:
     friend CommandBuffer;
     VkCommandPoolCreateFlags create_flags_;

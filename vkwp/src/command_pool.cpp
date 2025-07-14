@@ -74,3 +74,11 @@ vkwp::CommandPool::getCreateFlags() const noexcept
 {
     return this->create_flags_;
 }
+
+void
+vkwp::CommandPool::resetCommandPool(const VkCommandPoolResetFlags flags) const
+{
+    VulkanError::check(  //
+        vkResetCommandPool(std::get<0>(this->parents_), *this, flags),
+        "Failed to vkResetCommandPool()");
+}
