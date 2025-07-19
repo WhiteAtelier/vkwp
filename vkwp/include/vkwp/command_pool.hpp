@@ -2,6 +2,7 @@
 #define VKWP_COMMAND_POOL_HPP
 
 #include "fwd.hpp"
+#include "mutex.hpp"
 #include "resource.hpp"
 #include "vulkan.hpp"
 //
