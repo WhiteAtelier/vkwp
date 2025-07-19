@@ -207,7 +207,7 @@ vkwp::CommandBuffer::_beginCommandBuffer(const VkCommandBufferInheritanceInfo * 
         .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .pNext            = nullptr,
         .flags            = flags,
-        .pInheritanceInfo = nullptr,
+        .pInheritanceInfo = inheritance_info,
     };
     VulkanError::check(  //
         vkBeginCommandBuffer(*this, &bi),
