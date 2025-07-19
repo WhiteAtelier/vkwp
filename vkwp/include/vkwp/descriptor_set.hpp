@@ -12,7 +12,7 @@ namespace vkwp {
 struct DescriptorSetAllocateInfo
 {
     std::string                 label;
-    const DescriptorSetLayout * descriptor_set_layout = nullptr;
+    const DescriptorSetLayout & descriptor_set_layout;
 };
 
 ///

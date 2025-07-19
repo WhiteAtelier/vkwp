@@ -45,7 +45,7 @@ vkwp::DescriptorSet::allocate(const DescriptorPool &                         des
     for (const auto & ai : allocate_info_list)
     {
         VKWP_VALIDATE_ARG(ai.descriptor_set_layout != nullptr);
-        dset_layouts.emplace_back(*ai.descriptor_set_layout);
+        dset_layouts.emplace_back(ai.descriptor_set_layout);
         ret.emplace_back(DescriptorSet{ ai.label });
     }
 
