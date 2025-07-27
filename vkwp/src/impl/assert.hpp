@@ -156,4 +156,21 @@ private:
         throw ::vkwp::impl::CodingError{ #expr, __FILE__, __LINE__, __func__ };               \
     }
 
+#define VKWP_VALIDATE_ARG(argName)                                                 \
+    if (!(argName))                                                                \
+    {                                                                              \
+        ::vkwp::impl::AssertionError::printMessage(#argName,                       \
+                                                   __FILE__,                       \
+                                                   __LINE__,                       \
+                                                   __func__,                       \
+                                                   "Invalid argument: " #argName); \
+        throw std::invalid_argument{ "Check Failure: " #argName };                 \
+    }
+#define VKWP_VALIDATE_THIS                                                                                          \
+    if (!*this)                                                                                                     \
+    {                                                                                                               \
+        ::vkwp::impl::AssertionError::printMessage("*this", __FILE__, __LINE__, __func__, "Invalid self instance"); \
+        throw std::runtime_error{ "Invalid self instance." };                                                       \
+    }
+
 #endif

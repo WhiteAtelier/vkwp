@@ -10,16 +10,20 @@ namespace vkwp {
 ///
 /// @brief VkSemaphore wrapper.
 ///
-class Semaphore final : public Resource<VkSemaphore, VkDevice, void>
+class Semaphore final : public Resource<VkSemaphore, VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit Semaphore();
+    using Resource::Resource;
 
-    /// @brief Constructor with label name.
-    [[nodiscard]]
-    explicit Semaphore(const std::string & label);
+    struct OptionalCreateArgs
+    {
+        const void *               p_next      = nullptr;
+        VkSemaphoreCreateFlags     flags       = 0;
+        const DebugUtilsResource * debug_utils = nullptr;
+    };
+
+    static Semaphore
+    create(const std::string & label, const Device & device, const OptionalCreateArgs & opt_args = {});
 };
 
 }  // namespace vkwp

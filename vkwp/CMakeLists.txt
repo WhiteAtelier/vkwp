@@ -11,6 +11,7 @@ vkwp_add_library(vkwp
         Vulkan::Vulkan
    
     SOURCES
+        acceleration_structure_khr.cpp
         buffer.cpp
         command_buffer.cpp
         command_pool.cpp
@@ -30,6 +31,7 @@ vkwp_add_library(vkwp
         instance.cpp
         mutex.cpp
         physical_device.cpp
+        pipeline_cache.cpp
         pipeline_layout.cpp
         pipeline.cpp
         queue.cpp
@@ -44,10 +46,14 @@ vkwp_add_library(vkwp
 
         impl/assert.cpp
         impl/assert.hpp
-        impl/device_memory_pool_unit.cpp
-        impl/device_memory_pool_unit.hpp
+        impl/deleter.hpp
+        impl/device_memory_block_node.cpp
+        impl/device_memory_block_node.hpp
+        impl/device_memory_block.cpp
+        impl/device_memory_block.hpp
 
     HEADERS
+        vkwp/acceleration_structure_khr.hpp
         vkwp/buffer.hpp
         vkwp/command_buffer.hpp
         vkwp/command_pool.hpp
@@ -68,6 +74,7 @@ vkwp_add_library(vkwp
         vkwp/instance.hpp
         vkwp/mutex.hpp
         vkwp/physical_device.hpp
+        vkwp/pipeline_cache.hpp
         vkwp/pipeline_layout.hpp
         vkwp/pipeline.hpp
         vkwp/queue.hpp
@@ -79,6 +86,8 @@ vkwp_add_library(vkwp
         vkwp/surface_khr.hpp
         vkwp/swapchain_khr.hpp
         vkwp/types.hpp
+        vkwp/utils.hpp
+        vkwp/vk_structures.hpp
         vkwp/vulkan_error.hpp
         vkwp/vulkan.hpp
 
@@ -108,4 +117,10 @@ target_compile_definitions(vkwp
     PUBLIC
         VKWP_SUPPORT_GLFW_SURFACE=$<BOOL:${VKWP_SUPPORT_GLFW_SURFACE}>
         VKWP_SUPPORT_WIN32_SURFACE=$<BOOL:${VKWP_SUPPORT_WIN32_SURFACE}>
+)
+
+target_compile_definitions(vkwp
+    PRIVATE
+        VKWP_USE_GLFW_SURFACE
+        VKWP_USE_WIN32_SURFACE
 )

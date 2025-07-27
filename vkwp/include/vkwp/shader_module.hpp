@@ -5,21 +5,39 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <vector>
+
 namespace vkwp {
 
 ///
 /// @brief VkShaderModule wrapper.
 ///
-class ShaderModule final : public Resource<VkShaderModule, VkDevice, void>
+class ShaderModule final : public Resource<VkShaderModule, VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit ShaderModule();
+    using Resource::Resource;
 
-    /// @brief Constructor with label name.
+    struct OptionalCreateArgs
+    {
+        const void *               p_next      = nullptr;
+        VkShaderModuleCreateFlags  flags       = 0;
+        const DebugUtilsResource * debug_utils = nullptr;
+    };
+
     [[nodiscard]]
-    explicit ShaderModule(const std::string & label);
+    static ShaderModule
+    create(const std::string &                label,
+           const Device &                     device,
+           const std::vector<std::uint32_t> & code,
+           const OptionalCreateArgs &         opt_args = {});
+
+    [[nodiscard]]
+    static ShaderModule
+    create(const std::string &         label,
+           const Device &              device,
+           const std::uint32_t * const data,
+           const std::size_t           data_length,
+           const OptionalCreateArgs &  opt_args = {});
 };
 
 }  // namespace vkwp

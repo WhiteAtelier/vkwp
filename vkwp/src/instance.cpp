@@ -1,41 +1,37 @@
 #include "vkwp/instance.hpp"
 
 #include "impl/assert.hpp"
-#include "vkwp/physical_device.hpp"
-#include "vkwp/surface_khr.hpp"
+#include "impl/deleter.hpp"
 #include "vkwp/vulkan_error.hpp"
 
-vkwp::Instance::Instance() = default;
-
-vkwp::Instance::Instance(const std::string & label)
-    : Resource{ label }
-{}
-
-std::vector<VkExtensionProperties>
-vkwp::Instance::enumerateInstanceExtensionProperties()
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// _delete() overload
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <>
+void
+vkwp::impl::_delete<VkInstance>(VkInstance i, const std::tuple<> &) noexcept
 {
-    std::uint32_t count = 0;
-    VulkanError::check(  //
-        vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr),
-        "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
-    std::vector<VkExtensionProperties> ret(count);
-    VulkanError::check(  //
-        vkEnumerateInstanceExtensionProperties(nullptr, &count, ret.data()),
-        "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
-    return ret;
+    vkDestroyInstance(i, nullptr);
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// Instance class
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Instance
-vkwp::Instance::createInstance(const std::string &            label,
-                               const std::string &            application_name,
-                               const std::uint32_t            application_version,
-                               const std::string &            engine_name,
-                               const std::uint32_t            engine_version,
-                               const std::uint32_t            api_version,
-                               const std::vector<std::string> _enabled_layer_names,
-                               const std::vector<std::string> _enabled_extension_names,
-                               const void * const             p_next)
+vkwp::Instance::create(const std::string &            label,
+                       const std::string &            application_name,
+                       const std::uint32_t            application_version,
+                       const std::string &            engine_name,
+                       const std::uint32_t            engine_version,
+                       const std::uint32_t            api_version,
+                       const std::vector<std::string> _enabled_layer_names,
+                       const std::vector<std::string> _enabled_extension_names,
+                       const OptionalCreateArgs &     opt_args)
 {
     Instance                  ret{ label };
     std::vector<const char *> enabled_layer_names;
@@ -62,7 +58,7 @@ vkwp::Instance::createInstance(const std::string &            label,
     };
     const VkInstanceCreateInfo ci{
         .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-        .pNext                   = p_next,
+        .pNext                   = opt_args.p_next,
         .flags                   = 0,
         .pApplicationInfo        = &ai,
         .enabledLayerCount       = static_cast<std::uint32_t>(enabled_layer_names.size()),
@@ -72,69 +68,22 @@ vkwp::Instance::createInstance(const std::string &            label,
     };
 
     VulkanError::check(  //
-        vkCreateInstance(&ci, nullptr, ret.reset()),
+        vkCreateInstance(&ci, nullptr, ret._reset()),
         "Failed to vkCreateInstance().");
 
     return ret;
 }
 
-std::vector<vkwp::PhysicalDevice>
-vkwp::Instance::enumeratePhysicalDevices() const
+std::vector<VkExtensionProperties>
+vkwp::Instance::enumerateInstanceExtensionProperties()
 {
-    VKWP_CODING_ERROR(this->_ref() != nullptr);
-    std::vector<VkPhysicalDevice> phys_devs;
-    std::uint32_t                 count = 0;
-
+    std::uint32_t count = 0;
     VulkanError::check(  //
-        vkEnumeratePhysicalDevices(this->_ref(), &count, nullptr),
-        "Failed to vkEnumeratePhysicalDevice(). (Get array count.)");
-
-    phys_devs.resize(count);
+        vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr),
+        "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
+    std::vector<VkExtensionProperties> ret(count);
     VulkanError::check(  //
-        vkEnumeratePhysicalDevices(this->_ref(), &count, phys_devs.data()),
-        "Failed to vkEnumeratePhysicalDevice(). (Get array data.)");
-
-    std::vector<vkwp::PhysicalDevice> ret;
-    ret.reserve(count);
-
-    for (const auto & phys_dev : phys_devs)
-    {
-        auto & pdev     = ret.emplace_back();
-        *pdev.reset()   = phys_dev;
-        const auto prop = pdev.getProperties();
-        pdev.setLabel("/PhysicalDevice/ID" + std::to_string(prop.deviceID) + "/" + std::string{ prop.deviceName });
-    }
+        vkEnumerateInstanceExtensionProperties(nullptr, &count, ret.data()),
+        "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
     return ret;
 }
-
-#if VKWP_SUPPORT_GLFW_SURFACE
-#    include <GLFW/glfw3.h>
-vkwp::SurfaceKHR
-vkwp::Instance::createGLFWSurfaceKHR(const std::string & label, GLFWwindow * const window) const
-{
-    SurfaceKHR ret{ label };
-    VulkanError::check(  //
-        glfwCreateWindowSurface(this->_ref(), window, nullptr, ret.reset(this->_ref())),
-        "Failed to glfwCreateWindowSurface().");
-    return ret;
-}
-#endif
-
-#if VKWP_SUPPORT_WIN32_SURFACE
-vkwp::SurfaceKHR
-vkwp::Instance::createWin32SurfaceKHR(const std::string & label, const HINSTANCE h_instance, const HWND hwnd) const
-{
-    SurfaceKHR                  ret{ label };
-    VkWin32SurfaceCreateInfoKHR ci{
-        .sType     = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
-        .pNext     = nullptr,
-        .flags     = 0,
-        .hinstance = h_instance,
-        .hwnd      = hwnd,
-    };
-    VulkanError::check(  //
-        vkCreateWin32SurfaceKHR(this->_ref(), &ci, nullptr, ret.reset(this->_ref())),
-        "Failed to vkCreateWin32SurfaceKHR().");
-    return ret;
-}
-#endif

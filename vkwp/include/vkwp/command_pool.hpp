@@ -2,6 +2,7 @@
 #define VKWP_COMMAND_POOL_HPP
 
 #include "fwd.hpp"
+#include "mutex.hpp"
 #include "resource.hpp"
 #include "vulkan.hpp"
 //
@@ -15,41 +16,44 @@ namespace vkwp {
 ///
 /// @brief VkCommandPool wrapper.
 ///
-class CommandPool final : public Resource<VkCommandPool, VkDevice, void>
+class CommandPool final : public Resource<VkCommandPool, VkDevice>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit CommandPool();
+    using Resource::Resource;
 
-    /// @brief Constructor with label name.
-    [[nodiscard]]
-    explicit CommandPool(const std::string & label);
+    struct OptionalCreateArgs
+    {
+        VkCommandPoolCreateFlags   flags       = 0;  ///< もしくは VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT
+        const void *               p_next      = nullptr;
+        const DebugUtilsResource * debug_utils = nullptr;
+    };
 
+    [[nodiscard]]
+    static CommandPool
+    create(const std::string &        label,
+           const Device &             device,
+           const std::uint32_t        queue_family_index,
+           const OptionalCreateArgs & opt_args = {});
+
+    [[nodiscard]]
+    static CommandPool
+    create(const std::string &        label,
+           const Device &             device,
+           const std::uint32_t        queue_family_index,
+           std::unique_ptr<Mutex> &&  mutex,
+           const OptionalCreateArgs & opt_args = {});
+
+    VkCommandPoolCreateFlags
+    getCreateFlags() const noexcept;
+
+    /// @brief vkResetCommandPool - Reset a command pool
     void
-    setDebugUtilsResource(const DebugUtilsResource & debug_utils_resource);
-
-    [[nodiscard]]
-    std::vector<CommandBuffer>
-    allocateCommandBuffers(const std::string &        label,
-                           const VkCommandBufferLevel level,
-                           const std::uint32_t        command_buffer_count,
-                           const void * const         p_next = nullptr) const;
-
-    [[nodiscard]]
-    CommandBuffer
-    allocateCommandBuffer(const std::string &        label,
-                          const VkCommandBufferLevel level,
-                          const void * const         p_next = nullptr) const;
-
-    [[nodiscard]]
-    CommandBuffer
-    allocatePrimaryCommandBuffer(const std::string & label, const void * const p_next = nullptr) const;
+    resetCommandPool(const VkCommandPoolResetFlags flags = 0) const;
 
 private:
-    friend Device;
-    std::unique_ptr<Mutex> mutex_;
-    DebugUtilsResource     debug_utils_resource_;
+    friend CommandBuffer;
+    VkCommandPoolCreateFlags create_flags_;
+    std::unique_ptr<Mutex>   mutex_;
 };
 
 }  // namespace vkwp

@@ -15,14 +15,13 @@ namespace vkwp {
 ///
 /// @brief VkPhysicalDevice wrapper.
 ///
-class PhysicalDevice final : public Resource<VkPhysicalDevice, void, void>
+class PhysicalDevice final : public Resource<VkPhysicalDevice>
 {
 public:
-    /// @brief Default Constructor
-    explicit PhysicalDevice();
+    using Resource<VkPhysicalDevice>::Resource;
 
-    /// @brief Constructor with label name.
-    explicit PhysicalDevice(const std::string & label);
+    static std::vector<PhysicalDevice>
+    enumeratePhysicalDevices(const Instance & instance);
 
     [[nodiscard]]
     const std::vector<VkQueueFamilyProperties> &
@@ -30,7 +29,7 @@ public:
 
     [[nodiscard]]
     const VkPhysicalDeviceProperties &
-    getProperties() const;
+    getProperties() const noexcept;
 
     [[nodiscard]]
     const VkPhysicalDeviceMemoryProperties &
@@ -45,15 +44,6 @@ public:
     getFormatProperties(const VkFormat format) const;
 
     [[nodiscard]]
-    Device
-    createDevice(const std::string &                          label,
-                 const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
-                 const std::vector<std::string> &             enabled_layer_names,
-                 const std::vector<std::string> &             enabled_extension_names,
-                 const VkPhysicalDeviceFeatures * const       enabled_features,
-                 const void *                                 p_next = nullptr);
-
-    [[nodiscard]]
     std::vector<VkSurfaceFormatKHR>
     getSurfaceFormats(const VkSurfaceKHR & surface) const;
 
@@ -66,6 +56,12 @@ public:
     getMemoryTypeIndex(const VkMemoryPropertyFlags memory_property_flags, const std::uint32_t memory_type_bits) const;
 
     [[nodiscard]]
+    static std::pair<bool, std::uint32_t>
+    getMemoryTypeIndex(const VkPhysicalDeviceMemoryProperties & memory_properties,
+                       const VkMemoryPropertyFlags              memory_property_flags,
+                       const std::uint32_t                      memory_type_bits);
+
+    [[nodiscard]]
     std::set<std::uint32_t>
     listQueueFamilyIndexes(const VkQueueFlags & queue_flags) const;
 
@@ -74,8 +70,10 @@ public:
     isSurfaceSupported(const std::uint32_t queue_index, const VkSurfaceKHR & surface) const;
 
 private:
+    explicit PhysicalDevice(const std::string & label, VkPhysicalDeviceProperties && pd_properties);
+
+    VkPhysicalDeviceProperties                                  properties_{};
     mutable std::optional<std::vector<VkQueueFamilyProperties>> queue_family_properties_cache_;
-    mutable std::optional<VkPhysicalDeviceProperties>           properties_;
     mutable std::optional<VkPhysicalDeviceMemoryProperties>     memory_properties_;
 };
 

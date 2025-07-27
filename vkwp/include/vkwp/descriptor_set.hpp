@@ -5,7 +5,15 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <vector>
+
 namespace vkwp {
+
+struct DescriptorSetAllocateInfo
+{
+    std::string                 label;
+    const DescriptorSetLayout & descriptor_set_layout;
+};
 
 ///
 /// @brief VkDescriptorSet wrapper.
@@ -13,13 +21,18 @@ namespace vkwp {
 class DescriptorSet final : public Resource<VkDescriptorSet, VkDevice, VkDescriptorPool>
 {
 public:
-    /// @brief Default Constructor
-    [[nodiscard]]
-    explicit DescriptorSet();
+    using Resource::Resource;
 
-    /// @brief Constructor with label name.
-    [[nodiscard]]
-    explicit DescriptorSet(const std::string & label);
+    struct OptionalAllocateArgs
+    {
+        const void *               p_next      = nullptr;
+        const DebugUtilsResource * debug_utils = nullptr;
+    };
+
+    static std::vector<DescriptorSet>
+    allocate(const DescriptorPool &                         descriptor_pool,
+             const std::vector<DescriptorSetAllocateInfo> & allocate_info_list,
+             const OptionalAllocateArgs &                   opt_args = {});
 };
 
 }  // namespace vkwp

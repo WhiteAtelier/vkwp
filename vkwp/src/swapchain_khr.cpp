@@ -1,25 +1,93 @@
 #include "vkwp/swapchain_khr.hpp"
 
 #include "impl/assert.hpp"
+#include "impl/deleter.hpp"
+#include "vkwp/debug_utils_resource.hpp"
+#include "vkwp/device.hpp"
+#include "vkwp/surface_khr.hpp"
 #include "vkwp/vulkan_error.hpp"
 
-vkwp::SwapchainKHR::SwapchainKHR() = default;
+#include <spdlog/spdlog.h>
 
-vkwp::SwapchainKHR::SwapchainKHR(const std::string & label)
-    : Resource{ label }
-{}
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// _delete() overload
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+template <>
+void
+vkwp::impl::_delete<VkSwapchainKHR, VkDevice>(VkSwapchainKHR i, const std::tuple<VkDevice> & args) noexcept
+{
+    vkDestroySwapchainKHR(std::get<0>(args), i, nullptr);
+}
 
-#if defined(VK_EXT_hdr_metadata) && VK_EXT_hdr_metadata
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// PipelineLayout class
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/* STATIC */
+vkwp::SwapchainKHR
+vkwp::SwapchainKHR::create(const std::string &        label,
+                           const Device &             device,
+                           const SurfaceKHR &         surface,
+                           const std::uint32_t        min_image_count,
+                           const VkFormat             image_format,
+                           const VkColorSpaceKHR      image_color_space,
+                           const VkExtent2D           image_extent,
+                           const VkImageUsageFlags    image_usage,
+                           const VkPresentModeKHR     present_mode,
+                           const OptionalCreateArgs & opt_args)
+{
+    VKWP_VALIDATE_ARG(device);
+    SwapchainKHR                   ret{ label };
+    const VkSwapchainCreateInfoKHR ci{
+        .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+        .pNext                 = opt_args.p_next,
+        .flags                 = opt_args.flags,
+        .surface               = surface,
+        .minImageCount         = min_image_count,
+        .imageFormat           = image_format,
+        .imageColorSpace       = image_color_space,
+        .imageExtent           = image_extent,
+        .imageArrayLayers      = opt_args.image_array_layers,
+        .imageUsage            = image_usage,
+        .imageSharingMode      = opt_args.image_sharing_mode,
+        .queueFamilyIndexCount = opt_args.queue_family_index_count,
+        .pQueueFamilyIndices   = opt_args.queue_family_indices,
+        .preTransform          = opt_args.pre_transform,
+        .compositeAlpha        = opt_args.composite_alpha,
+        .presentMode           = present_mode,
+        .clipped               = opt_args.clipped,
+        .oldSwapchain          = opt_args.old_swapchain != nullptr  //
+                                   ? *opt_args.old_swapchain
+                                   : nullptr,
+    };
+    VulkanError::check(  //
+        vkCreateSwapchainKHR(device, &ci, nullptr, ret._reset(device)),
+        "Failed to vkCreateSwapchainKHR().");
+    if (opt_args.debug_utils != nullptr)
+    {
+        opt_args.debug_utils->registDebugUtilsObjectName(device,
+                                                         VK_OBJECT_TYPE_SWAPCHAIN_KHR,
+                                                         static_cast<VkSwapchainKHR>(ret),
+                                                         ret.getLabel());
+    }
+    return ret;
+}
+
 void
 vkwp::SwapchainKHR::setHdrMetadata(const VkHdrMetadataEXT & metadata)
 {
-#    define GET_INSTANCE_PROC_ADDR(FuncName) \
-        reinterpret_cast<PFN_##FuncName>(vkGetDeviceProcAddr(this->_getParent(), #FuncName))
-    VKWP_ASSERTION(GET_INSTANCE_PROC_ADDR(vkSetHdrMetadataEXT) != nullptr);
-    GET_INSTANCE_PROC_ADDR(vkSetHdrMetadataEXT)(this->_getParent(), 1, this->ptr(), &metadata);
-#    undef GET_INSTANCE_PROC_ADDR
+    const auto func = reinterpret_cast<PFN_vkSetHdrMetadataEXT>(
+        vkGetDeviceProcAddr(std::get<0>(this->parents_), "vkSetHdrMetadataEXT"));
+    if (func == nullptr)
+    {
+        SPDLOG_CRITICAL("vkSetHdrMetadataEXT is not supported.");
+        throw std::runtime_error{ "vkSetHdrMetadataEXT is not supported." };
+    }
+    func(std::get<0>(this->parents_), 1, this->ptr(), &metadata);
 }
-#endif
 
 std::vector<VkImage>
 vkwp::SwapchainKHR::getSwapchainImages() const
@@ -27,11 +95,11 @@ vkwp::SwapchainKHR::getSwapchainImages() const
     std::vector<VkImage> ret;
     std::uint32_t        count = 0;
     VulkanError::check(  //
-        vkGetSwapchainImagesKHR(this->_getParent(), this->_ref(), &count, nullptr),
+        vkGetSwapchainImagesKHR(std::get<0>(this->parents_), *this, &count, nullptr),
         "Failed to vkGetSwapchainImagesKHR(). (array count)");
     ret.resize(count);
     VulkanError::check(  //
-        vkGetSwapchainImagesKHR(this->_getParent(), this->_ref(), &count, ret.data()),
+        vkGetSwapchainImagesKHR(std::get<0>(this->parents_), *this, &count, ret.data()),
         "Failed to vkGetSwapchainImagesKHR(). (array data)");
     return ret;
 }
