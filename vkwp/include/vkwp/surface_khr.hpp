@@ -25,8 +25,8 @@ public:
 
 #if defined(VKWP_USE_GLFW_SURFACE)
     [[nodiscard]]
-    SurfaceKHR
-    createGLFWSurfaceKHR(const std::string & label, const Instance & instance, GLFWwindow * const window) const;
+    static SurfaceKHR
+    createGLFWSurfaceKHR(const std::string & label, const Instance & instance, GLFWwindow * const window);
 #endif
 
 #if defined(_WIN32) && defined(VKWP_USE_WIN32_SURFACE)
@@ -37,12 +37,12 @@ public:
     };
 
     [[nodiscard]]
-    SurfaceKHR
+    static SurfaceKHR
     createWin32SurfaceKHR(const std::string &             label,
                           const Instance &                instance,
                           const HINSTANCE                 h_instance,
                           const HWND                      hwnd,
-                          const OptionalCreateArgsWin32 & opt_args = {}) const;
+                          const OptionalCreateArgsWin32 & opt_args = {});
 #endif
 };
 

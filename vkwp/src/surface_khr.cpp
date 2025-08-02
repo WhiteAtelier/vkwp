@@ -35,7 +35,7 @@ vkwp::impl::_delete<VkSurfaceKHR, VkInstance>(VkSurfaceKHR i, const std::tuple<V
 vkwp::SurfaceKHR
 vkwp::SurfaceKHR::createGLFWSurfaceKHR(const std::string & label,
                                        const Instance &    instance,
-                                       GLFWwindow * const  window) const
+                                       GLFWwindow * const  window)
 {
     SurfaceKHR ret{ label };
     VulkanError::check(  //
@@ -52,7 +52,7 @@ vkwp::SurfaceKHR::createWin32SurfaceKHR(const std::string &             label,
                                         const Instance &                instance,
                                         const HINSTANCE                 h_instance,
                                         const HWND                      hwnd,
-                                        const OptionalCreateArgsWin32 & opt_args) const
+                                        const OptionalCreateArgsWin32 & opt_args)
 {
     SurfaceKHR                  ret{ label };
     VkWin32SurfaceCreateInfoKHR ci{
