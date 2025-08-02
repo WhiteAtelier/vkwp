@@ -156,6 +156,7 @@ template class vkwp::Resource<VkPipelineCache, VkDevice>;
 template class vkwp::Resource<VkPipelineLayout, VkDevice>;
 template class vkwp::Resource<VkQueue>;
 template class vkwp::Resource<VkRenderPass, VkDevice>;
+template class vkwp::Resource<VkSampler, VkDevice>;
 template class vkwp::Resource<VkSemaphore, VkDevice>;
 template class vkwp::Resource<VkShaderModule, VkDevice>;
 template class vkwp::Resource<VkSurfaceKHR, VkInstance>;

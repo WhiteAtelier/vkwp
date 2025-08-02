@@ -34,7 +34,7 @@ vkwp::DeviceMemoryNode::DeviceMemoryNode(const std::string &           label,
 
 vkwp::DeviceMemoryNode::DeviceMemoryNode(DeviceMemoryNode && m) noexcept
     : label_{ std::move(m.label_) }
-    , mapping_alignment_{ 0 }
+    , mapping_alignment_{ m.mapping_alignment_ }
     , block_{ m.block_ }
     , node_{ m.node_ }
 {
