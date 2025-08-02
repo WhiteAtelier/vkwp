@@ -28,16 +28,17 @@ vkwp::impl::_delete<VkSwapchainKHR, VkDevice>(VkSwapchainKHR i, const std::tuple
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::SwapchainKHR
-vkwp::SwapchainKHR::create(const std::string &        label,
-                           const Device &             device,
-                           const SurfaceKHR &         surface,
-                           const std::uint32_t        min_image_count,
-                           const VkFormat             image_format,
-                           const VkColorSpaceKHR      image_color_space,
-                           const VkExtent2D           image_extent,
-                           const VkImageUsageFlags    image_usage,
-                           const VkPresentModeKHR     present_mode,
-                           const OptionalCreateArgs & opt_args)
+vkwp::SwapchainKHR::create(const std::string &                 label,
+                           const Device &                      device,
+                           const SurfaceKHR &                  surface,
+                           const std::uint32_t                 min_image_count,
+                           const VkFormat                      image_format,
+                           const VkColorSpaceKHR               image_color_space,
+                           const VkExtent2D                    image_extent,
+                           const VkImageUsageFlags             image_usage,
+                           const VkPresentModeKHR              present_mode,
+                           const VkSurfaceTransformFlagBitsKHR pre_transform,
+                           const OptionalCreateArgs &          opt_args)
 {
     VKWP_VALIDATE_ARG(device);
     SwapchainKHR                   ret{ label };
@@ -55,7 +56,7 @@ vkwp::SwapchainKHR::create(const std::string &        label,
         .imageSharingMode      = opt_args.image_sharing_mode,
         .queueFamilyIndexCount = opt_args.queue_family_index_count,
         .pQueueFamilyIndices   = opt_args.queue_family_indices,
-        .preTransform          = opt_args.pre_transform,
+        .preTransform          = pre_transform,
         .compositeAlpha        = opt_args.composite_alpha,
         .presentMode           = present_mode,
         .clipped               = opt_args.clipped,
