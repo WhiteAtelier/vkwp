@@ -57,6 +57,12 @@ vkwp::Resource<T, ParentTs...>::operator=(Resource && rhs) & noexcept
 {
     if (this != &rhs)
     {
+        // Reset
+        if (this->instance_ != nullptr && !this->external_)
+        {
+            impl::_delete<T, ParentTs...>(this->instance_, this->parents_);
+        }
+
         this->label_    = std::move(rhs.label_);
         this->external_ = rhs.external_;
         this->instance_ = rhs.instance_;
