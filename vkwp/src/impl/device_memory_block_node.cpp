@@ -38,12 +38,14 @@ vkwp::DeviceMemoryBlockNode::align(std::unique_ptr<DeviceMemoryBlockNode> & root
         // 以降 noexcept
         this->offset_ = new_offset;           //  alignment 済みの offset
         this->size_ -= new_prev_node->size_;  // サイズ縮小
-        this->prev_ = new_prev_node.get();
 
         if (this->prev_ != nullptr)
         {
             // 自分のノードを, 新しくできた前ノードの next に設定.
             new_prev_node->next_ = std::move(this->prev_->next_ /* == this */);
+
+            // 自分のノードの prev を, 新しく作ったノードに差し替え
+            this->prev_ = new_prev_node.get();
 
             // 新しくできた前ノードの, その前ノードの next に, 新しくできた前ノードを設定
             new_prev_node->prev_->next_ = std::move(new_prev_node);
@@ -54,6 +56,9 @@ vkwp::DeviceMemoryBlockNode::align(std::unique_ptr<DeviceMemoryBlockNode> & root
             // 自分のノードを, 新しくできた前ノードの next に設定.
             VKWP_ASSERTION(root_node.get() == this);
             new_prev_node->next_ = std::move(root_node /* == this */);
+
+            // 自分のノードの prev を, 新しく作ったノードに差し替え
+            this->prev_ = new_prev_node.get();
 
             // root_node に, 新しくできた前ノードを設定
             root_node = std::move(new_prev_node);
