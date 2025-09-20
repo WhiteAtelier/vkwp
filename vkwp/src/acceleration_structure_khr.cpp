@@ -127,3 +127,5 @@ vkwp::AccelerationStructureKHR::createEXT(const std::string &                   
     }
     return ret;
 }
+
+const vkwp::AccelerationStructureKHR::OptionalCreateArgs vkwp::AccelerationStructureKHR::default_opt_args;

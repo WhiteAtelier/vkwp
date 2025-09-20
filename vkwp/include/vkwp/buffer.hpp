@@ -24,7 +24,7 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;  ///< Pointer to a debug utils resource instance.
     };
 
-    constexpr static OptionalCreateArgs default_opt_args{};
+    static const OptionalCreateArgs default_opt_args;
 
     ///
     /// @brief Create new buffer instance.

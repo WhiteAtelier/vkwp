@@ -99,3 +99,5 @@ vkwp::Buffer::getBufferDeviceAddress() const
     };
     return vkGetBufferDeviceAddress(std::get<0>(this->parents_), &buffer_device_address_info);
 }
+
+const vkwp::Buffer::OptionalCreateArgs vkwp::Buffer::default_opt_args;

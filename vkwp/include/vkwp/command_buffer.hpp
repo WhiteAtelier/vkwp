@@ -39,7 +39,7 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
-    constexpr static OptionalAllocateArgs default_opt_args;
+    static const OptionalAllocateArgs default_opt_args;
 
     [[nodiscard]]
     static std::vector<CommandBuffer>

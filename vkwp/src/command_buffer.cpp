@@ -252,3 +252,5 @@ vkwp::CommandBuffer::unlock() const
         this->mutex_->unlock();
     }
 }
+
+const vkwp::CommandBuffer::OptionalAllocateArgs vkwp::CommandBuffer::default_opt_args;

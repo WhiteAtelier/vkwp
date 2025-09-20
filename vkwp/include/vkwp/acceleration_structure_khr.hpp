@@ -29,13 +29,13 @@ public:
 
     struct OptionalCreateArgs
     {
-        void * const                          p_next         = nullptr;
+        const void *                          p_next         = nullptr;
         VkAccelerationStructureCreateFlagsKHR create_flags   = 0;
         VkDeviceAddress                       device_address = 0;
-        const DebugUtilsResource * const      debug_utils    = nullptr;
+        const DebugUtilsResource *            debug_utils    = nullptr;
     };
 
-    constexpr static OptionalCreateArgs default_opt_args{};
+    static const OptionalCreateArgs default_opt_args;
 
     static AccelerationStructureKHR
     create(const std::string &                  label,

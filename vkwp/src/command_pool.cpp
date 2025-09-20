@@ -82,3 +82,5 @@ vkwp::CommandPool::resetCommandPool(const VkCommandPoolResetFlags flags) const
         vkResetCommandPool(std::get<0>(this->parents_), *this, flags),
         "Failed to vkResetCommandPool()");
 }
+
+const vkwp::CommandPool::OptionalCreateArgs vkwp::CommandPool::default_opt_args;

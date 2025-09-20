@@ -52,3 +52,5 @@ vkwp::DescriptorSetLayout::create(const std::string &                           
     }
     return ret;
 }
+
+const vkwp::DescriptorSetLayout::OptionalCreateArgs vkwp::DescriptorSetLayout::default_opt_args;
