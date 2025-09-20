@@ -24,6 +24,8 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;  ///< Pointer to a debug utils resource instance.
     };
 
+    constexpr static OptionalCreateArgs default_opt_args;
+
     ///
     /// @brief Create new buffer instance.
     ///
@@ -50,7 +52,7 @@ public:
            const Device &             device,
            const VkDeviceSize         size,
            const VkBufferUsageFlags   usage,
-           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs & opt_args = default_opt_args);
 
     ///
     /// @brief このバッファが要求するデバイスメモリ要件を取得する.

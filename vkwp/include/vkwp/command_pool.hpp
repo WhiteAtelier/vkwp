@@ -28,12 +28,14 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
+    constexpr static OptionalCreateArgs default_opt_args;
+
     [[nodiscard]]
     static CommandPool
     create(const std::string &        label,
            const Device &             device,
            const std::uint32_t        queue_family_index,
-           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs & opt_args = default_opt_args);
 
     [[nodiscard]]
     static CommandPool
@@ -41,7 +43,7 @@ public:
            const Device &             device,
            const std::uint32_t        queue_family_index,
            std::unique_ptr<Mutex> &&  mutex,
-           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs & opt_args = default_opt_args);
 
     VkCommandPoolCreateFlags
     getCreateFlags() const noexcept;

@@ -35,6 +35,8 @@ public:
         const DebugUtilsResource * const      debug_utils    = nullptr;
     };
 
+    constexpr static OptionalCreateArgs default_opt_args;
+
     static AccelerationStructureKHR
     create(const std::string &                  label,
            const Device &                       device,
@@ -42,7 +44,7 @@ public:
            const VkDeviceSize                   offset,
            const VkDeviceSize                   size,
            const VkAccelerationStructureTypeKHR type,
-           const OptionalCreateArgs &           opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &           opt_args = default_opt_args);
 
     static AccelerationStructureKHR
     createEXT(const std::string &                           label,
@@ -52,7 +54,7 @@ public:
               const VkDeviceSize                            size,
               const VkAccelerationStructureTypeKHR          type,
               const AccelerationStructureKHR_ExtFunctions & ext_functions,
-              const OptionalCreateArgs &                    opt_args = OptionalCreateArgs{});
+              const OptionalCreateArgs &                    opt_args = default_opt_args);
 };
 
 }  // namespace vkwp

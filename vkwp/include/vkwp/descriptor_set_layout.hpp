@@ -24,11 +24,13 @@ public:
         const DebugUtilsResource *       debug_utils = nullptr;
     };
 
+    constexpr static OptionalCreateArgs default_opt_args;
+
     static DescriptorSetLayout
     create(const std::string &                               label,
            const Device &                                    device,
            const std::vector<VkDescriptorSetLayoutBinding> & bindings,
-           const OptionalCreateArgs &                        opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &                        opt_args = default_opt_args);
 };
 
 }  // namespace vkwp

@@ -39,25 +39,27 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
+    constexpr static OptionalAllocateArgs default_opt_args;
+
     [[nodiscard]]
     static std::vector<CommandBuffer>
     allocateCommandBuffers(const CommandPool &              command_pool,
                            const VkCommandBufferLevel       level,
                            const std::vector<std::string> & command_buffer_labels,
-                           const OptionalAllocateArgs &     opt_args = OptionalAllocateArgs{});
+                           const OptionalAllocateArgs &     opt_args = default_opt_args);
 
     [[nodiscard]]
     static CommandBuffer
     allocateCommandBuffer(const std::string &          label,
                           const CommandPool &          command_pool,
                           const VkCommandBufferLevel   level,
-                          const OptionalAllocateArgs & opt_args = OptionalAllocateArgs{});
+                          const OptionalAllocateArgs & opt_args = default_opt_args);
 
     [[nodiscard]]
     static CommandBuffer
     allocatePrimaryCommandBuffer(const std::string &          label,
                                  const CommandPool &          command_pool,
-                                 const OptionalAllocateArgs & opt_args = OptionalAllocateArgs{});
+                                 const OptionalAllocateArgs & opt_args = default_opt_args);
 
     void
     beginCommandBuffer(const VkCommandBufferInheritanceInfo & inheritance_info,
