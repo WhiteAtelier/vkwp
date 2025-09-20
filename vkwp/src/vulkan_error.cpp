@@ -3,31 +3,17 @@
 #include <spdlog/spdlog.h>
 #include <vulkan/vulkan.h>
 
+#include <type_traits>
+
+static_assert(sizeof(std::underlying_type_t<VkResult>) <= sizeof(int));
+
 // ************************************************************************************************
 // Constructor
 // ************************************************************************************************
 vkwp::VulkanError::VulkanError(const VkResult & result, const std::string & message) noexcept
-    : message_{ VulkanError::_toMessage(result, message) }
-    , result_{ result }
+    : runtime_error{ VulkanError::_toMessage(result, message) }
+    , result_{ static_cast<int>(result) }
 {}
-
-// ************************************************************************************************
-// what()
-// ************************************************************************************************
-const char *
-vkwp::VulkanError::what() const
-{
-    return this->message_.c_str();
-}
-
-// ************************************************************************************************
-// str()
-// ************************************************************************************************
-const std::string &
-vkwp::VulkanError::str() const noexcept
-{
-    return this->message_;
-}
 
 // ************************************************************************************************
 // result()

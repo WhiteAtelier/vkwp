@@ -14,7 +14,7 @@ namespace vkwp {
 ///
 /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkResult.html
 ///
-class VulkanError : public std::exception
+class VulkanError : public std::runtime_error
 {
 public:
     // ========================================================================================= //
@@ -32,7 +32,6 @@ public:
     ///     何をしようとしてエラーになったかなど, 詳細を表す文字列.
     ///
     [[nodiscard]]
-    //
     VulkanError(const VkResult & result, const std::string & message) noexcept;
 
     ///
@@ -45,18 +44,6 @@ public:
     /// @name Getter
     /// @{
     // ========================================================================================= //
-
-    ///
-    /// @brief エラーの内容を取得します.
-    ///
-    virtual const char *
-    what() const override;
-
-    ///
-    /// @brief エラーの内容を string で取得します.
-    ///
-    const std::string &
-    str() const noexcept;
 
     ///
     /// @brief エラーの内容を VkResult で取得します.
@@ -96,8 +83,7 @@ private:
     static std::string
     _toMessage(const VkResult & result, const std::string & message) noexcept;
 
-    const std::string message_;
-    int               result_;
+    int result_;
 };
 
 }  // namespace vkwp
