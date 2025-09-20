@@ -70,3 +70,5 @@ vkwp::Framebuffer::create(const std::string &                                   
     }
     return ret;
 }
+
+const vkwp::Framebuffer::OptionalCreateArgs vkwp::Framebuffer::default_opt_args;

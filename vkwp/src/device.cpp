@@ -118,3 +118,6 @@ vkwp::Device::getDeviceQueue(const std::uint32_t        queue_family_index,
     }
     return ret;
 }
+
+const vkwp::Device::OptionalCreateArgs vkwp::Device::default_opt_args;
+const vkwp::Device::DeviceQueueGetArgs vkwp::Device::default_get_opt_args;

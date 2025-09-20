@@ -26,6 +26,8 @@ public:
         const DebugUtilsResource * debug_utils  = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     [[nodiscard]]
     static Image
     create(const std::string &        label,
@@ -34,7 +36,7 @@ public:
            const VkFormat             format,
            const VkExtent3D           extent,
            const VkImageUsageFlags    usage,
-           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs & opt_args = default_opt_args);
 
     [[nodiscard]]
     static Image
@@ -43,7 +45,7 @@ public:
              const VkFormat             format,
              const std::uint32_t        width,
              const VkImageUsageFlags    usage,
-             const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
+             const OptionalCreateArgs & opt_args = default_opt_args);
 
     [[nodiscard]]
     static Image
@@ -53,7 +55,7 @@ public:
              const std::uint32_t        width,
              const std::uint32_t        height,
              const VkImageUsageFlags    usage,
-             const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
+             const OptionalCreateArgs & opt_args = default_opt_args);
 
     [[nodiscard]]
     static Image
@@ -64,7 +66,7 @@ public:
              const std::uint32_t        height,
              const std::uint32_t        depth,
              const VkImageUsageFlags    usage,
-             const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
+             const OptionalCreateArgs & opt_args = default_opt_args);
 
     [[nodiscard]]
     VkMemoryRequirements

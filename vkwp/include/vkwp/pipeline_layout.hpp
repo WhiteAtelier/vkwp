@@ -25,12 +25,14 @@ public:
         const DebugUtilsResource *  debug_utils = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     static PipelineLayout
     create(const std::string &                                                    label,
            const Device &                                                         device,
            const std::vector<std::reference_wrapper<const DescriptorSetLayout>> & set_layouts,
            const std::vector<VkPushConstantRange> &                               push_constant_ranges,
-           const OptionalCreateArgs &                                             opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &                                             opt_args = default_opt_args);
 };
 
 }  // namespace vkwp

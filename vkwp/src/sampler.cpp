@@ -68,3 +68,5 @@ vkwp::Sampler::create(const std::string &        label,
     }
     return ret;
 }
+
+const vkwp::Sampler::OptionalCreateArgs vkwp::Sampler::default_opt_args;

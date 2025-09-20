@@ -59,3 +59,5 @@ vkwp::RenderPass::create(const std::string &                          label,
     }
     return ret;
 }
+
+const vkwp::RenderPass::OptionalCreateArgs vkwp::RenderPass::default_opt_args;

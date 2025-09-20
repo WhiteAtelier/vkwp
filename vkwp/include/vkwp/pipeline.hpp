@@ -92,6 +92,8 @@ public:
         const DebugUtilsResource * debug_utils    = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     struct OptionalCreateRTPipelineArgs
     {
         const DeferredOperationKHR * deferred_operation = nullptr;
@@ -99,21 +101,23 @@ public:
         const DebugUtilsResource *   debug_utils        = nullptr;
     };
 
+    static const OptionalCreateRTPipelineArgs default_rt_pipeline_opt_args;
+
     static std::vector<Pipeline>
     create(const Device &                                  device,
            const std::vector<GraphicsPipelineCreateInfo> & create_info_list,
-           const OptionalCreateArgs &                      opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &                      opt_args = default_opt_args);
 
     static std::vector<Pipeline>
     create(const Device &                                 device,
            const std::vector<ComputePipelineCreateInfo> & create_info_list,
-           const OptionalCreateArgs &                     opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &                     opt_args = default_opt_args);
 
     static std::vector<Pipeline>
     create(const Device &                                       device,
            const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
            const RayTracingPipelineKHR_ExtFunctions &           ext_functions,
-           const OptionalCreateRTPipelineArgs &                 opt_args = OptionalCreateRTPipelineArgs{});
+           const OptionalCreateRTPipelineArgs &                 opt_args = default_rt_pipeline_opt_args);
 };
 
 }  // namespace vkwp

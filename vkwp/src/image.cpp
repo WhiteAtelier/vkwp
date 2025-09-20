@@ -169,3 +169,5 @@ vkwp::Image::bindMemory(const DeviceMemoryNode & device_memory_node, const VkDev
                           device_memory_node._getOffset() + offset),
         "Failed to vkBindImageMemory().");
 }
+
+const vkwp::Image::OptionalCreateArgs vkwp::Image::default_opt_args;

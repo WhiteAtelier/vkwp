@@ -68,3 +68,5 @@ vkwp::Fence::resetSignal() const
         vkResetFences(std::get<0>(this->parents_), 1, this->ptr()),
         "Failed to vkResetFences().");
 }
+
+const vkwp::Fence::OptionalCreateArgs vkwp::Fence::default_opt_args;

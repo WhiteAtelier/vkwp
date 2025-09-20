@@ -22,6 +22,8 @@ public:
         const void * p_next = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     [[nodiscard]]
     static Instance
     create(const std::string &            label,
@@ -32,7 +34,7 @@ public:
            const std::uint32_t            api_version,
            const std::vector<std::string> enabled_layer_names,
            const std::vector<std::string> enabled_extension_names,
-           const OptionalCreateArgs &     opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &     opt_args = default_opt_args);
 
     [[nodiscard]]
     static std::vector<VkExtensionProperties>

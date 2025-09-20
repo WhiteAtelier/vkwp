@@ -22,10 +22,10 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     static Semaphore
-    create(const std::string &        label,
-           const Device &             device,
-           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
+    create(const std::string & label, const Device & device, const OptionalCreateArgs & opt_args = default_opt_args);
 };
 
 }  // namespace vkwp

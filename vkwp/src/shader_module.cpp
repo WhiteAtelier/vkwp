@@ -61,3 +61,5 @@ vkwp::ShaderModule::create(const std::string &         label,
     }
     return ret;
 }
+
+const vkwp::ShaderModule::OptionalCreateArgs vkwp::ShaderModule::default_opt_args;

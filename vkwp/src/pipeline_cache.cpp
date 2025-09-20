@@ -47,3 +47,5 @@ vkwp::PipelineCache::create(const std::string & label, const Device & device, co
     }
     return ret;
 }
+
+const vkwp::PipelineCache::OptionalCreateArgs vkwp::PipelineCache::default_opt_args;

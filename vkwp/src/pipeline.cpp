@@ -185,3 +185,6 @@ vkwp::Pipeline::create(const Device &                                       devi
 
     return ret;
 }
+
+const vkwp::Pipeline::OptionalCreateArgs           vkwp::Pipeline::default_opt_args;
+const vkwp::Pipeline::OptionalCreateRTPipelineArgs vkwp::Pipeline::default_rt_pipeline_opt_args;

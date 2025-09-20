@@ -45,3 +45,5 @@ vkwp::Semaphore::create(const std::string & label, const Device & device, const 
     }
     return ret;
 }
+
+const vkwp::Semaphore::OptionalCreateArgs vkwp::Semaphore::default_opt_args;

@@ -36,13 +36,15 @@ public:
         VkWin32SurfaceCreateFlagsKHR flags  = 0;
     };
 
+    static const OptionalCreateArgsWin32 default_win32_opt_args;
+
     [[nodiscard]]
     static SurfaceKHR
     createWin32SurfaceKHR(const std::string &             label,
                           const Instance &                instance,
                           const HINSTANCE                 h_instance,
                           const HWND                      hwnd,
-                          const OptionalCreateArgsWin32 & opt_args = OptionalCreateArgsWin32{});
+                          const OptionalCreateArgsWin32 & opt_args = default_win32_opt_args);
 #endif
 };
 

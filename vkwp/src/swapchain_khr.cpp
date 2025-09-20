@@ -104,3 +104,5 @@ vkwp::SwapchainKHR::getSwapchainImages() const
         "Failed to vkGetSwapchainImagesKHR(). (array data)");
     return ret;
 }
+
+const vkwp::SwapchainKHR::OptionalCreateArgs vkwp::SwapchainKHR::default_opt_args;

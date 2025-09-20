@@ -25,6 +25,8 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     static Device
     create(const std::string &                          label,
            const VkPhysicalDevice                       physical_device,
@@ -32,7 +34,7 @@ public:
            const std::vector<std::string> &             enabled_layer_names,
            const std::vector<std::string> &             enabled_extension_names,
            const VkPhysicalDeviceFeatures * const       enabled_features,
-           const OptionalCreateArgs &                   opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &                   opt_args = default_opt_args);
 
     void
     waitIdle() const;
@@ -42,18 +44,20 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
+    static const DeviceQueueGetArgs default_get_opt_args;
+
     [[nodiscard]]
     Queue
     getDeviceQueue(const std::uint32_t        queue_family_index,
                    const std::uint32_t        queue_index,
-                   const DeviceQueueGetArgs & opt_args = DeviceQueueGetArgs{}) const;
+                   const DeviceQueueGetArgs & opt_args = default_get_opt_args) const;
 
     [[nodiscard]]
     Queue
     getDeviceQueue(const std::uint32_t        queue_family_index,
                    const std::uint32_t        queue_index,
                    std::unique_ptr<Mutex> &&  mutex,
-                   const DeviceQueueGetArgs & opt_args = DeviceQueueGetArgs{}) const;
+                   const DeviceQueueGetArgs & opt_args = default_get_opt_args) const;
 };
 
 }  // namespace vkwp

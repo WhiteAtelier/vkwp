@@ -60,3 +60,5 @@ vkwp::DescriptorPool::getCreateFlags() const noexcept
 {
     return this->create_flags_;
 }
+
+const vkwp::DescriptorPool::OptionalCreateArgs vkwp::DescriptorPool::default_opt_args;

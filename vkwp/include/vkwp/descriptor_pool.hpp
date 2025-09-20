@@ -25,13 +25,15 @@ public:
         const DebugUtilsResource *  debug_utils = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     [[nodiscard]]
     static DescriptorPool
     create(const std::string &                       label,
            const Device &                            device,
            const std::uint32_t                       max_sets,
            const std::vector<VkDescriptorPoolSize> & pool_sizes,
-           const OptionalCreateArgs &                opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &                opt_args = default_opt_args);
 
     [[nodiscard]]
     VkDescriptorPoolCreateFlags

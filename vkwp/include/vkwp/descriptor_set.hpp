@@ -29,10 +29,12 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
+    static const OptionalAllocateArgs default_opt_args;
+
     static std::vector<DescriptorSet>
     allocate(const DescriptorPool &                         descriptor_pool,
              const std::vector<DescriptorSetAllocateInfo> & allocate_info_list,
-             const OptionalAllocateArgs &                   opt_args = OptionalAllocateArgs{});
+             const OptionalAllocateArgs &                   opt_args = default_opt_args);
 };
 
 }  // namespace vkwp

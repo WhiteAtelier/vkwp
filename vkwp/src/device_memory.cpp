@@ -266,3 +266,5 @@ vkwp::DeviceMemory::MappedScope::ptr() const noexcept
 {
     return this->ptr_;
 }
+
+const vkwp::DeviceMemory::OptionalAllocateArgs vkwp::DeviceMemory::default_opt_args;

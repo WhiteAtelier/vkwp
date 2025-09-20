@@ -31,6 +31,8 @@ public:
         const DebugUtilsResource * debug_utils              = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     static Sampler
     create(const std::string &        label,
            const Device &             device,
@@ -40,7 +42,7 @@ public:
            const VkSamplerAddressMode address_mode_u,
            const VkSamplerAddressMode address_mode_v,
            const VkSamplerAddressMode address_mode_w,
-           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs & opt_args = default_opt_args);
 };
 
 }  // namespace vkwp

@@ -24,12 +24,14 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     [[nodiscard]]
     static ShaderModule
     create(const std::string &                label,
            const Device &                     device,
            const std::vector<std::uint32_t> & code,
-           const OptionalCreateArgs &         opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &         opt_args = default_opt_args);
 
     [[nodiscard]]
     static ShaderModule
@@ -37,7 +39,7 @@ public:
            const Device &              device,
            const std::uint32_t * const data,
            const std::size_t           data_length,
-           const OptionalCreateArgs &  opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &  opt_args = default_opt_args);
 };
 
 }  // namespace vkwp

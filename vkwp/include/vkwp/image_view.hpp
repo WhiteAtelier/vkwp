@@ -27,6 +27,8 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     [[nodiscard]]
     static ImageView
     create(const std::string &             label,
@@ -35,7 +37,7 @@ public:
            const VkImageViewType           view_type,
            const VkFormat                  format,
            const VkImageSubresourceRange & subresource_range,
-           const OptionalCreateArgs &      opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &      opt_args = default_opt_args);
 };
 
 }  // namespace vkwp

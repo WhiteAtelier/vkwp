@@ -83,3 +83,5 @@ vkwp::DescriptorSet::allocate(const DescriptorPool &                         des
 
     return ret;
 }
+
+const vkwp::DescriptorSet::OptionalAllocateArgs vkwp::DescriptorSet::default_opt_args;

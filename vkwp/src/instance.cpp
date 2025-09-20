@@ -87,3 +87,5 @@ vkwp::Instance::enumerateInstanceExtensionProperties()
         "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
     return ret;
 }
+
+const vkwp::Instance::OptionalCreateArgs vkwp::Instance::default_opt_args;

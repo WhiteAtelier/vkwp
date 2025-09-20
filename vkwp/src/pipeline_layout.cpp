@@ -65,3 +65,5 @@ vkwp::PipelineLayout::create(const std::string &                                
     }
     return ret;
 }
+
+const vkwp::PipelineLayout::OptionalCreateArgs vkwp::PipelineLayout::default_opt_args;

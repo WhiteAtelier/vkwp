@@ -60,3 +60,5 @@ vkwp::ImageView::create(const std::string &             label,
     }
     return ret;
 }
+
+const vkwp::ImageView::OptionalCreateArgs vkwp::ImageView::default_opt_args;

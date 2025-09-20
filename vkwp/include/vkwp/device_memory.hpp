@@ -21,6 +21,8 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;  ///< Pointer to a debug utils resource instance.
     };
 
+    static const OptionalAllocateArgs default_opt_args;
+
     [[nodiscard]]
     static DeviceMemory
     allocate(const std::string &          label,
@@ -28,7 +30,7 @@ public:
              const PhysicalDevice &       physical_device,
              const VkMemoryRequirements & memory_requirements,
              const VkMemoryPropertyFlags  memory_property_flags,
-             const OptionalAllocateArgs & opt_args = OptionalAllocateArgs{});
+             const OptionalAllocateArgs & opt_args = default_opt_args);
 
     [[nodiscard]]
     static DeviceMemory
@@ -41,7 +43,7 @@ public:
                               const wchar_t * const                    name,
                               const VkImage &                          image,
                               const VkBuffer &                         buffer,
-                              const OptionalAllocateArgs &             opt_args = OptionalAllocateArgs{});
+                              const OptionalAllocateArgs &             opt_args = default_opt_args);
 
     /// @brief Write data.
     ///

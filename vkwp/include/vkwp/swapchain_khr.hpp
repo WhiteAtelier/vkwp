@@ -31,6 +31,8 @@ public:
         const DebugUtilsResource *  debug_utils              = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     [[nodiscard]]
     static SwapchainKHR
     create(const std::string &                 label,
@@ -43,7 +45,7 @@ public:
            const VkImageUsageFlags             image_usage,
            const VkPresentModeKHR              present_mode,
            const VkSurfaceTransformFlagBitsKHR pre_transform,
-           const OptionalCreateArgs &          opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &          opt_args = default_opt_args);
 
     // VK_EXT_hdr_metadata 拡張が必要.
     void

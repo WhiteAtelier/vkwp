@@ -25,6 +25,8 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
+    static const OptionalCreateArgs default_opt_args;
+
     static Framebuffer
     create(const std::string &                                        label,
            const Device &                                             device,
@@ -33,7 +35,7 @@ public:
            const std::uint32_t                                        width,
            const std::uint32_t                                        height,
            const std::uint32_t                                        layers,
-           const OptionalCreateArgs &                                 opt_args = OptionalCreateArgs{});
+           const OptionalCreateArgs &                                 opt_args = default_opt_args);
 };
 
 }  // namespace vkwp
