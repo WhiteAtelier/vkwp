@@ -28,7 +28,7 @@ public:
         const DebugUtilsResource * debug_utils = nullptr;
     };
 
-    constexpr static OptionalCreateArgs default_opt_args;
+    constexpr static OptionalCreateArgs default_opt_args{};
 
     [[nodiscard]]
     static CommandPool

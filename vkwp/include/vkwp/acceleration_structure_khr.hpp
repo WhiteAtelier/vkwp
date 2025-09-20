@@ -35,7 +35,7 @@ public:
         const DebugUtilsResource * const      debug_utils    = nullptr;
     };
 
-    constexpr static OptionalCreateArgs default_opt_args;
+    constexpr static OptionalCreateArgs default_opt_args{};
 
     static AccelerationStructureKHR
     create(const std::string &                  label,
