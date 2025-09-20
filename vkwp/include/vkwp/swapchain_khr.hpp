@@ -43,7 +43,7 @@ public:
            const VkImageUsageFlags             image_usage,
            const VkPresentModeKHR              present_mode,
            const VkSurfaceTransformFlagBitsKHR pre_transform,
-           const OptionalCreateArgs &          opt_args = {});
+           const OptionalCreateArgs &          opt_args = OptionalCreateArgs{});
 
     // VK_EXT_hdr_metadata 拡張が必要.
     void

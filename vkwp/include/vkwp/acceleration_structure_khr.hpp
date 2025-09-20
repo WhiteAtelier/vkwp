@@ -42,7 +42,7 @@ public:
            const VkDeviceSize                   offset,
            const VkDeviceSize                   size,
            const VkAccelerationStructureTypeKHR type,
-           const OptionalCreateArgs &           opt_args = {});
+           const OptionalCreateArgs &           opt_args = OptionalCreateArgs{});
 
     static AccelerationStructureKHR
     createEXT(const std::string &                           label,
@@ -52,7 +52,7 @@ public:
               const VkDeviceSize                            size,
               const VkAccelerationStructureTypeKHR          type,
               const AccelerationStructureKHR_ExtFunctions & ext_functions,
-              const OptionalCreateArgs &                    opt_args = {});
+              const OptionalCreateArgs &                    opt_args = OptionalCreateArgs{});
 };
 
 }  // namespace vkwp

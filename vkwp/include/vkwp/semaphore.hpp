@@ -23,7 +23,9 @@ public:
     };
 
     static Semaphore
-    create(const std::string & label, const Device & device, const OptionalCreateArgs & opt_args = {});
+    create(const std::string &        label,
+           const Device &             device,
+           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
 };
 
 }  // namespace vkwp

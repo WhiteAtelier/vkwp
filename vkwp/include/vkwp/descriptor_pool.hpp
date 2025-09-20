@@ -5,6 +5,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <cstdint>
 #include <vector>
 
 namespace vkwp {
@@ -30,7 +31,7 @@ public:
            const Device &                            device,
            const std::uint32_t                       max_sets,
            const std::vector<VkDescriptorPoolSize> & pool_sizes,
-           const OptionalCreateArgs &                opt_args);
+           const OptionalCreateArgs &                opt_args = OptionalCreateArgs{});
 
     [[nodiscard]]
     VkDescriptorPoolCreateFlags

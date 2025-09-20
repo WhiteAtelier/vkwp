@@ -30,7 +30,7 @@ public:
            const std::vector<VkAttachmentDescription> & attachments,
            const std::vector<VkSubpassDescription> &    subpasses,
            const std::vector<VkSubpassDependency> &     dependencies,
-           const OptionalCreateArgs &                   opt_args = {});
+           const OptionalCreateArgs &                   opt_args = OptionalCreateArgs{});
 };
 
 }  // namespace vkwp

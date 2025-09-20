@@ -40,7 +40,7 @@ public:
            const VkSamplerAddressMode address_mode_u,
            const VkSamplerAddressMode address_mode_v,
            const VkSamplerAddressMode address_mode_w,
-           const OptionalCreateArgs & opt_args = {});
+           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
 };
 
 }  // namespace vkwp

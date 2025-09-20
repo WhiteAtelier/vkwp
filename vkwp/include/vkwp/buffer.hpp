@@ -50,7 +50,7 @@ public:
            const Device &             device,
            const VkDeviceSize         size,
            const VkBufferUsageFlags   usage,
-           const OptionalCreateArgs & opt_args = {});
+           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
 
     ///
     /// @brief このバッファが要求するデバイスメモリ要件を取得する.

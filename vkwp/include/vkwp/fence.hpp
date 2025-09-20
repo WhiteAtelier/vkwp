@@ -25,7 +25,9 @@ public:
     };
 
     static Fence
-    create(const std::string & label, const Device & device, const OptionalCreateArgs & opt_args = {});
+    create(const std::string &        label,
+           const Device &             device,
+           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
 
     bool
     wait(const std::uint64_t timeout = (std::numeric_limits<std::uint64_t>::max)()) const;

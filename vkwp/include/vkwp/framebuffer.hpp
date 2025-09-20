@@ -33,7 +33,7 @@ public:
            const std::uint32_t                                        width,
            const std::uint32_t                                        height,
            const std::uint32_t                                        layers,
-           const OptionalCreateArgs &                                 opt_args = {});
+           const OptionalCreateArgs &                                 opt_args = OptionalCreateArgs{});
 };
 
 }  // namespace vkwp

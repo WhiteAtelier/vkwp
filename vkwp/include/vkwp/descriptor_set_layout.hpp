@@ -28,7 +28,7 @@ public:
     create(const std::string &                               label,
            const Device &                                    device,
            const std::vector<VkDescriptorSetLayoutBinding> & bindings,
-           const OptionalCreateArgs &                        opt_args = {});
+           const OptionalCreateArgs &                        opt_args = OptionalCreateArgs{});
 };
 
 }  // namespace vkwp

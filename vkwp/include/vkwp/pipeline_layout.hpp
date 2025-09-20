@@ -30,7 +30,7 @@ public:
            const Device &                                                         device,
            const std::vector<std::reference_wrapper<const DescriptorSetLayout>> & set_layouts,
            const std::vector<VkPushConstantRange> &                               push_constant_ranges,
-           const OptionalCreateArgs &                                             opt_args = {});
+           const OptionalCreateArgs &                                             opt_args = OptionalCreateArgs{});
 };
 
 }  // namespace vkwp

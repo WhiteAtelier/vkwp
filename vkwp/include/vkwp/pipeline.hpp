@@ -102,18 +102,18 @@ public:
     static std::vector<Pipeline>
     create(const Device &                                  device,
            const std::vector<GraphicsPipelineCreateInfo> & create_info_list,
-           const OptionalCreateArgs &                      opt_args = {});
+           const OptionalCreateArgs &                      opt_args = OptionalCreateArgs{});
 
     static std::vector<Pipeline>
     create(const Device &                                 device,
            const std::vector<ComputePipelineCreateInfo> & create_info_list,
-           const OptionalCreateArgs &                     opt_args = {});
+           const OptionalCreateArgs &                     opt_args = OptionalCreateArgs{});
 
     static std::vector<Pipeline>
     create(const Device &                                       device,
            const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
            const RayTracingPipelineKHR_ExtFunctions &           ext_functions,
-           const OptionalCreateRTPipelineArgs &                 opt_args = {});
+           const OptionalCreateRTPipelineArgs &                 opt_args = OptionalCreateRTPipelineArgs{});
 };
 
 }  // namespace vkwp

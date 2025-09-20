@@ -42,7 +42,7 @@ public:
                           const Instance &                instance,
                           const HINSTANCE                 h_instance,
                           const HWND                      hwnd,
-                          const OptionalCreateArgsWin32 & opt_args = {});
+                          const OptionalCreateArgsWin32 & opt_args = OptionalCreateArgsWin32{});
 #endif
 };
 

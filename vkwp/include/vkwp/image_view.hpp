@@ -35,7 +35,7 @@ public:
            const VkImageViewType           view_type,
            const VkFormat                  format,
            const VkImageSubresourceRange & subresource_range,
-           const OptionalCreateArgs &      opt_args = {});
+           const OptionalCreateArgs &      opt_args = OptionalCreateArgs{});
 };
 
 }  // namespace vkwp

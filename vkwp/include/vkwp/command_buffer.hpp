@@ -44,20 +44,20 @@ public:
     allocateCommandBuffers(const CommandPool &              command_pool,
                            const VkCommandBufferLevel       level,
                            const std::vector<std::string> & command_buffer_labels,
-                           const OptionalAllocateArgs &     opt_args = {});
+                           const OptionalAllocateArgs &     opt_args = OptionalAllocateArgs{});
 
     [[nodiscard]]
     static CommandBuffer
     allocateCommandBuffer(const std::string &          label,
                           const CommandPool &          command_pool,
                           const VkCommandBufferLevel   level,
-                          const OptionalAllocateArgs & opt_args = {});
+                          const OptionalAllocateArgs & opt_args = OptionalAllocateArgs{});
 
     [[nodiscard]]
     static CommandBuffer
     allocatePrimaryCommandBuffer(const std::string &          label,
                                  const CommandPool &          command_pool,
-                                 const OptionalAllocateArgs & opt_args = {});
+                                 const OptionalAllocateArgs & opt_args = OptionalAllocateArgs{});
 
     void
     beginCommandBuffer(const VkCommandBufferInheritanceInfo & inheritance_info,

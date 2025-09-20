@@ -32,7 +32,7 @@ public:
            const std::uint32_t            api_version,
            const std::vector<std::string> enabled_layer_names,
            const std::vector<std::string> enabled_extension_names,
-           const OptionalCreateArgs &     opt_args = {});
+           const OptionalCreateArgs &     opt_args = OptionalCreateArgs{});
 
     [[nodiscard]]
     static std::vector<VkExtensionProperties>

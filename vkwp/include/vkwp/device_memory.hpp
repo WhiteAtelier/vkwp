@@ -28,7 +28,7 @@ public:
              const PhysicalDevice &       physical_device,
              const VkMemoryRequirements & memory_requirements,
              const VkMemoryPropertyFlags  memory_property_flags,
-             const OptionalAllocateArgs & opt_args = {});
+             const OptionalAllocateArgs & opt_args = OptionalAllocateArgs{});
 
     [[nodiscard]]
     static DeviceMemory
@@ -41,7 +41,7 @@ public:
                               const wchar_t * const                    name,
                               const VkImage &                          image,
                               const VkBuffer &                         buffer,
-                              const OptionalAllocateArgs &             opt_args = {});
+                              const OptionalAllocateArgs &             opt_args = OptionalAllocateArgs{});
 
     /// @brief Write data.
     ///

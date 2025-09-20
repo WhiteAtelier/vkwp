@@ -33,7 +33,7 @@ public:
     create(const std::string &        label,
            const Device &             device,
            const std::uint32_t        queue_family_index,
-           const OptionalCreateArgs & opt_args = {});
+           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
 
     [[nodiscard]]
     static CommandPool
@@ -41,7 +41,7 @@ public:
            const Device &             device,
            const std::uint32_t        queue_family_index,
            std::unique_ptr<Mutex> &&  mutex,
-           const OptionalCreateArgs & opt_args = {});
+           const OptionalCreateArgs & opt_args = OptionalCreateArgs{});
 
     VkCommandPoolCreateFlags
     getCreateFlags() const noexcept;

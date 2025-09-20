@@ -29,7 +29,7 @@ public:
     create(const std::string &                label,
            const Device &                     device,
            const std::vector<std::uint32_t> & code,
-           const OptionalCreateArgs &         opt_args = {});
+           const OptionalCreateArgs &         opt_args = OptionalCreateArgs{});
 
     [[nodiscard]]
     static ShaderModule
@@ -37,7 +37,7 @@ public:
            const Device &              device,
            const std::uint32_t * const data,
            const std::size_t           data_length,
-           const OptionalCreateArgs &  opt_args = {});
+           const OptionalCreateArgs &  opt_args = OptionalCreateArgs{});
 };
 
 }  // namespace vkwp
