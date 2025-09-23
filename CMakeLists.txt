@@ -26,6 +26,15 @@ add_compile_options(
     "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>"
     "$<$<CXX_COMPILER_ID:MSVC>:/EHsc>"
     "$<$<CXX_COMPILER_ID:MSVC>:/MP>"
+
+    # displays level 1, level 2, and level 3 warnings, and all level 4 (informational) warnings
+    "$<$<CXX_COMPILER_ID:MSVC>:/W4>"
+
+    # Treats all compiler warnings as errors.
+    "$<$<CXX_COMPILER_ID:MSVC>:/WX>"
+    
+    # 'enumeration': a forward declaration of an unscoped enumeration must have an underlying type
+    "$<$<CXX_COMPILER_ID:MSVC>:/wd4471>"
 )
 
 add_subdirectory(vkwp)
