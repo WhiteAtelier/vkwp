@@ -6,32 +6,32 @@
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
 vkwp::Resource<T, ParentTs...>::Resource()
     : label_{}
-    , external_{ false }
     , instance_{ nullptr }
+    , external_{ false }
     , parents_{}
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
 vkwp::Resource<T, ParentTs...>::Resource(const std::string & label)
     : label_{ label }
-    , external_{ false }
     , instance_{ nullptr }
+    , external_{ false }
     , parents_{}
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
 vkwp::Resource<T, ParentTs...>::Resource(const std::string & label, const T & external)
     : label_{ label }
-    , external_{ true }
     , instance_{ external }
+    , external_{ true }
     , parents_{}
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
 vkwp::Resource<T, ParentTs...>::Resource(Resource && m) noexcept
     : label_{ std::move(m.label_) }
-    , external_{ m.external_ }
     , instance_{ m.instance_ }
+    , external_{ m.external_ }
     , parents_{ std::move(m.parents_) }
 {
     if (this != &m)
