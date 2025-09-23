@@ -150,7 +150,7 @@ vkwp::DeviceMemoryNode::write(const void * const src, const std::size_t size, co
     // 範囲外チェック
     if ((offset + size) > (this->_getOffset() + this->getSize()))
     {
-        throw std::out_of_range{ "Out of range write to DeviceMemoryNode." };
+        throw std::out_of_range{ "Out of range, Failed to write to DeviceMemoryNode." };
     }
 
     void * ptr = this->block_->getMappedPtr();
@@ -174,7 +174,7 @@ vkwp::DeviceMemoryNode::read(void * const dst, const std::size_t size, const std
     // 範囲外チェック
     if ((offset + size) > (this->_getOffset() + this->getSize()))
     {
-        throw std::out_of_range{ "Out of range write to DeviceMemoryNode." };
+        throw std::out_of_range{ "Out of range, Failed read to DeviceMemoryNode." };
     }
 
     void * ptr = this->block_->getMappedPtr();
