@@ -8,8 +8,9 @@
 namespace vkwp {
 
 ///
-/// @brief VkBuffer wrapper.
+/// @brief Wrapper for VkBuffer.
 ///
+/// For more details, see:
 /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkBuffer.html
 ///
 class Buffer final : public Resource<VkBuffer, VkDevice>
@@ -27,25 +28,25 @@ public:
     static const OptionalCreateArgs default_opt_args;
 
     ///
-    /// @brief Create new buffer instance.
+    /// @brief Creates a new buffer instance.
     ///
     /// @param label
-    ///     Label string for debugging.
+    ///     A label string for debugging purposes.
     ///
     /// @param device
-    ///     The logical device that creates the buffer object.
+    ///     The logical device used to create the buffer object.
     ///
     /// @param size
-    ///     The size in bytes of the buffer to be created.
+    ///     The size of the buffer to be created, in bytes.
     ///
     /// @param usage
-    ///     A bitmask of VkBufferUsageFlagBits specifying allowed usages of the buffer.
+    ///     A bitmask of VkBufferUsageFlagBits specifying the allowed usages of the buffer.
     ///
     /// @param opt_args
-    ///     Optional arguments.
+    ///     Optional arguments for buffer creation.
     ///
     /// @return
-    ///     Buffer instance.
+    ///     A new Buffer instance.
     ///
     static Buffer
     create(const std::string &        label,
@@ -55,34 +56,49 @@ public:
            const OptionalCreateArgs & opt_args = default_opt_args);
 
     ///
-    /// @brief このバッファが要求するデバイスメモリ要件を取得する.
+    /// @brief Retrieves the memory requirements for this buffer.
     ///
     /// @return
-    ///     メモリ要件についての構造体.
+    ///     A structure containing the memory requirements.
+    ///     For more details, see:
     ///     https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkMemoryRequirements.html
     ///
     VkMemoryRequirements
     getMemoryRequirements() const;
 
     ///
-    /// @brief デバイスメモリをバインドする.
+    /// @brief Binds device memory to this buffer.
     ///
     /// @param device_memory
-    ///     バインドするデバイスメモリインスタンス.
-    ///     有効なインスタンスである必要があります.
+    ///     The device memory instance to bind. It must be a valid instance.
     ///
     /// @param offset
-    ///     メモリオフセット (Bytes).
+    ///     The memory offset, in bytes.
     ///
     void
     bindMemory(const DeviceMemory & device_memory, const VkDeviceSize offset) const;
 
+    ///
+    /// @brief Binds DeviceMemoryNode to this buffer.
+    ///
+    /// @param device_memory_node
+    ///     The device memory node to bind.
+    ///
+    /// @param offset
+    ///     The memory offset, in bytes.
+    ///
     void
     bindMemory(const DeviceMemoryNode & device_memory_node, const VkDeviceSize offset) const;
 
-    /// @brief このバッファのデバイスアドレスを取得する.
     ///
-    /// BufferDeviceAddressFeature を有効にしている必要があります.
+    /// @brief Retrieves the device address of this buffer.
+    ///
+    /// @remark
+    ///     The BufferDeviceAddressFeature must be enabled.
+    ///
+    /// @return
+    ///     The device address of the buffer.
+    ///
     VkDeviceAddress
     getBufferDeviceAddress() const;
 };
