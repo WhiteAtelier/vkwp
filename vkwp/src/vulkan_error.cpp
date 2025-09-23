@@ -5,7 +5,9 @@
 
 #include <type_traits>
 
-static_assert(sizeof(std::underlying_type_t<VkResult>) <= sizeof(int));
+static_assert(sizeof(std::underlying_type_t<VkResult>) <= sizeof(int),
+              "VkResult's underlying type is larger than int; cannot safely cast VkResult to int. "
+              "If this assertion fails, review all static_cast<int>(VkResult) usages for correctness.");
 
 // ************************************************************************************************
 // Constructor
