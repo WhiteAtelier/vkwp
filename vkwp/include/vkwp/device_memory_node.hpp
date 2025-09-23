@@ -75,12 +75,8 @@ private:
 
     [[nodiscard]]
     explicit DeviceMemoryNode(const std::string &                 label,
-                              const std::size_t                   mapping_alignment,
                               class DeviceMemoryBlock * const     block,
                               class DeviceMemoryBlockNode * const node);
-
-    std::size_t
-    _alignMappingRange(std::size_t & size, std::size_t & offset) const;
 
     VkDeviceMemory
     _getDeviceMemory() const;
@@ -89,7 +85,6 @@ private:
     _getOffset() const;
 
     std::string                   label_;
-    std::size_t                   mapping_alignment_;
     class DeviceMemoryBlock *     block_;
     class DeviceMemoryBlockNode * node_;
 };

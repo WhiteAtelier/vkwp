@@ -10,31 +10,26 @@
 
 vkwp::DeviceMemoryNode::DeviceMemoryNode()
     : label_{}
-    , mapping_alignment_{ 0 }
     , block_{ nullptr }
     , node_{ nullptr }
 {}
 
 vkwp::DeviceMemoryNode::DeviceMemoryNode(const std::string & label)
     : label_{ label }
-    , mapping_alignment_{ 0 }
     , block_{ nullptr }
     , node_{ nullptr }
 {}
 
 vkwp::DeviceMemoryNode::DeviceMemoryNode(const std::string &           label,
-                                         const std::size_t             mapping_alignment,
                                          DeviceMemoryBlock * const     block,
                                          DeviceMemoryBlockNode * const node)
     : label_{ label }
-    , mapping_alignment_{ mapping_alignment }
     , block_{ block }
     , node_{ node }
 {}
 
 vkwp::DeviceMemoryNode::DeviceMemoryNode(DeviceMemoryNode && m) noexcept
     : label_{ std::move(m.label_) }
-    , mapping_alignment_{ m.mapping_alignment_ }
     , block_{ m.block_ }
     , node_{ m.node_ }
 {
@@ -52,13 +47,11 @@ vkwp::DeviceMemoryNode::operator=(DeviceMemoryNode && m) noexcept
 {
     if (this != &m)
     {
-        this->label_             = std::move(m.label_);
-        this->mapping_alignment_ = m.mapping_alignment_;
-        this->block_             = m.block_;
-        this->node_              = m.node_;
-        m.mapping_alignment_     = 0;
-        m.block_                 = nullptr;
-        m.node_                  = nullptr;
+        this->label_ = std::move(m.label_);
+        this->block_ = m.block_;
+        this->node_  = m.node_;
+        m.block_     = nullptr;
+        m.node_      = nullptr;
     }
     return *this;
 }
@@ -133,17 +126,6 @@ public:
 };
 }  // namespace
 
-std::size_t
-vkwp::DeviceMemoryNode::_alignMappingRange(std::size_t & size, std::size_t & offset) const
-{
-    auto new_offset = utils::align(offset + 1, this->mapping_alignment_) - this->mapping_alignment_;
-    VKWP_ASSERTION(new_offset <= offset);
-    auto dst_offset = offset - new_offset;
-    size            = utils::align(dst_offset + size, this->mapping_alignment_);
-    offset          = new_offset;
-    return dst_offset;
-}
-
 VkDeviceMemory
 vkwp::DeviceMemoryNode::_getDeviceMemory() const
 {
@@ -157,33 +139,49 @@ vkwp::DeviceMemoryNode::_getOffset() const
 }
 
 void
-vkwp::DeviceMemoryNode::write(const void * const src, const std::size_t _size, const std::size_t _offset)
+vkwp::DeviceMemoryNode::write(const void * const src, const std::size_t size, const std::size_t _offset)
 {
     // とにかくこの領域だけ map して書き込むモード.
     VKWP_ASSERTION(this->block_ != nullptr);
     VKWP_ASSERTION(*this->block_);
 
-    // offset と size について, min mapping alignment に従って alignment を取る.
-    auto       size       = _size;
-    auto       offset     = _offset;
-    const auto dst_offset = this->_alignMappingRange(size, offset);
+    const auto offset = _offset + this->_getOffset();  // MemoryBlock 先頭からの offset
 
-    Scope scope{ this->block_->getDevice(), *this->block_, size, offset };
-    std::memcpy(reinterpret_cast<std::uint8_t *>(scope()) + dst_offset, src, _size);
+    // 範囲外チェック
+    if ((offset + size) > (this->_getOffset() + this->getSize()))
+    {
+        throw std::out_of_range{ "Out of range write to DeviceMemoryNode." };
+    }
+
+    void * ptr = this->block_->getMappedPtr();
+    if (ptr == nullptr)
+    {
+        throw std::runtime_error{ "Device memory cannot map. (not HOST_VISIBLE)" };
+    }
+
+    std::memcpy(reinterpret_cast<std::uint8_t *>(ptr) + offset, src, size);
 }
 
 void
-vkwp::DeviceMemoryNode::read(void * const dst, const std::size_t data_size, const std::size_t node_offset)
+vkwp::DeviceMemoryNode::read(void * const dst, const std::size_t size, const std::size_t _offset)
 {
     // とにかくこの領域だけ map して読み込むモード.
     VKWP_ASSERTION(this->block_ != nullptr);
     VKWP_ASSERTION(*this->block_);
 
-    // offset と size について, min mapping alignment に従って alignment を取る.
-    auto       map_size   = data_size;
-    auto       map_offset = node_offset;
-    const auto dst_offset = this->_alignMappingRange(map_size, map_offset);
+    const auto offset = _offset + this->_getOffset();  // MemoryBlock 先頭からの offset
 
-    Scope scope{ this->block_->getDevice(), *this->block_, map_size, map_offset };
-    std::memcpy(dst, reinterpret_cast<std::uint8_t *>(scope()) + dst_offset, data_size);
+    // 範囲外チェック
+    if ((offset + size) > (this->_getOffset() + this->getSize()))
+    {
+        throw std::out_of_range{ "Out of range write to DeviceMemoryNode." };
+    }
+
+    void * ptr = this->block_->getMappedPtr();
+    if (ptr == nullptr)
+    {
+        throw std::runtime_error{ "Device memory cannot map. (not HOST_VISIBLE)" };
+    }
+
+    std::memcpy(dst, reinterpret_cast<std::uint8_t *>(ptr) + offset, size);
 }

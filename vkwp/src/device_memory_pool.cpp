@@ -28,7 +28,6 @@ vkwp::DeviceMemoryPool::DeviceMemoryPool()
     : label_{}
     , device_{ nullptr }
     , memory_properties_{}
-    , mapping_alignment_{ 0 }
     , block_size_{ 0 }
     , max_size_{ 0 }
     , current_size_{ 0 }
@@ -47,7 +46,6 @@ vkwp::DeviceMemoryPool::DeviceMemoryPool(const std::string &        label,
     : label_{ label }
     , device_{ device }
     , memory_properties_{ physical_device.getMemoryProperties() }
-    , mapping_alignment_{ physical_device.getProperties().limits.minMemoryMapAlignment }
     , block_size_{ block_size }
     , max_size_{ max_size }
     , current_size_{ 0 }
@@ -159,13 +157,14 @@ vkwp::DeviceMemoryPool::allocate(const std::string &          label,
     }
 
     // 新しいメモリを追加, まだ memories には足さない.
-    auto allocated_unit = DeviceMemoryBlock::allocate(std::format("{}:Unit[{}]", this->label_, this->unit_index_),
-                                                      this->device_,
-                                                      this->mapping_alignment_,
-                                                      index,
-                                                      allocation_size,
-                                                      this->allocate_memory_p_next_,
-                                                      this->debug_util_);
+    auto allocated_unit = DeviceMemoryBlock::allocate(  //
+        std::format("{}:Unit[{}]", this->label_, this->unit_index_),
+        this->device_,
+        index,
+        allocation_size,
+        (memory_property_flags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) != 0,
+        this->allocate_memory_p_next_,
+        this->debug_util_);
     ++this->unit_index_;
 
     // iter に対して allocateNode する
