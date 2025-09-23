@@ -15,7 +15,7 @@ namespace vkwp {
 class Instance final : public Resource<VkInstance>
 {
 public:
-    Resource<VkInstance>::Resource;
+    using Resource<VkInstance>::Resource;
 
     struct OptionalCreateArgs
     {
