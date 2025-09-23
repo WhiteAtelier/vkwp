@@ -205,7 +205,7 @@ vkwp::CommandBuffer::_beginCommandBuffer(const VkCommandBufferInheritanceInfo * 
 {
     const VkCommandBufferBeginInfo bi{
         .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .pNext            = nullptr,
+        .pNext            = p_next,
         .flags            = flags,
         .pInheritanceInfo = inheritance_info,
     };
