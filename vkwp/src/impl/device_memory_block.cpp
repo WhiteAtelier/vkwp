@@ -9,16 +9,29 @@
 
 #include <spdlog/spdlog.h>
 
-vkwp::DeviceMemoryBlock::DeviceMemoryBlock(const std::string & label,
-                                           const std::size_t   size,
-                                           const std::size_t   mapping_alignment) noexcept
+vkwp::DeviceMemoryBlock::DeviceMemoryBlock(const std::string & label, const std::size_t size) noexcept
     : Resource<VkDeviceMemory, VkDevice>{ label }
     , size_{ size }
-    , mapping_alignment_{ mapping_alignment }
+    , mapped_ptr_{ nullptr }
     , root_node_{ std::make_unique<DeviceMemoryBlockNode>(size) }
     , free_nodes_{ { size, this->root_node_.get() } }
 {
     VKWP_ASSERTION(size > 0);
+}
+
+void
+vkwp::DeviceMemoryBlock::_map()
+{
+    VKWP_ASSERTION(this->mapped_ptr_ == nullptr);
+    if (this->mapped_ptr_ == nullptr)
+    {
+        vkMapMemory(std::get<0>(this->parents_),
+                    static_cast<VkDeviceMemory>(*this),
+                    0,
+                    this->size_,
+                    0,
+                    &this->mapped_ptr_);
+    }
 }
 
 vkwp::DeviceMemoryBlock::~DeviceMemoryBlock() noexcept
@@ -26,27 +39,25 @@ vkwp::DeviceMemoryBlock::~DeviceMemoryBlock() noexcept
     // この時点で Node はひとつのはず
     VKWP_ASSERTION(!this->root_node_->isUsed());
     VKWP_ASSERTION(this->root_node_->getNext() == nullptr);
+
+    if (this->mapped_ptr_ != nullptr)
+    {
+        vkUnmapMemory(std::get<0>(this->parents_), static_cast<VkDeviceMemory>(*this));
+        this->mapped_ptr_ = nullptr;
+    }
 }
 
 /* STATIC */
 std::unique_ptr<vkwp::DeviceMemoryBlock>
 vkwp::DeviceMemoryBlock::allocate(const std::string &        label,
                                   const VkDevice             device,
-                                  const std::size_t          mapping_alignment,
                                   const std::uint32_t        memory_type_index,
                                   const std::size_t          size,
+                                  const bool                 host_visible,
                                   const void * const         allocate_memory_p_next,
                                   const DebugUtilsResource * debug_utils)
 {
-    class DeviceMemoryBlock_ final : public DeviceMemoryBlock
-    {
-    public:
-        DeviceMemoryBlock_(const std::string & l, const std::size_t s, const std::size_t a) noexcept
-            : DeviceMemoryBlock{ l, s, a }
-        {}
-    };
-
-    auto block = std::make_unique<DeviceMemoryBlock_>(label, size, mapping_alignment);
+    auto block = std::make_unique<DeviceMemoryBlock>(label, size);
 
     const VkMemoryAllocateInfo ai{
         .sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
@@ -61,6 +72,11 @@ vkwp::DeviceMemoryBlock::allocate(const std::string &        label,
     VulkanError::check(  //
         vkAllocateMemory(device, &ai, nullptr, block->_reset(device)),
         "Failed to vkAllocateMemory().");
+
+    if (host_visible)
+    {
+        block->_map();
+    }
 
     if (debug_utils != nullptr)
     {
@@ -109,7 +125,7 @@ vkwp::DeviceMemoryBlock::allocateNode(const std::string & label, const std::size
                 this->free_nodes_.emplace(next_node->getSize(), next_node);
             }
 
-            return DeviceMemoryNode{ label, this->mapping_alignment_, this, target_node };
+            return DeviceMemoryNode{ label, this, target_node };
         }
     }
 
@@ -180,4 +196,10 @@ VkDevice
 vkwp::DeviceMemoryBlock::getDevice() const noexcept
 {
     return std::get<0>(this->parents_);
+}
+
+void *
+vkwp::DeviceMemoryBlock::getMappedPtr() const noexcept
+{
+    return this->mapped_ptr_;
 }

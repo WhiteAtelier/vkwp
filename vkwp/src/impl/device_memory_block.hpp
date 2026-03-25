@@ -20,6 +20,9 @@ class DeviceMemoryBlockNode;
 class DeviceMemoryBlock : public Resource<VkDeviceMemory, VkDevice>
 {
 public:
+    // 必ず allocate() で確保すること.
+    DeviceMemoryBlock(const std::string & label, const std::size_t size) noexcept;
+
     DeviceMemoryBlock(const DeviceMemoryBlock &) = delete;
     DeviceMemoryBlock(DeviceMemoryBlock &&)      = delete;
 
@@ -32,9 +35,9 @@ public:
     static std::unique_ptr<DeviceMemoryBlock>
     allocate(const std::string &        label,
              const VkDevice             device,
-             const std::size_t          mapping_alignment,
              const std::uint32_t        memory_type_index,
              const std::size_t          size,
+             const bool                 host_visible,
              const void * const         allocate_memory_p_next = nullptr,
              const DebugUtilsResource * debug_utils            = nullptr);
 
@@ -54,14 +57,18 @@ public:
     VkDevice
     getDevice() const noexcept;
 
-private:
-    DeviceMemoryBlock(const std::string & label, const std::size_t size, const std::size_t mapping_alignment) noexcept;
+    void *
+    getMappedPtr() const noexcept;
 
-    const std::size_t                                   size_;               // 全体サイズ
-    std::size_t                                         mapping_alignment_;  // map alignment
-    std::mutex                                          mutex_;              // mutex
-    std::unique_ptr<DeviceMemoryBlockNode>              root_node_;          // 一番先頭のルートノード
-    std::multimap<std::size_t, DeviceMemoryBlockNode *> free_nodes_;         // 空きノード, size:Node
+private:
+    void
+    _map();
+
+    const std::size_t                                   size_;        // 全体サイズ
+    void *                                              mapped_ptr_;  // map されたポインタ
+    std::mutex                                          mutex_;       // mutex
+    std::unique_ptr<DeviceMemoryBlockNode>              root_node_;   // 一番先頭のルートノード
+    std::multimap<std::size_t, DeviceMemoryBlockNode *> free_nodes_;  // 空きノード, size:Node
 };
 
 }  // namespace vkwp
