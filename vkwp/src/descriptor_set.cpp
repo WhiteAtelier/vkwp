@@ -68,7 +68,11 @@ vkwp::DescriptorSet::allocate(const DescriptorPool &                         des
 
     for (std::size_t i = 0; i < allocate_info_list.size(); ++i)
     {
-        *ret[i]._reset(device, require_to_free ? descriptor_pool : nullptr) = vk_descriptor_sets[i];
+        *ret[i]._reset(device,
+                       require_to_free  //
+                           ? static_cast<VkDescriptorPool>(descriptor_pool)
+                           : nullptr)
+            = vk_descriptor_sets[i];
     }
     if (opt_args.debug_utils != nullptr)
     {

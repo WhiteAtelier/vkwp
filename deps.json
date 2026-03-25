@@ -10,6 +10,8 @@
     "glfw.glfw": {
         "version": "3.4.0",
         "options": {
+            "BuildWayland": null,
+            "BuildX11": null,
             "Shared": null
         }
     },

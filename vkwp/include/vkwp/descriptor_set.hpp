@@ -30,9 +30,13 @@ public:
     };
 
     static std::vector<DescriptorSet>
+    allocate(const DescriptorPool &                         descriptor_pool,  //
+             const std::vector<DescriptorSetAllocateInfo> & allocate_info_list);
+
+    static std::vector<DescriptorSet>
     allocate(const DescriptorPool &                         descriptor_pool,
              const std::vector<DescriptorSetAllocateInfo> & allocate_info_list,
-             const OptionalAllocateArgs &                   opt_args = {});
+             const OptionalAllocateArgs &                   opt_args);
 };
 
 }  // namespace vkwp

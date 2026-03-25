@@ -5,6 +5,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string_view>
 #include <vector>
 
 namespace vkwp {
@@ -25,10 +26,15 @@ public:
     };
 
     static DescriptorSetLayout
-    create(const std::string &                               label,
+    create(const std::string_view                            label,
+           const Device &                                    device,
+           const std::vector<VkDescriptorSetLayoutBinding> & bindings);
+
+    static DescriptorSetLayout
+    create(const std::string_view                            label,
            const Device &                                    device,
            const std::vector<VkDescriptorSetLayoutBinding> & bindings,
-           const OptionalCreateArgs &                        opt_args = {});
+           const OptionalCreateArgs &                        opt_args);
 };
 
 }  // namespace vkwp

@@ -5,6 +5,8 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string_view>
+
 namespace vkwp {
 
 ///
@@ -23,7 +25,10 @@ public:
     };
 
     static Semaphore
-    create(const std::string & label, const Device & device, const OptionalCreateArgs & opt_args = {});
+    create(const std::string_view label, const Device & device);
+
+    static Semaphore
+    create(const std::string_view label, const Device & device, const OptionalCreateArgs & opt_args);
 };
 
 }  // namespace vkwp

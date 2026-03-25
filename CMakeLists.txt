@@ -16,16 +16,18 @@ set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Debug postfix")
 
 # Dependency
 find_package(Vulkan 1.4 REQUIRED)
-
-option(VKWP_SPDLOG_LOGGING OFF "Use spdlog for logging")
-if (${VKWP_SPDLOG_LOGGING})
-    find_package(spdlog 1 REQUIRED)
-endif()
+find_package(spdlog CONFIG REQUIRED)
 
 add_compile_options(
     "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>"
     "$<$<CXX_COMPILER_ID:MSVC>:/EHsc>"
     "$<$<CXX_COMPILER_ID:MSVC>:/MP>"
+    "$<$<CXX_COMPILER_ID:MSVC>:/W4>"
+    "$<$<CXX_COMPILER_ID:MSVC>:/WX>"
+
+    "$<$<CXX_COMPILER_ID:GNU>:-Wall>"
+    "$<$<CXX_COMPILER_ID:GNU>:-Wextra>"
+    "$<$<CXX_COMPILER_ID:GNU>:-Werror>"
 )
 
 add_subdirectory(vkwp)

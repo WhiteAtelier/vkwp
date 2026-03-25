@@ -5,6 +5,8 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <cstdint>
+#include <string_view>
 #include <vector>
 
 namespace vkwp {
@@ -33,7 +35,20 @@ public:
 
     [[nodiscard]]
     static SwapchainKHR
-    create(const std::string &                 label,
+    create(const std::string_view              label,
+           const Device &                      device,
+           const SurfaceKHR &                  surface,
+           const std::uint32_t                 min_image_count,
+           const VkFormat                      image_format,
+           const VkColorSpaceKHR               image_color_space,
+           const VkExtent2D                    image_extent,
+           const VkImageUsageFlags             image_usage,
+           const VkPresentModeKHR              present_mode,
+           const VkSurfaceTransformFlagBitsKHR pre_transform);
+
+    [[nodiscard]]
+    static SwapchainKHR
+    create(const std::string_view              label,
            const Device &                      device,
            const SurfaceKHR &                  surface,
            const std::uint32_t                 min_image_count,
@@ -43,7 +58,7 @@ public:
            const VkImageUsageFlags             image_usage,
            const VkPresentModeKHR              present_mode,
            const VkSurfaceTransformFlagBitsKHR pre_transform,
-           const OptionalCreateArgs &          opt_args = {});
+           const OptionalCreateArgs &          opt_args);
 
     // VK_EXT_hdr_metadata 拡張が必要.
     void

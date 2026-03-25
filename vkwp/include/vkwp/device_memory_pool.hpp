@@ -102,7 +102,6 @@ private:
     std::string                                                   label_;
     VkDevice                                                      device_;
     VkPhysicalDeviceMemoryProperties                              memory_properties_;
-    std::size_t                                                   mapping_alignment_;
     std::size_t                                                   block_size_;    // memory unit size [Bytes]
     std::size_t                                                   max_size_;      // max memories size [Bytes]
     std::size_t                                                   current_size_;  // current amount size [Bytes]

@@ -27,7 +27,16 @@ vkwp::impl::_delete<VkBuffer>(VkBuffer i, const std::tuple<VkDevice> & args) noe
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 vkwp::Buffer
-vkwp::Buffer::create(const std::string &        label,
+vkwp::Buffer::create(const std::string_view   label,
+                     const Device &           device,
+                     const VkDeviceSize       size,
+                     const VkBufferUsageFlags usage)
+{
+    return create(label, device, size, usage, {});
+}
+
+vkwp::Buffer
+vkwp::Buffer::create(const std::string_view     label,
                      const Device &             device,
                      const VkDeviceSize         size,
                      const VkBufferUsageFlags   usage,

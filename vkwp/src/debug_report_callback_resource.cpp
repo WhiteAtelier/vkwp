@@ -5,6 +5,12 @@
 
 #include <spdlog/spdlog.h>
 
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string_view>
+#include <vector>
+
 namespace vkwp {
 
 class DebugReportCallbackResource::Impl_ final
@@ -20,12 +26,12 @@ private:
     static VkBool32 VKAPI_CALL
     _debugReportCallback(VkDebugReportFlagsEXT      flags,
                          VkDebugReportObjectTypeEXT object_type,
-                         uint64_t                   object,
-                         size_t                     location,
-                         int32_t                    message_code,
-                         const char *               layer_prefix,
-                         const char *               message,
-                         void *                     userData);
+                         std::uint64_t /*object*/,
+                         std::size_t /*location*/,
+                         std::int32_t /*message_code*/,
+                         const char * /*layer_prefix*/,
+                         const char * message,
+                         void * /*userData*/);
 
     const VkInstance                          instance_                            = nullptr;
     const PFN_vkCreateDebugReportCallbackEXT  pfn_vkCreateDebugReportCallbackEXT_  = nullptr;
@@ -108,12 +114,12 @@ vkwp::DebugReportCallbackResource::initialize(const VkInstance instance)
 VkBool32
 vkwp::DebugReportCallbackResource::Impl_::_debugReportCallback(VkDebugReportFlagsEXT      flags,
                                                                VkDebugReportObjectTypeEXT object_type,
-                                                               uint64_t                   object,
-                                                               size_t                     location,
-                                                               int32_t                    message_code,
-                                                               const char *               layer_prefix,
-                                                               const char *               message,
-                                                               void *                     userData)
+                                                               std::uint64_t /*object*/,
+                                                               std::size_t /*location*/,
+                                                               std::int32_t /*message_code*/,
+                                                               const char * /*layer_prefix*/,
+                                                               const char * message,
+                                                               void * /*userData*/)
 {
     VkBool32 ret{ VK_FALSE };
     if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT || flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)

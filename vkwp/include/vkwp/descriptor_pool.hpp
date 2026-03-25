@@ -5,6 +5,8 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <cstdint>
+#include <string_view>
 #include <vector>
 
 namespace vkwp {
@@ -26,7 +28,14 @@ public:
 
     [[nodiscard]]
     static DescriptorPool
-    create(const std::string &                       label,
+    create(const std::string_view                    label,
+           const Device &                            device,
+           const std::uint32_t                       max_sets,
+           const std::vector<VkDescriptorPoolSize> & pool_sizes);
+
+    [[nodiscard]]
+    static DescriptorPool
+    create(const std::string_view                    label,
            const Device &                            device,
            const std::uint32_t                       max_sets,
            const std::vector<VkDescriptorPoolSize> & pool_sizes,

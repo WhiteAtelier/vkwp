@@ -6,32 +6,32 @@
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
 vkwp::Resource<T, ParentTs...>::Resource()
     : label_{}
-    , external_{ false }
     , instance_{ nullptr }
+    , external_{ false }
     , parents_{}
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
-vkwp::Resource<T, ParentTs...>::Resource(const std::string & label)
+vkwp::Resource<T, ParentTs...>::Resource(const std::string_view label)
     : label_{ label }
-    , external_{ false }
     , instance_{ nullptr }
+    , external_{ false }
     , parents_{}
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
-vkwp::Resource<T, ParentTs...>::Resource(const std::string & label, const T & external)
+vkwp::Resource<T, ParentTs...>::Resource(const std::string_view label, const T & external)
     : label_{ label }
-    , external_{ true }
     , instance_{ external }
+    , external_{ true }
     , parents_{}
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
 vkwp::Resource<T, ParentTs...>::Resource(Resource && m) noexcept
     : label_{ std::move(m.label_) }
-    , external_{ m.external_ }
     , instance_{ m.instance_ }
+    , external_{ m.external_ }
     , parents_{ std::move(m.parents_) }
 {
     if (this != &m)
@@ -64,11 +64,11 @@ vkwp::Resource<T, ParentTs...>::operator=(Resource && rhs) & noexcept
         }
 
         this->label_    = std::move(rhs.label_);
-        this->external_ = rhs.external_;
         this->instance_ = rhs.instance_;
+        this->external_ = rhs.external_;
         this->parents_  = std::move(rhs.parents_);
-        rhs.external_   = false;
         rhs.instance_   = nullptr;
+        rhs.external_   = false;
         rhs.parents_    = std::tuple<ParentTs...>{};
     }
     return *this;

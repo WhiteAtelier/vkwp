@@ -26,7 +26,25 @@ vkwp::impl::_delete<VkImageView, VkDevice>(VkImageView i, const std::tuple<VkDev
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::ImageView
-vkwp::ImageView::create(const std::string &             label,
+vkwp::ImageView::create(const std::string_view          label,
+                        const Device &                  device,
+                        const Image &                   image,
+                        const VkImageViewType           view_type,
+                        const VkFormat                  format,
+                        const VkImageSubresourceRange & subresource_range)
+{
+    return ImageView::create(label,  //
+                             device,
+                             image,
+                             view_type,
+                             format,
+                             subresource_range,
+                             {});
+}
+
+/* STATIC */
+vkwp::ImageView
+vkwp::ImageView::create(const std::string_view          label,
                         const Device &                  device,
                         const Image &                   image,
                         const VkImageViewType           view_type,

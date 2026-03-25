@@ -6,28 +6,10 @@
 // ************************************************************************************************
 // Constructor
 // ************************************************************************************************
-vkwp::VulkanError::VulkanError(const VkResult & result, const std::string & message) noexcept
-    : message_{ VulkanError::_toMessage(result, message) }
+vkwp::VulkanError::VulkanError(const VkResult result, const std::string_view message) noexcept
+    : runtime_error{ VulkanError::_toMessage(result, message) }
     , result_{ result }
 {}
-
-// ************************************************************************************************
-// what()
-// ************************************************************************************************
-const char *
-vkwp::VulkanError::what() const
-{
-    return this->message_.c_str();
-}
-
-// ************************************************************************************************
-// str()
-// ************************************************************************************************
-const std::string &
-vkwp::VulkanError::str() const noexcept
-{
-    return this->message_;
-}
 
 // ************************************************************************************************
 // result()
@@ -43,7 +25,7 @@ vkwp::VulkanError::result() const noexcept
 // ************************************************************************************************
 /* static */
 void
-vkwp::VulkanError::check(const VkResult & result, const std::string & message)
+vkwp::VulkanError::check(const VkResult result, const std::string_view message)
 {
     if (result != VkResult::VK_SUCCESS)
     {
@@ -56,9 +38,10 @@ vkwp::VulkanError::check(const VkResult & result, const std::string & message)
 // [PRIVATE / STATIC] _toMessage()
 // ************************************************************************************************
 std::string
-vkwp::VulkanError::_toMessage(const VkResult & result, const std::string & message) noexcept
+vkwp::VulkanError::_toMessage(const VkResult result, const std::string_view message) noexcept
 {
-    std::string str = message + ", Code = ";
+    std::string str{ message };
+    str += ", Code = ";
 
     switch (result)
     {

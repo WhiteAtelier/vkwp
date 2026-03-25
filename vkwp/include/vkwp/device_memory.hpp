@@ -5,6 +5,8 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string_view>
+
 namespace vkwp {
 
 ///
@@ -23,16 +25,36 @@ public:
 
     [[nodiscard]]
     static DeviceMemory
-    allocate(const std::string &          label,
+    allocate(const std::string_view       label,
+             const Device &               device,
+             const PhysicalDevice &       physical_device,
+             const VkMemoryRequirements & memory_requirements,
+             const VkMemoryPropertyFlags  memory_property_flags);
+
+    [[nodiscard]]
+    static DeviceMemory
+    allocate(const std::string_view       label,
              const Device &               device,
              const PhysicalDevice &       physical_device,
              const VkMemoryRequirements & memory_requirements,
              const VkMemoryPropertyFlags  memory_property_flags,
-             const OptionalAllocateArgs & opt_args = {});
+             const OptionalAllocateArgs & opt_args);
 
     [[nodiscard]]
     static DeviceMemory
-    importWin32ExternalMemory(const std::string &                      label,
+    importWin32ExternalMemory(const std::string_view                   label,
+                              const Device &                           device,
+                              const PhysicalDevice &                   physical_device,
+                              const std::size_t                        size,
+                              const VkExternalMemoryHandleTypeFlagBits handle_type,
+                              void * const                             handle,
+                              const wchar_t * const                    name,
+                              const VkImage &                          image,
+                              const VkBuffer &                         buffer);
+
+    [[nodiscard]]
+    static DeviceMemory
+    importWin32ExternalMemory(const std::string_view                   label,
                               const Device &                           device,
                               const PhysicalDevice &                   physical_device,
                               const std::size_t                        size,
@@ -41,7 +63,7 @@ public:
                               const wchar_t * const                    name,
                               const VkImage &                          image,
                               const VkBuffer &                         buffer,
-                              const OptionalAllocateArgs &             opt_args = {});
+                              const OptionalAllocateArgs &             opt_args);
 
     /// @brief Write data.
     ///

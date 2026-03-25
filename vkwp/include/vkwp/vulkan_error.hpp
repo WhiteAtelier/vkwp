@@ -1,11 +1,11 @@
 #ifndef VKWP_VULKAN_VULKAN_ERROR_HPP
 #define VKWP_VULKAN_VULKAN_ERROR_HPP
 
+#include <vulkan/vulkan.h>
+
 #include <stdexcept>
 #include <string>
-
-// fwd declare
-enum VkResult;
+#include <string_view>
 
 namespace vkwp {
 
@@ -14,7 +14,7 @@ namespace vkwp {
 ///
 /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkResult.html
 ///
-class VulkanError : public std::exception
+class VulkanError : public std::runtime_error
 {
 public:
     // ========================================================================================= //
@@ -32,8 +32,7 @@ public:
     ///     何をしようとしてエラーになったかなど, 詳細を表す文字列.
     ///
     [[nodiscard]]
-    //
-    VulkanError(const VkResult & result, const std::string & message) noexcept;
+    explicit VulkanError(const VkResult result, const std::string_view message) noexcept;
 
     ///
     /// @brief デストラクタ.
@@ -45,18 +44,6 @@ public:
     /// @name Getter
     /// @{
     // ========================================================================================= //
-
-    ///
-    /// @brief エラーの内容を取得します.
-    ///
-    virtual const char *
-    what() const override;
-
-    ///
-    /// @brief エラーの内容を string で取得します.
-    ///
-    const std::string &
-    str() const noexcept;
 
     ///
     /// @brief エラーの内容を VkResult で取得します.
@@ -85,7 +72,7 @@ public:
     ///     result が VK_SUCCESS 以外だった場合に送出される.
     ///
     static void
-    check(const VkResult & result, const std::string & message);
+    check(const VkResult result, const std::string_view message);
 
     /// @}
 
@@ -94,10 +81,9 @@ private:
     /// @brief VkResult, message を統合してエラーメッセージを作成します.
     ///
     static std::string
-    _toMessage(const VkResult & result, const std::string & message) noexcept;
+    _toMessage(const VkResult result, const std::string_view message) noexcept;
 
-    const std::string message_;
-    int               result_;
+    int result_;
 };
 
 }  // namespace vkwp

@@ -5,6 +5,8 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string_view>
+
 namespace vkwp {
 
 ///
@@ -39,6 +41,30 @@ public:
     /// @param usage
     ///     A bitmask of VkBufferUsageFlagBits specifying allowed usages of the buffer.
     ///
+    /// @return
+    ///     Buffer instance.
+    ///
+    static Buffer
+    create(const std::string_view   label,  //
+           const Device &           device,
+           const VkDeviceSize       size,
+           const VkBufferUsageFlags usage);
+
+    ///
+    /// @brief Create new buffer instance.
+    ///
+    /// @param label
+    ///     Label string for debugging.
+    ///
+    /// @param device
+    ///     The logical device that creates the buffer object.
+    ///
+    /// @param size
+    ///     The size in bytes of the buffer to be created.
+    ///
+    /// @param usage
+    ///     A bitmask of VkBufferUsageFlagBits specifying allowed usages of the buffer.
+    ///
     /// @param opt_args
     ///     Optional arguments.
     ///
@@ -46,11 +72,11 @@ public:
     ///     Buffer instance.
     ///
     static Buffer
-    create(const std::string &        label,
+    create(const std::string_view     label,
            const Device &             device,
            const VkDeviceSize         size,
            const VkBufferUsageFlags   usage,
-           const OptionalCreateArgs & opt_args = {});
+           const OptionalCreateArgs & opt_args);
 
     ///
     /// @brief このバッファが要求するデバイスメモリ要件を取得する.

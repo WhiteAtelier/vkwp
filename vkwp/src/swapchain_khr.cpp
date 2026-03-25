@@ -28,7 +28,33 @@ vkwp::impl::_delete<VkSwapchainKHR, VkDevice>(VkSwapchainKHR i, const std::tuple
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::SwapchainKHR
-vkwp::SwapchainKHR::create(const std::string &                 label,
+vkwp::SwapchainKHR::create(const std::string_view              label,
+                           const Device &                      device,
+                           const SurfaceKHR &                  surface,
+                           const std::uint32_t                 min_image_count,
+                           const VkFormat                      image_format,
+                           const VkColorSpaceKHR               image_color_space,
+                           const VkExtent2D                    image_extent,
+                           const VkImageUsageFlags             image_usage,
+                           const VkPresentModeKHR              present_mode,
+                           const VkSurfaceTransformFlagBitsKHR pre_transform)
+{
+    return SwapchainKHR::create(label,
+                                device,
+                                surface,
+                                min_image_count,
+                                image_format,
+                                image_color_space,
+                                image_extent,
+                                image_usage,
+                                present_mode,
+                                pre_transform,
+                                {});
+}
+
+/* STATIC */
+vkwp::SwapchainKHR
+vkwp::SwapchainKHR::create(const std::string_view              label,
                            const Device &                      device,
                            const SurfaceKHR &                  surface,
                            const std::uint32_t                 min_image_count,
@@ -61,7 +87,7 @@ vkwp::SwapchainKHR::create(const std::string &                 label,
         .presentMode           = present_mode,
         .clipped               = opt_args.clipped,
         .oldSwapchain          = opt_args.old_swapchain != nullptr  //
-                                   ? *opt_args.old_swapchain
+                                   ? static_cast<VkSwapchainKHR>(*opt_args.old_swapchain)
                                    : nullptr,
     };
     VulkanError::check(  //

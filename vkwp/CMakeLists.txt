@@ -8,6 +8,7 @@ endif()
 
 vkwp_add_library(vkwp
     LIBRARIES
+        spdlog::spdlog
         Vulkan::Vulkan
    
     SOURCES
@@ -103,13 +104,6 @@ if (${VKWP_SUPPORT_GLFW_SURFACE})
     target_link_libraries(vkwp
         PRIVATE
             glfw
-    )
-endif()
-
-if (${VKWP_SPDLOG_LOGGING})
-    target_link_libraries(vkwp
-        PRIVATE
-            spdlog::spdlog
     )
 endif()
 

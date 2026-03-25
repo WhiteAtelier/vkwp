@@ -5,6 +5,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string>
 #include <vector>
 
 namespace vkwp {
@@ -43,21 +44,38 @@ public:
     static std::vector<CommandBuffer>
     allocateCommandBuffers(const CommandPool &              command_pool,
                            const VkCommandBufferLevel       level,
+                           const std::vector<std::string> & command_buffer_labels);
+
+    [[nodiscard]]
+    static std::vector<CommandBuffer>
+    allocateCommandBuffers(const CommandPool &              command_pool,
+                           const VkCommandBufferLevel       level,
                            const std::vector<std::string> & command_buffer_labels,
-                           const OptionalAllocateArgs &     opt_args = {});
+                           const OptionalAllocateArgs &     opt_args);
+
+    [[nodiscard]]
+    static CommandBuffer
+    allocateCommandBuffer(const std::string &        label,
+                          const CommandPool &        command_pool,
+                          const VkCommandBufferLevel level);
 
     [[nodiscard]]
     static CommandBuffer
     allocateCommandBuffer(const std::string &          label,
                           const CommandPool &          command_pool,
                           const VkCommandBufferLevel   level,
-                          const OptionalAllocateArgs & opt_args = {});
+                          const OptionalAllocateArgs & opt_args);
+
+    [[nodiscard]]
+    static CommandBuffer
+    allocatePrimaryCommandBuffer(const std::string & label,  //
+                                 const CommandPool & command_pool);
 
     [[nodiscard]]
     static CommandBuffer
     allocatePrimaryCommandBuffer(const std::string &          label,
                                  const CommandPool &          command_pool,
-                                 const OptionalAllocateArgs & opt_args = {});
+                                 const OptionalAllocateArgs & opt_args);
 
     void
     beginCommandBuffer(const VkCommandBufferInheritanceInfo & inheritance_info,
@@ -93,7 +111,7 @@ private:
                         const void * const                     p_next) const;
 
     [[nodiscard]]
-    explicit CommandBuffer(const std::string & label);
+    explicit CommandBuffer(const std::string_view label);
 
     Mutex * mutex_;
 };

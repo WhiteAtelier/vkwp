@@ -32,6 +32,18 @@ vkwp::impl::_delete<VkCommandBuffer, VkDevice, VkCommandPool>(VkCommandBuffer   
 std::vector<vkwp::CommandBuffer>
 vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              command_pool,
                                             const VkCommandBufferLevel       level,
+                                            const std::vector<std::string> & command_buffer_labels)
+{
+    return CommandBuffer::allocateCommandBuffers(command_pool,  //
+                                                 level,
+                                                 command_buffer_labels,
+                                                 {});
+}
+
+/* STATIC */
+std::vector<vkwp::CommandBuffer>
+vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              command_pool,
+                                            const VkCommandBufferLevel       level,
                                             const std::vector<std::string> & command_buffer_labels,
                                             const OptionalAllocateArgs &     opt_args)
 {
@@ -69,7 +81,9 @@ vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              com
         {
             *ret[i]._reset(device,
                            // vkFreeCommandBuffers を呼ばなくて良い場合は cmdpool に null を渡す
-                           require_to_free ? command_pool : nullptr)
+                           require_to_free  //
+                               ? static_cast<VkCommandPool>(command_pool)
+                               : nullptr)
                 = cmdbufs[i];
 
             ret[i].mutex_ = command_pool.mutex_.get();
@@ -88,6 +102,18 @@ vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              com
     }
 
     return ret;
+}
+
+/* STATIC */
+vkwp::CommandBuffer
+vkwp::CommandBuffer::allocateCommandBuffer(const std::string &        label,
+                                           const CommandPool &        command_pool,
+                                           const VkCommandBufferLevel level)
+{
+    return CommandBuffer::allocateCommandBuffer(label,  //
+                                                command_pool,
+                                                level,
+                                                {});
 }
 
 /* STATIC */
@@ -119,7 +145,9 @@ vkwp::CommandBuffer::allocateCommandBuffer(const std::string &          label,
             &ai,
             ret._reset(device,
                        // vkFreeCommandBuffers を呼ばなくて良い場合は cmdpool に null を渡す
-                       require_to_free ? command_pool : nullptr)),
+                       require_to_free  //
+                           ? static_cast<VkCommandPool>(command_pool)
+                           : nullptr)),
         "Failed to vkAllocateCommandBuffers(). (single allocation)");
 
     ret.mutex_ = command_pool.mutex_.get();
@@ -136,6 +164,13 @@ vkwp::CommandBuffer::allocateCommandBuffer(const std::string &          label,
 
 /* STATIC */
 vkwp::CommandBuffer
+vkwp::CommandBuffer::allocatePrimaryCommandBuffer(const std::string & label, const CommandPool & command_pool)
+{
+    return CommandBuffer::allocatePrimaryCommandBuffer(label, command_pool, {});
+}
+
+/* STATIC */
+vkwp::CommandBuffer
 vkwp::CommandBuffer::allocatePrimaryCommandBuffer(const std::string &          label,
                                                   const CommandPool &          command_pool,
                                                   const OptionalAllocateArgs & opt_args)
@@ -148,7 +183,7 @@ vkwp::CommandBuffer::CommandBuffer()
     , mutex_{ nullptr }
 {}
 
-vkwp::CommandBuffer::CommandBuffer(const std::string & label)
+vkwp::CommandBuffer::CommandBuffer(const std::string_view label)
     : Resource{ label }
     , mutex_{ nullptr }
 {}
@@ -205,7 +240,7 @@ vkwp::CommandBuffer::_beginCommandBuffer(const VkCommandBufferInheritanceInfo * 
 {
     const VkCommandBufferBeginInfo bi{
         .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .pNext            = nullptr,
+        .pNext            = p_next,
         .flags            = flags,
         .pInheritanceInfo = inheritance_info,
     };

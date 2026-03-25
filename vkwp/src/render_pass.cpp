@@ -26,7 +26,18 @@ vkwp::impl::_delete<VkRenderPass, VkDevice>(VkRenderPass i, const std::tuple<VkD
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::RenderPass
-vkwp::RenderPass::create(const std::string &                          label,
+vkwp::RenderPass::create(const std::string_view                       label,
+                         const Device &                               device,
+                         const std::vector<VkAttachmentDescription> & attachments,
+                         const std::vector<VkSubpassDescription> &    subpasses,
+                         const std::vector<VkSubpassDependency> &     dependencies)
+{
+    return RenderPass::create(label, device, attachments, subpasses, dependencies, {});
+}
+
+/* STATIC */
+vkwp::RenderPass
+vkwp::RenderPass::create(const std::string_view                       label,
                          const Device &                               device,
                          const std::vector<VkAttachmentDescription> & attachments,
                          const std::vector<VkSubpassDescription> &    subpasses,
