@@ -23,14 +23,14 @@ vkwp::impl::_delete<VkInstance>(VkInstance i, const std::tuple<> &) noexcept
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Instance
-vkwp::Instance::create(const std::string_view         label,
-                       const std::string_view         application_name,
-                       const std::uint32_t            application_version,
-                       const std::string_view         engine_name,
-                       const std::uint32_t            engine_version,
-                       const std::uint32_t            api_version,
-                       const std::vector<std::string> enabled_layer_names,
-                       const std::vector<std::string> enabled_extension_names)
+vkwp::Instance::create(const std::string_view           label,
+                       const std::string_view           application_name,
+                       const std::uint32_t              application_version,
+                       const std::string_view           engine_name,
+                       const std::uint32_t              engine_version,
+                       const std::uint32_t              api_version,
+                       const std::vector<std::string> & enabled_layer_names,
+                       const std::vector<std::string> & enabled_extension_names)
 {
     return Instance::create(label,
                             application_name,
@@ -45,15 +45,15 @@ vkwp::Instance::create(const std::string_view         label,
 
 /* STATIC */
 vkwp::Instance
-vkwp::Instance::create(const std::string_view         label,
-                       const std::string_view         application_name,
-                       const std::uint32_t            application_version,
-                       const std::string_view         engine_name,
-                       const std::uint32_t            engine_version,
-                       const std::uint32_t            api_version,
-                       const std::vector<std::string> _enabled_layer_names,
-                       const std::vector<std::string> _enabled_extension_names,
-                       const OptionalCreateArgs &     opt_args)
+vkwp::Instance::create(const std::string_view           label,
+                       const std::string_view           application_name,
+                       const std::uint32_t              application_version,
+                       const std::string_view           engine_name,
+                       const std::uint32_t              engine_version,
+                       const std::uint32_t              api_version,
+                       const std::vector<std::string> & _enabled_layer_names,
+                       const std::vector<std::string> & _enabled_extension_names,
+                       const OptionalCreateArgs &       opt_args)
 {
     Instance                  ret{ label };
     std::vector<const char *> enabled_layer_names;
