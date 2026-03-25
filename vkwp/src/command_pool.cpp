@@ -37,16 +37,6 @@ vkwp::CommandPool::create(const std::string_view label,  //
 
 /* STATIC */
 vkwp::CommandPool
-vkwp::CommandPool::create(const std::string_view     label,
-                          const Device &             device,
-                          const std::uint32_t        queue_family_index,
-                          const OptionalCreateArgs & opt_args)
-{
-    return create(label, device, queue_family_index, nullptr, opt_args);
-}
-
-/* STATIC */
-vkwp::CommandPool
 vkwp::CommandPool::create(const std::string_view    label,
                           const Device &            device,
                           const std::uint32_t       queue_family_index,

@@ -48,13 +48,6 @@ public:
     create(const std::string_view     label,
            const Device &             device,
            const std::uint32_t        queue_family_index,
-           const OptionalCreateArgs & opt_args);
-
-    [[nodiscard]]
-    static CommandPool
-    create(const std::string_view     label,
-           const Device &             device,
-           const std::uint32_t        queue_family_index,
            std::unique_ptr<Mutex> &&  mutex,
            const OptionalCreateArgs & opt_args);
 
