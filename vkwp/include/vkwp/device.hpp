@@ -58,12 +58,6 @@ public:
 
     [[nodiscard]]
     Queue
-    getDeviceQueue(const std::uint32_t        queue_family_index,
-                   const std::uint32_t        queue_index,
-                   const DeviceQueueGetArgs & opt_args) const;
-
-    [[nodiscard]]
-    Queue
     getDeviceQueue(const std::uint32_t       queue_family_index,
                    const std::uint32_t       queue_index,
                    std::unique_ptr<Mutex> && mutex) const;

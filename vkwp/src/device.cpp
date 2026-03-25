@@ -115,15 +115,6 @@ vkwp::Device::getDeviceQueue(const std::uint32_t queue_family_index,  //
 }
 
 vkwp::Queue
-vkwp::Device::getDeviceQueue(const std::uint32_t        queue_family_index,
-                             const std::uint32_t        queue_index,
-                             const DeviceQueueGetArgs & opt_args) const
-{
-    VKWP_VALIDATE_THIS;
-    return this->getDeviceQueue(queue_family_index, queue_index, {}, opt_args);
-}
-
-vkwp::Queue
 vkwp::Device::getDeviceQueue(const std::uint32_t       queue_family_index,
                              const std::uint32_t       queue_index,
                              std::unique_ptr<Mutex> && mutex) const
