@@ -5,6 +5,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <cstdint>
 #include <optional>
 #include <set>
 #include <utility>
@@ -70,7 +71,7 @@ public:
     isSurfaceSupported(const std::uint32_t queue_index, const VkSurfaceKHR & surface) const;
 
 private:
-    explicit PhysicalDevice(const std::string & label, VkPhysicalDeviceProperties && pd_properties);
+    explicit PhysicalDevice(const std::string_view label, VkPhysicalDeviceProperties && pd_properties);
 
     VkPhysicalDeviceProperties                                  properties_{};
     mutable std::optional<std::vector<VkQueueFamilyProperties>> queue_family_properties_cache_;

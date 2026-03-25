@@ -28,8 +28,25 @@ vkwp::impl::_delete<VkDeviceMemory, VkDevice>(VkDeviceMemory i, const std::tuple
 // CommandPool class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+/* STATIC */
 vkwp::DeviceMemory
-vkwp::DeviceMemory::allocate(const std::string &          label,
+vkwp::DeviceMemory::allocate(const std::string_view       label,
+                             const Device &               device,
+                             const PhysicalDevice &       physical_device,
+                             const VkMemoryRequirements & memory_requirements,
+                             const VkMemoryPropertyFlags  memory_property_flags)
+{
+    return DeviceMemory::allocate(label,  //
+                                  device,
+                                  physical_device,
+                                  memory_requirements,
+                                  memory_property_flags,
+                                  {});
+}
+
+/* STATIC */
+vkwp::DeviceMemory
+vkwp::DeviceMemory::allocate(const std::string_view       label,
                              const Device &               device,
                              const PhysicalDevice &       physical_device,
                              const VkMemoryRequirements & memory_requirements,
@@ -74,8 +91,33 @@ vkwp::DeviceMemory::allocate(const std::string &          label,
 }
 
 #if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
+/* STATIC */
 vkwp::DeviceMemory
-vkwp::DeviceMemory::importWin32ExternalMemory(const std::string &                      label,
+vkwp::DeviceMemory::importWin32ExternalMemory(const std::string_view                   label,
+                                              const Device &                           device,
+                                              const PhysicalDevice &                   physical_device,
+                                              const std::size_t                        size,
+                                              const VkExternalMemoryHandleTypeFlagBits handle_type,
+                                              void * const                             handle,
+                                              const wchar_t * const                    name,
+                                              const VkImage &                          image,
+                                              const VkBuffer &                         buffer)
+{
+    return DeviceMemory::importWin32ExternalMemory(label,
+                                                   device,
+                                                   physical_device,
+                                                   size,
+                                                   handle_type,
+                                                   handle,
+                                                   name,
+                                                   image,
+                                                   buffer,
+                                                   {});
+}
+
+/* STATIC */
+vkwp::DeviceMemory
+vkwp::DeviceMemory::importWin32ExternalMemory(const std::string_view                   label,
                                               const Device &                           device,
                                               const PhysicalDevice &                   physical_device,
                                               const std::size_t                        size,

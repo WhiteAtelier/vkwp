@@ -5,6 +5,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <cstdint>
 #include <type_traits>
 #include <vector>
 
@@ -26,14 +27,23 @@ public:
     };
 
     static Framebuffer
-    create(const std::string &                                        label,
+    create(const std::string_view                                     label,
+           const Device &                                             device,
+           const RenderPass &                                         render_pass,
+           const std::vector<std::reference_wrapper<const ImageView>> attachments,
+           const std::uint32_t                                        width,
+           const std::uint32_t                                        height,
+           const std::uint32_t                                        layers);
+
+    static Framebuffer
+    create(const std::string_view                                     label,
            const Device &                                             device,
            const RenderPass &                                         render_pass,
            const std::vector<std::reference_wrapper<const ImageView>> attachments,
            const std::uint32_t                                        width,
            const std::uint32_t                                        height,
            const std::uint32_t                                        layers,
-           const OptionalCreateArgs &                                 opt_args = {});
+           const OptionalCreateArgs &                                 opt_args);
 };
 
 }  // namespace vkwp

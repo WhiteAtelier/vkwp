@@ -6,7 +6,9 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <cstdint>
 #include <memory>
+#include <string_view>
 
 namespace vkwp {
 
@@ -16,12 +18,15 @@ namespace vkwp {
 class Queue final : public Resource<VkQueue>
 {
 public:
-    Queue();
-    Queue(const std::string &       label,
-          const VkQueue             external_queue,
-          const std::uint32_t       family_index,
-          std::unique_ptr<Mutex> && mutex);
+    explicit Queue();
 
+    [[nodiscard]]
+    explicit Queue(const std::string_view    label,
+                   const VkQueue             external_queue,
+                   const std::uint32_t       family_index,
+                   std::unique_ptr<Mutex> && mutex);
+
+    [[nodiscard]]
     std::uint32_t
     getQueueFamilyIndex() const noexcept;
 
@@ -34,6 +39,7 @@ public:
     /// @brief Try to lock this queue for synchronized.
     ///
     /// Should not use this function directly, but use with std::lock_guard, std::unique_lock, or etc...
+    [[nodiscard]]
     bool
     try_lock() const;
 
@@ -42,7 +48,7 @@ public:
     unlock() const;
 
 private:
-    Queue(const std::string & label);
+    explicit Queue(const std::string_view label);
 
     friend Device;
     std::uint32_t          queue_family_index_;

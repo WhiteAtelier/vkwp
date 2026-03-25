@@ -6,6 +6,8 @@
 #include <spdlog/spdlog.h>
 
 #include <bit>
+#include <string>
+#include <string_view>
 
 namespace vkwp {
 
@@ -19,10 +21,10 @@ public:
     initialize();
 
     void
-    registDebugUtilsObjectName(const VkDevice      device,
-                               const VkObjectType  object_type,
-                               const void * const  ptr,
-                               const std::string & name) const;
+    registDebugUtilsObjectName(const VkDevice         device,
+                               const VkObjectType     object_type,
+                               const void * const     ptr,
+                               const std::string_view name) const;
 
 private:
     const VkInstance                   instance_                           = nullptr;
@@ -93,17 +95,18 @@ vkwp::DebugUtilsResource::initialize(const VkInstance instance)
 // registDebugUtilsObjectName()
 // ============================================================================================= //
 void
-vkwp::DebugUtilsResource::Impl_::registDebugUtilsObjectName(const VkDevice      device,
-                                                            const VkObjectType  object_type,
-                                                            const void * const  ptr,
-                                                            const std::string & name) const
+vkwp::DebugUtilsResource::Impl_::registDebugUtilsObjectName(const VkDevice         device,
+                                                            const VkObjectType     object_type,
+                                                            const void * const     ptr,
+                                                            const std::string_view name) const
 {
+    std::string                         name_str{ name };  // guarantee null terminated
     const VkDebugUtilsObjectNameInfoEXT object_name_info_ext{
         .sType        = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
         .pNext        = nullptr,
         .objectType   = object_type,
         .objectHandle = std::bit_cast<std::uint64_t>(ptr),
-        .pObjectName  = name.c_str(),
+        .pObjectName  = name_str.c_str(),
     };
     VulkanError::check(  //
         this->pfn_vkSetDebugUtilsObjectNameEXT_(device, &object_name_info_ext),
@@ -111,10 +114,10 @@ vkwp::DebugUtilsResource::Impl_::registDebugUtilsObjectName(const VkDevice      
 }
 
 void
-vkwp::DebugUtilsResource::registDebugUtilsObjectName(const VkDevice &    device,
-                                                     const VkObjectType  object_type,
-                                                     const void * const  ptr,
-                                                     const std::string & name) const
+vkwp::DebugUtilsResource::registDebugUtilsObjectName(const VkDevice &       device,
+                                                     const VkObjectType     object_type,
+                                                     const void * const     ptr,
+                                                     const std::string_view name) const
 {
     if (this->impl_)
     {

@@ -25,7 +25,14 @@ vkwp::impl::_delete<VkSemaphore, VkDevice>(VkSemaphore i, const std::tuple<VkDev
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Semaphore
-vkwp::Semaphore::create(const std::string & label, const Device & device, const OptionalCreateArgs & opt_args)
+vkwp::Semaphore::create(const std::string_view label, const Device & device)
+{
+    return Semaphore::create(label, device, {});
+}
+
+/* STATIC */
+vkwp::Semaphore
+vkwp::Semaphore::create(const std::string_view label, const Device & device, const OptionalCreateArgs & opt_args)
 {
     Semaphore                   ret{ label };
     const VkSemaphoreCreateInfo ci{

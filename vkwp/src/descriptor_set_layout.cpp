@@ -26,7 +26,19 @@ vkwp::impl::_delete<VkDescriptorSetLayout, VkDevice>(VkDescriptorSetLayout      
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::DescriptorSetLayout
-vkwp::DescriptorSetLayout::create(const std::string &                               label,
+vkwp::DescriptorSetLayout::create(const std::string_view                            label,
+                                  const Device &                                    device,
+                                  const std::vector<VkDescriptorSetLayoutBinding> & bindings)
+{
+    return DescriptorSetLayout::create(label,  //
+                                       device,
+                                       bindings,
+                                       {});
+}
+
+/* STATIC */
+vkwp::DescriptorSetLayout
+vkwp::DescriptorSetLayout::create(const std::string_view                            label,
                                   const Device &                                    device,
                                   const std::vector<VkDescriptorSetLayoutBinding> & bindings,
                                   const OptionalCreateArgs &                        opt_args)

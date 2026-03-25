@@ -8,7 +8,9 @@
 //
 #include "debug_utils_resource.hpp"
 
+#include <cstdint>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 namespace vkwp {
@@ -30,18 +32,31 @@ public:
 
     [[nodiscard]]
     static CommandPool
-    create(const std::string &        label,
-           const Device &             device,
-           const std::uint32_t        queue_family_index,
-           const OptionalCreateArgs & opt_args = {});
+    create(const std::string_view label,  //
+           const Device &         device,
+           const std::uint32_t    queue_family_index);
 
     [[nodiscard]]
     static CommandPool
-    create(const std::string &        label,
+    create(const std::string_view    label,
+           const Device &            device,
+           const std::uint32_t       queue_family_index,
+           std::unique_ptr<Mutex> && mutex);
+
+    [[nodiscard]]
+    static CommandPool
+    create(const std::string_view     label,
+           const Device &             device,
+           const std::uint32_t        queue_family_index,
+           const OptionalCreateArgs & opt_args);
+
+    [[nodiscard]]
+    static CommandPool
+    create(const std::string_view     label,
            const Device &             device,
            const std::uint32_t        queue_family_index,
            std::unique_ptr<Mutex> &&  mutex,
-           const OptionalCreateArgs & opt_args = {});
+           const OptionalCreateArgs & opt_args);
 
     VkCommandPoolCreateFlags
     getCreateFlags() const noexcept;

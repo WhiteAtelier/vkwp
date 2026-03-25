@@ -25,7 +25,16 @@ vkwp::impl::_delete<VkShaderModule, VkDevice>(VkShaderModule i, const std::tuple
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::ShaderModule
-vkwp::ShaderModule::create(const std::string &                label,
+vkwp::ShaderModule::create(const std::string_view             label,  //
+                           const Device &                     device,
+                           const std::vector<std::uint32_t> & code)
+{
+    return ShaderModule::create(label, device, code.data(), code.size(), {});
+}
+
+/* STATIC */
+vkwp::ShaderModule
+vkwp::ShaderModule::create(const std::string_view             label,
                            const Device &                     device,
                            const std::vector<std::uint32_t> & code,
                            const OptionalCreateArgs &         opt_args)
@@ -33,8 +42,19 @@ vkwp::ShaderModule::create(const std::string &                label,
     return create(label, device, code.data(), code.size(), opt_args);
 }
 
+/* STATIC */
 vkwp::ShaderModule
-vkwp::ShaderModule::create(const std::string &         label,
+vkwp::ShaderModule::create(const std::string_view      label,
+                           const Device &              device,
+                           const std::uint32_t * const data,
+                           const std::size_t           data_length)
+{
+    return ShaderModule::create(label, device, data, data_length, {});
+}
+
+/* STATIC */
+vkwp::ShaderModule
+vkwp::ShaderModule::create(const std::string_view      label,
                            const Device &              device,
                            const std::uint32_t * const data,
                            const std::size_t           data_length,

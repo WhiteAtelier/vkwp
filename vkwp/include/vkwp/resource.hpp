@@ -2,6 +2,7 @@
 #define VKWP_VKM_RESOURCE_HPP
 
 #include <string>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 
@@ -18,10 +19,10 @@ template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
 class Resource
 {
 public:
-    Resource();
+    explicit Resource();
 
     [[nodiscard]]
-    Resource(const std::string & label, const T & external);
+    explicit Resource(const std::string_view label, const T & external);
 
     Resource(const Resource &) = delete;
 
@@ -75,7 +76,7 @@ public:
 protected:
     using BaseType = Resource<T, ParentTs...>;
 
-    Resource(const std::string & label);
+    Resource(const std::string_view label);
 
     T *
     _reset(ParentTs... parents) & noexcept;

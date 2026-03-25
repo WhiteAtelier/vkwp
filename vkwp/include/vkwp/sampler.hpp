@@ -5,6 +5,8 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string_view>
+
 namespace vkwp {
 
 ///
@@ -32,7 +34,17 @@ public:
     };
 
     static Sampler
-    create(const std::string &        label,
+    create(const std::string_view     label,
+           const Device &             device,
+           const VkFilter             mag_filter,
+           const VkFilter             min_filter,
+           const VkSamplerMipmapMode  mipmap_mode,
+           const VkSamplerAddressMode address_mode_u,
+           const VkSamplerAddressMode address_mode_v,
+           const VkSamplerAddressMode address_mode_w);
+
+    static Sampler
+    create(const std::string_view     label,
            const Device &             device,
            const VkFilter             mag_filter,
            const VkFilter             min_filter,
@@ -40,7 +52,7 @@ public:
            const VkSamplerAddressMode address_mode_u,
            const VkSamplerAddressMode address_mode_v,
            const VkSamplerAddressMode address_mode_w,
-           const OptionalCreateArgs & opt_args = {});
+           const OptionalCreateArgs & opt_args);
 };
 
 }  // namespace vkwp

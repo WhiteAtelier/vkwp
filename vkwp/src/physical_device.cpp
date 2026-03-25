@@ -24,7 +24,7 @@ vkwp::impl::_delete<VkPhysicalDevice>(VkPhysicalDevice, const std::tuple<> &) no
 // PhysicalDevice class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-vkwp::PhysicalDevice::PhysicalDevice(const std::string & label, VkPhysicalDeviceProperties && pd_properties)
+vkwp::PhysicalDevice::PhysicalDevice(const std::string_view label, VkPhysicalDeviceProperties && pd_properties)
     : Resource{ label }
     , properties_{ std::move(pd_properties) }
 {}

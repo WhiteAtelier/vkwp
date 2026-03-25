@@ -5,6 +5,8 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string_view>
+
 namespace vkwp {
 
 struct AccelerationStructureKHR_ExtFunctions
@@ -36,23 +38,40 @@ public:
     };
 
     static AccelerationStructureKHR
-    create(const std::string &                  label,
+    create(const std::string_view               label,
+           const Device &                       device,
+           const Buffer &                       buffer,
+           const VkDeviceSize                   offset,
+           const VkDeviceSize                   size,
+           const VkAccelerationStructureTypeKHR type);
+
+    static AccelerationStructureKHR
+    create(const std::string_view               label,
            const Device &                       device,
            const Buffer &                       buffer,
            const VkDeviceSize                   offset,
            const VkDeviceSize                   size,
            const VkAccelerationStructureTypeKHR type,
-           const OptionalCreateArgs &           opt_args = {});
+           const OptionalCreateArgs &           opt_args);
 
     static AccelerationStructureKHR
-    createEXT(const std::string &                           label,
+    createEXT(const std::string_view                        label,
+              const Device &                                device,
+              const Buffer &                                buffer,
+              const VkDeviceSize                            offset,
+              const VkDeviceSize                            size,
+              const VkAccelerationStructureTypeKHR          type,
+              const AccelerationStructureKHR_ExtFunctions & ext_functions);
+
+    static AccelerationStructureKHR
+    createEXT(const std::string_view                        label,
               const Device &                                device,
               const Buffer &                                buffer,
               const VkDeviceSize                            offset,
               const VkDeviceSize                            size,
               const VkAccelerationStructureTypeKHR          type,
               const AccelerationStructureKHR_ExtFunctions & ext_functions,
-              const OptionalCreateArgs &                    opt_args = {});
+              const OptionalCreateArgs &                    opt_args);
 };
 
 }  // namespace vkwp

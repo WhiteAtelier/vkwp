@@ -27,7 +27,27 @@ vkwp::impl::_delete<VkFramebuffer, VkDevice>(VkFramebuffer i, const std::tuple<V
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Framebuffer
-vkwp::Framebuffer::create(const std::string &                                        label,
+vkwp::Framebuffer::create(const std::string_view                                     label,
+                          const Device &                                             device,
+                          const RenderPass &                                         render_pass,
+                          const std::vector<std::reference_wrapper<const ImageView>> _attachments,
+                          const std::uint32_t                                        width,
+                          const std::uint32_t                                        height,
+                          const std::uint32_t                                        layers)
+{
+    return Framebuffer::create(label,  //
+                               device,
+                               render_pass,
+                               _attachments,
+                               width,
+                               height,
+                               layers,
+                               {});
+}
+
+/* STATIC */
+vkwp::Framebuffer
+vkwp::Framebuffer::create(const std::string_view                                     label,
                           const Device &                                             device,
                           const RenderPass &                                         render_pass,
                           const std::vector<std::reference_wrapper<const ImageView>> _attachments,

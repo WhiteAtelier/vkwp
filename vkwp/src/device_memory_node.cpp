@@ -8,6 +8,8 @@
 #include "vkwp/utils.hpp"
 #include "vkwp/vulkan_error.hpp"
 
+#include <cstring>
+
 vkwp::DeviceMemoryNode::DeviceMemoryNode()
     : label_{}
     , mapping_alignment_{ 0 }

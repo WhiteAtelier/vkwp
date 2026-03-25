@@ -6,6 +6,8 @@
 #include "vkwp/device.hpp"
 #include "vkwp/vulkan_error.hpp"
 
+#include <string_view>
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // _delete() overload
@@ -25,7 +27,14 @@ vkwp::impl::_delete<VkFence, VkDevice>(VkFence i, const std::tuple<VkDevice> & a
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Fence
-vkwp::Fence::create(const std::string & label, const Device & device, const OptionalCreateArgs & opt_args)
+vkwp::Fence::create(const std::string_view label, const Device & device)
+{
+    return Fence::create(label, device, {});
+}
+
+/* STATIC */
+vkwp::Fence
+vkwp::Fence::create(const std::string_view label, const Device & device, const OptionalCreateArgs & opt_args)
 {
     VKWP_VALIDATE_ARG(device);
     Fence                   ret{ label };

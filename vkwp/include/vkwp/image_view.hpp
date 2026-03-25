@@ -6,6 +6,8 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string_view>
+
 namespace vkwp {
 
 ///
@@ -29,13 +31,22 @@ public:
 
     [[nodiscard]]
     static ImageView
-    create(const std::string &             label,
+    create(const std::string_view          label,
+           const Device &                  device,
+           const Image &                   image,
+           const VkImageViewType           view_type,
+           const VkFormat                  format,
+           const VkImageSubresourceRange & subresource_range);
+
+    [[nodiscard]]
+    static ImageView
+    create(const std::string_view          label,
            const Device &                  device,
            const Image &                   image,
            const VkImageViewType           view_type,
            const VkFormat                  format,
            const VkImageSubresourceRange & subresource_range,
-           const OptionalCreateArgs &      opt_args = {});
+           const OptionalCreateArgs &      opt_args);
 };
 
 }  // namespace vkwp

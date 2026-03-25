@@ -26,7 +26,14 @@ vkwp::impl::_delete<VkPipelineCache, VkDevice>(VkPipelineCache i, const std::tup
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::PipelineCache
-vkwp::PipelineCache::create(const std::string & label, const Device & device, const OptionalCreateArgs & opt_args)
+vkwp::PipelineCache::create(const std::string_view label, const Device & device)
+{
+    return PipelineCache::create(label, device, {});
+}
+
+/* STATIC */
+vkwp::PipelineCache
+vkwp::PipelineCache::create(const std::string_view label, const Device & device, const OptionalCreateArgs & opt_args)
 {
     VKWP_VALIDATE_ARG(device);
     vkwp::PipelineCache             ret{ label };

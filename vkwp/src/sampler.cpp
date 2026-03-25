@@ -25,7 +25,29 @@ vkwp::impl::_delete<VkSampler, VkDevice>(VkSampler i, const std::tuple<VkDevice>
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Sampler
-vkwp::Sampler::create(const std::string &        label,
+vkwp::Sampler::create(const std::string_view     label,
+                      const Device &             device,
+                      const VkFilter             mag_filter,
+                      const VkFilter             min_filter,
+                      const VkSamplerMipmapMode  mipmap_mode,
+                      const VkSamplerAddressMode address_mode_u,
+                      const VkSamplerAddressMode address_mode_v,
+                      const VkSamplerAddressMode address_mode_w)
+{
+    return Sampler::create(label,
+                           device,
+                           mag_filter,
+                           min_filter,
+                           mipmap_mode,
+                           address_mode_u,
+                           address_mode_v,
+                           address_mode_w,
+                           {});
+}
+
+/* STATIC */
+vkwp::Sampler
+vkwp::Sampler::create(const std::string_view     label,
                       const Device &             device,
                       const VkFilter             mag_filter,
                       const VkFilter             min_filter,

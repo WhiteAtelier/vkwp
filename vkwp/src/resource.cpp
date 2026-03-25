@@ -12,7 +12,7 @@ vkwp::Resource<T, ParentTs...>::Resource()
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
-vkwp::Resource<T, ParentTs...>::Resource(const std::string & label)
+vkwp::Resource<T, ParentTs...>::Resource(const std::string_view label)
     : label_{ label }
     , external_{ false }
     , instance_{ nullptr }
@@ -20,7 +20,7 @@ vkwp::Resource<T, ParentTs...>::Resource(const std::string & label)
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
-vkwp::Resource<T, ParentTs...>::Resource(const std::string & label, const T & external)
+vkwp::Resource<T, ParentTs...>::Resource(const std::string_view label, const T & external)
     : label_{ label }
     , external_{ true }
     , instance_{ external }

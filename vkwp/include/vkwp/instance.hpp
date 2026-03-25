@@ -5,6 +5,9 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <cstdint>
+#include <string>
+#include <string_view>
 #include <vector>
 
 namespace vkwp {
@@ -15,7 +18,7 @@ namespace vkwp {
 class Instance final : public Resource<VkInstance>
 {
 public:
-    Resource<VkInstance>::Resource;
+    using Resource<VkInstance>::Resource;
 
     struct OptionalCreateArgs
     {
@@ -24,15 +27,26 @@ public:
 
     [[nodiscard]]
     static Instance
-    create(const std::string &            label,
-           const std::string &            application_name,
+    create(const std::string_view         label,
+           const std::string_view         application_name,
            const std::uint32_t            application_version,
-           const std::string &            engine_name,
+           const std::string_view         engine_name,
+           const std::uint32_t            engine_version,
+           const std::uint32_t            api_version,
+           const std::vector<std::string> enabled_layer_names,
+           const std::vector<std::string> enabled_extension_names);
+
+    [[nodiscard]]
+    static Instance
+    create(const std::string_view         label,
+           const std::string_view         application_name,
+           const std::uint32_t            application_version,
+           const std::string_view         engine_name,
            const std::uint32_t            engine_version,
            const std::uint32_t            api_version,
            const std::vector<std::string> enabled_layer_names,
            const std::vector<std::string> enabled_extension_names,
-           const OptionalCreateArgs &     opt_args = {});
+           const OptionalCreateArgs &     opt_args);
 
     [[nodiscard]]
     static std::vector<VkExtensionProperties>

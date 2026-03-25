@@ -44,6 +44,14 @@ vkwp::RayTracingPipelineKHR_ExtFunctions::create(const VkInstance instance)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 std::vector<vkwp::Pipeline>
+vkwp::Pipeline::create(const Device &                                  device,  //
+                       const std::vector<GraphicsPipelineCreateInfo> & create_info_list)
+{
+    return Pipeline::create(device, create_info_list, {});
+}
+
+/* STATIC */
+std::vector<vkwp::Pipeline>
 vkwp::Pipeline::create(const Device &                                  device,
                        const std::vector<GraphicsPipelineCreateInfo> & create_info_list,
                        const OptionalCreateArgs &                      opt_args)
@@ -64,7 +72,7 @@ vkwp::Pipeline::create(const Device &                                  device,
     VulkanError::check(  //
         vkCreateGraphicsPipelines(device,
                                   opt_args.pipeline_cache != nullptr  //
-                                      ? *opt_args.pipeline_cache
+                                      ? static_cast<VkPipelineCache>(*opt_args.pipeline_cache)
                                       : nullptr,
                                   static_cast<std::uint32_t>(cis.size()),
                                   cis.data(),
@@ -90,6 +98,15 @@ vkwp::Pipeline::create(const Device &                                  device,
     return ret;
 }
 
+/* STATIC */
+std::vector<vkwp::Pipeline>
+vkwp::Pipeline::create(const Device &                                 device,  //
+                       const std::vector<ComputePipelineCreateInfo> & create_info_list)
+{
+    return Pipeline::create(device, create_info_list, {});
+}
+
+/* STATIC */
 std::vector<vkwp::Pipeline>
 vkwp::Pipeline::create(const Device &                                 device,
                        const std::vector<ComputePipelineCreateInfo> & create_info_list,
@@ -111,7 +128,7 @@ vkwp::Pipeline::create(const Device &                                 device,
     VulkanError::check(  //
         vkCreateComputePipelines(device,
                                  opt_args.pipeline_cache != nullptr  //
-                                     ? *opt_args.pipeline_cache
+                                     ? static_cast<VkPipelineCache>(*opt_args.pipeline_cache)
                                      : nullptr,
                                  static_cast<std::uint32_t>(cis.size()),
                                  cis.data(),
@@ -137,6 +154,16 @@ vkwp::Pipeline::create(const Device &                                 device,
     return ret;
 }
 
+/* STATIC */
+std::vector<vkwp::Pipeline>
+vkwp::Pipeline::create(const Device &                                       device,
+                       const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
+                       const RayTracingPipelineKHR_ExtFunctions &           ext_functions)
+{
+    return Pipeline::create(device, create_info_list, ext_functions, {});
+}
+
+/* STATIC */
 std::vector<vkwp::Pipeline>
 vkwp::Pipeline::create(const Device &                                       device,
                        const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
@@ -160,7 +187,7 @@ vkwp::Pipeline::create(const Device &                                       devi
         ext_functions.vkCreateRayTracingPipelinesKHR(device,
                                                      nullptr,  // *opt_args.deferred_operation,
                                                      opt_args.pipeline_cache != nullptr  //
-                                                         ? *opt_args.pipeline_cache
+                                                         ? static_cast<VkPipelineCache>(*opt_args.pipeline_cache)
                                                          : nullptr,
                                                      static_cast<std::uint32_t>(cis.size()),
                                                      cis.data(),

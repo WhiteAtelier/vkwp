@@ -19,15 +19,18 @@ public:
 
     struct OptionalCreateArgs
     {
-        const void *               p_next = nullptr;
-        VkPipelineCacheCreateFlags flags;
+        const void *               p_next            = nullptr;
+        VkPipelineCacheCreateFlags flags             = 0;
         std::size_t                initial_data_size = 0;
         const void *               initial_data      = nullptr;
         const DebugUtilsResource * debug_utils       = nullptr;
     };
 
     static PipelineCache
-    create(const std::string & label, const Device & device, const OptionalCreateArgs & opt_args = {});
+    create(const std::string_view label, const Device & device);
+
+    static PipelineCache
+    create(const std::string_view label, const Device & device, const OptionalCreateArgs & opt_args);
 };
 
 }  // namespace vkwp

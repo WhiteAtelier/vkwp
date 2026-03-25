@@ -26,8 +26,27 @@ vkwp::impl::_delete<VkDevice>(VkDevice i, const std::tuple<> &) noexcept
 // Device class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+/* STATIC */
 vkwp::Device
-vkwp::Device::create(const std::string &                          label,
+vkwp::Device::create(const std::string_view                       label,
+                     const VkPhysicalDevice                       physical_device,
+                     const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
+                     const std::vector<std::string> &             enabled_layer_names,
+                     const std::vector<std::string> &             enabled_extension_names,
+                     const VkPhysicalDeviceFeatures * const       enabled_features)
+{
+    return Device::create(label,
+                          physical_device,
+                          queue_create_infos,
+                          enabled_layer_names,
+                          enabled_extension_names,
+                          enabled_features,
+                          {});
+}
+
+/* STATIC */
+vkwp::Device
+vkwp::Device::create(const std::string_view                       label,
                      const VkPhysicalDevice                       physical_device,
                      const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
                      const std::vector<std::string> &             _enabled_layer_names,
@@ -88,12 +107,29 @@ vkwp::Device::waitIdle() const
 }
 
 vkwp::Queue
+vkwp::Device::getDeviceQueue(const std::uint32_t queue_family_index,  //
+                             const std::uint32_t queue_index) const
+{
+    VKWP_VALIDATE_THIS;
+    return this->getDeviceQueue(queue_family_index, queue_index, {}, {});
+}
+
+vkwp::Queue
 vkwp::Device::getDeviceQueue(const std::uint32_t        queue_family_index,
                              const std::uint32_t        queue_index,
                              const DeviceQueueGetArgs & opt_args) const
 {
     VKWP_VALIDATE_THIS;
     return this->getDeviceQueue(queue_family_index, queue_index, {}, opt_args);
+}
+
+vkwp::Queue
+vkwp::Device::getDeviceQueue(const std::uint32_t       queue_family_index,
+                             const std::uint32_t       queue_index,
+                             std::unique_ptr<Mutex> && mutex) const
+{
+    VKWP_VALIDATE_THIS;
+    return this->getDeviceQueue(queue_family_index, queue_index, std::move(mutex), {});
 }
 
 vkwp::Queue

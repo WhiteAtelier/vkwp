@@ -5,6 +5,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string_view>
 #include <vector>
 
 namespace vkwp {
@@ -25,12 +26,19 @@ public:
     };
 
     static RenderPass
-    create(const std::string &                          label,
+    create(const std::string_view                       label,
+           const Device &                               device,
+           const std::vector<VkAttachmentDescription> & attachments,
+           const std::vector<VkSubpassDescription> &    subpasses,
+           const std::vector<VkSubpassDependency> &     dependencies);
+
+    static RenderPass
+    create(const std::string_view                       label,
            const Device &                               device,
            const std::vector<VkAttachmentDescription> & attachments,
            const std::vector<VkSubpassDescription> &    subpasses,
            const std::vector<VkSubpassDependency> &     dependencies,
-           const OptionalCreateArgs &                   opt_args = {});
+           const OptionalCreateArgs &                   opt_args);
 };
 
 }  // namespace vkwp

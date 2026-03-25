@@ -5,6 +5,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -26,11 +27,17 @@ public:
     };
 
     static PipelineLayout
-    create(const std::string &                                                    label,
+    create(const std::string_view                                                 label,
+           const Device &                                                         device,
+           const std::vector<std::reference_wrapper<const DescriptorSetLayout>> & set_layouts,
+           const std::vector<VkPushConstantRange> &                               push_constant_ranges);
+
+    static PipelineLayout
+    create(const std::string_view                                                 label,
            const Device &                                                         device,
            const std::vector<std::reference_wrapper<const DescriptorSetLayout>> & set_layouts,
            const std::vector<VkPushConstantRange> &                               push_constant_ranges,
-           const OptionalCreateArgs &                                             opt_args = {});
+           const OptionalCreateArgs &                                             opt_args);
 };
 
 }  // namespace vkwp

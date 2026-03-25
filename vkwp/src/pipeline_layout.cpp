@@ -26,7 +26,21 @@ vkwp::impl::_delete<VkPipelineLayout, VkDevice>(VkPipelineLayout i, const std::t
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::PipelineLayout
-vkwp::PipelineLayout::create(const std::string &                                                    label,
+vkwp::PipelineLayout::create(const std::string_view                                                 label,
+                             const Device &                                                         device,
+                             const std::vector<std::reference_wrapper<const DescriptorSetLayout>> & _set_layouts,
+                             const std::vector<VkPushConstantRange> & push_constant_ranges)
+{
+    return PipelineLayout::create(label,  //
+                                  device,
+                                  _set_layouts,
+                                  push_constant_ranges,
+                                  {});
+}
+
+/* STATIC */
+vkwp::PipelineLayout
+vkwp::PipelineLayout::create(const std::string_view                                                 label,
                              const Device &                                                         device,
                              const std::vector<std::reference_wrapper<const DescriptorSetLayout>> & _set_layouts,
                              const std::vector<VkPushConstantRange> & push_constant_ranges,

@@ -5,7 +5,7 @@
 #include "vulkan.hpp"
 
 #include <memory>
-#include <string>
+#include <string_view>
 
 namespace vkwp {
 
@@ -38,10 +38,10 @@ public:
     initialize(const VkInstance instance);
 
     void
-    registDebugUtilsObjectName(const VkDevice &    device,
-                               const VkObjectType  object_type,
-                               const void * const  ptr,
-                               const std::string & name) const;
+    registDebugUtilsObjectName(const VkDevice &       device,
+                               const VkObjectType     object_type,
+                               const void * const     ptr,
+                               const std::string_view name) const;
 
 private:
     class Impl_;

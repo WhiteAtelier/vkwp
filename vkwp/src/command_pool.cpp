@@ -28,7 +28,16 @@ vkwp::impl::_delete<VkCommandPool, VkDevice>(VkCommandPool i, const std::tuple<V
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::CommandPool
-vkwp::CommandPool::create(const std::string &        label,
+vkwp::CommandPool::create(const std::string_view label,  //
+                          const Device &         device,
+                          const std::uint32_t    queue_family_index)
+{
+    return create(label, device, queue_family_index, nullptr, {});
+}
+
+/* STATIC */
+vkwp::CommandPool
+vkwp::CommandPool::create(const std::string_view     label,
                           const Device &             device,
                           const std::uint32_t        queue_family_index,
                           const OptionalCreateArgs & opt_args)
@@ -38,7 +47,17 @@ vkwp::CommandPool::create(const std::string &        label,
 
 /* STATIC */
 vkwp::CommandPool
-vkwp::CommandPool::create(const std::string &        label,
+vkwp::CommandPool::create(const std::string_view    label,
+                          const Device &            device,
+                          const std::uint32_t       queue_family_index,
+                          std::unique_ptr<Mutex> && mutex)
+{
+    return create(label, device, queue_family_index, std::move(mutex), {});
+}
+
+/* STATIC */
+vkwp::CommandPool
+vkwp::CommandPool::create(const std::string_view     label,
                           const Device &             device,
                           const std::uint32_t        queue_family_index,
                           std::unique_ptr<Mutex> &&  mutex,

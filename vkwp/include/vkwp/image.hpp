@@ -5,6 +5,9 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <cstdint>
+#include <string_view>
+
 namespace vkwp {
 
 ///
@@ -28,43 +31,79 @@ public:
 
     [[nodiscard]]
     static Image
-    create(const std::string &        label,
+    create(const std::string_view  label,
+           const Device &          device,
+           const VkImageType       image_type,
+           const VkFormat          format,
+           const VkExtent3D        extent,
+           const VkImageUsageFlags usage);
+
+    [[nodiscard]]
+    static Image
+    create(const std::string_view     label,
            const Device &             device,
            const VkImageType          image_type,
            const VkFormat             format,
            const VkExtent3D           extent,
            const VkImageUsageFlags    usage,
-           const OptionalCreateArgs & opt_args = {});
+           const OptionalCreateArgs & opt_args);
 
     [[nodiscard]]
     static Image
-    create1D(const std::string &        label,
+    create1D(const std::string_view  label,
+             const Device &          device,
+             const VkFormat          format,
+             const std::uint32_t     width,
+             const VkImageUsageFlags usage);
+
+    [[nodiscard]]
+    static Image
+    create1D(const std::string_view     label,
              const Device &             device,
              const VkFormat             format,
              const std::uint32_t        width,
              const VkImageUsageFlags    usage,
-             const OptionalCreateArgs & opt_args = {});
+             const OptionalCreateArgs & opt_args);
 
     [[nodiscard]]
     static Image
-    create2D(const std::string &        label,
+    create2D(const std::string_view  label,
+             const Device &          device,
+             const VkFormat          format,
+             const std::uint32_t     width,
+             const std::uint32_t     height,
+             const VkImageUsageFlags usage);
+
+    [[nodiscard]]
+    static Image
+    create2D(const std::string_view     label,
              const Device &             device,
              const VkFormat             format,
              const std::uint32_t        width,
              const std::uint32_t        height,
              const VkImageUsageFlags    usage,
-             const OptionalCreateArgs & opt_args = {});
+             const OptionalCreateArgs & opt_args);
 
     [[nodiscard]]
     static Image
-    create3D(const std::string &        label,
+    create3D(const std::string_view  label,
+             const Device &          device,
+             const VkFormat          format,
+             const std::uint32_t     width,
+             const std::uint32_t     height,
+             const std::uint32_t     depth,
+             const VkImageUsageFlags usage);
+
+    [[nodiscard]]
+    static Image
+    create3D(const std::string_view     label,
              const Device &             device,
              const VkFormat             format,
              const std::uint32_t        width,
              const std::uint32_t        height,
              const std::uint32_t        depth,
              const VkImageUsageFlags    usage,
-             const OptionalCreateArgs & opt_args = {});
+             const OptionalCreateArgs & opt_args);
 
     [[nodiscard]]
     VkMemoryRequirements
