@@ -22,6 +22,12 @@ add_compile_options(
     "$<$<CXX_COMPILER_ID:MSVC>:/utf-8>"
     "$<$<CXX_COMPILER_ID:MSVC>:/EHsc>"
     "$<$<CXX_COMPILER_ID:MSVC>:/MP>"
+    "$<$<CXX_COMPILER_ID:MSVC>:/W4>"
+    "$<$<CXX_COMPILER_ID:MSVC>:/WX>"
+
+    "$<$<CXX_COMPILER_ID:GNU>:-Wall>"
+    "$<$<CXX_COMPILER_ID:GNU>:-Wextra>"
+    "$<$<CXX_COMPILER_ID:GNU>:-Werror>"
 )
 
 add_subdirectory(vkwp)
