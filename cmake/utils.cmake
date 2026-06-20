@@ -1,6 +1,4 @@
 
-option(BUILD_TESTS "Build test project." OFF)
-
 # =============================================================================================== #
 # 
 # vkwp_add_library
@@ -205,16 +203,19 @@ function(vkwp_add_library ARG_TARGET_NAME)
         endif()
     endif()
 
-    install(
-        TARGETS ${ARG_TARGET_NAME}
-        EXPORT ${PROJECT_NAME}-export
-        FILE_SET HEADERS
-    )
+    if (VKWP_INSTALL)
+        install(
+            TARGETS ${ARG_TARGET_NAME}
+            EXPORT ${PROJECT_NAME}-export
+            FILE_SET HEADERS
+        )
+    endif()
 
     # ========================================= #
     # test
     # ========================================= #
-    if (BUILD_TESTS AND (DEFINED ARG_TESTS))
+    if (VKWP_BUILD_TESTS AND (DEFINED ARG_TESTS))
+        find_package(GTest REQUIRED)
 
         # --- TESTS の一覧を絶対パスに変換 ---
         if (DEFINED ARG_TESTS)
@@ -229,9 +230,6 @@ function(vkwp_add_library ARG_TARGET_NAME)
                 endif()
             endforeach()
         endif()  
-        
-        find_package(GTest REQUIRED)
-        include(GoogleTest)
 
         # --- Add executable ---
         add_executable(${ARG_TARGET_NAME}-test)
@@ -480,7 +478,7 @@ function(vkwp_add_executable ARG_TARGET_NAME)
     # =======================================
     # test
     # =======================================
-    if (BUILD_TESTS AND (DEFINED ARG_TESTS))
+    if (VKWP_BUILD_TESTS AND (DEFINED ARG_TESTS))
 
         # ARG_TESTS を見て, test/ を付加する
         if (DEFINED ARG_TESTS)
@@ -582,6 +580,10 @@ function(vkwp_add_executable ARG_TARGET_NAME)
 endfunction()
 
 function(export_config)
+    if (NOT VKWP_INSTALL)
+        return()
+    endif()
+
     install (
         EXPORT
             ${PROJECT_NAME}-export

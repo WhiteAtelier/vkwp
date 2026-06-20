@@ -1,10 +1,8 @@
 
 # https://qiita.com/yoyomion/items/16d152421ef4f7bfc8ac
 
-option(BUILD_DOCS "Generate documents." OFF)
-
 function(regist_doxygen_files ARG_FILES)
-    if (NOT ${BUILD_DOCS})
+    if (NOT ${VKWP_BUILD_DOCS})
         return()
     endif()
 
@@ -13,7 +11,7 @@ function(regist_doxygen_files ARG_FILES)
 endfunction()
 
 function(add_doxygen_target)
-    if (NOT ${BUILD_DOCS})
+    if (NOT ${VKWP_BUILD_DOCS})
         return()
     endif()
 
