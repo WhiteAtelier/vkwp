@@ -9,9 +9,15 @@ project(vkwp
         CXX
 )
 
+if ("${CMAKE_PROJECT_NAME}" STREQUAL "${PROJECT_NAME}")
+    set(VKWP_IS_MASTER_PROJECT ON)
+else()
+    set(VKWP_IS_MASTER_PROJECT OFF)
+endif()
+
 option(VKWP_BUILD_TESTS "Build test project."  OFF)
 option(VKWP_BUILD_DOCS  "Build documentation." OFF)
-option(VKWP_INSTALL     "Install the project." "${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME}")
+option(VKWP_INSTALL     "Install the project." VKWP_IS_MASTER_PROJECT)
 
 include(cmake/doxygen/doxygen.cmake)
 include(cmake/utils.cmake)
