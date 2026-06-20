@@ -4,11 +4,11 @@ Vulkan API Wrapper.
 
 ## Features
 
--   Destroy in constructor.
--   Uncopyable, Movable instance.
--   Move assignable instance.
--   Valid/Invalid container.
--   (WIP) Memory Pool and Memory Node.
+- Destroy in constructor.
+- Uncopyable, Movable instance.
+- Move assignable instance.
+- Valid/Invalid container.
+- (WIP) Memory Pool and Memory Node.
 
 独自の wrapper, まあ, みんな作るよね w
 
@@ -59,36 +59,37 @@ auto pool = vkwp::DeviceMemoryPool::create(...);
 
 ## Requirements
 
--   C++20 or later
+- C++20 or later
 
 ## Dependencies
 
--   Vulkan
-    -   [https://vulkan.lunarg.com/](https://vulkan.lunarg.com/)
--   gabime/spdlog
-    -   Optional, With: `VKWP_SPDLOG_LOGGING=ON`
-    -   [https://github.com/gabime/spdlog](https://github.com/gabime/spdlog)
--   glfw/glfw
-    -   Optional, With: `VKWP_SUPPORT_GLFW_SURFACE=ON`
-    -   Version: 3
-    -   For supporting glfw surface.
-    -   [https://github.com/glfw/glfw](https://github.com/glfw/glfw)
--   google/googletest
-    -   With: `BUILD_TESTS=ON`
-    -   [https://github.com/google/googletest](https://github.com/google/googletest)
--   doxygen
-    -   With: `BUILD_DOCS=ON`
-    -   [https://doxygen.nl/](https://doxygen.nl/)
+- Vulkan
+  - [https://vulkan.lunarg.com/](https://vulkan.lunarg.com/)
+- gabime/spdlog
+  - Optional, With: `VKWP_SPDLOG_LOGGING=ON`
+  - [https://github.com/gabime/spdlog](https://github.com/gabime/spdlog)
+- glfw/glfw
+  - Optional, With: `VKWP_SUPPORT_GLFW_SURFACE=ON`
+  - Version: 3
+  - For supporting glfw surface.
+  - [https://github.com/glfw/glfw](https://github.com/glfw/glfw)
+- google/googletest
+  - With: `VKWP_BUILD_TESTS=ON`
+  - [https://github.com/google/googletest](https://github.com/google/googletest)
+- doxygen
+  - With: `VKWP_BUILD_DOCS=ON`
+  - [https://doxygen.nl/](https://doxygen.nl/)
 
 ## Build
 
 ### CMake Options
 
-| Option                     | Type   | Default | Description                            |
-| -------------------------- | ------ | ------- | -------------------------------------- |
-| VKWP_SPDLOG_LOGGING        | BOOL   | `OFF`   | Use spdlog for logging.                |
-| VKWP_SUPPORT_GLFW_SURFACE  | BOOL   | `OFF`   | glfw surface support.                  |
-| VKWP_SUPPORT_WIN32_SURFACE | BOOL   | `OFF`   | win32 surface support. (Windows only.) |
-| BUILD_TESTS                | BOOL   | `OFF`   | Build test projects.                   |
-| BUILD_DOCS                 | BOOL   | `OFF`   | Build documentation.                   |
-| (CMAKE_DEBUG_POSTFIX)      | STRING | `d`     |                                        |
+| Option                     | Type   | Default          | Description                            |
+| -------------------------- | ------ | ---------------- | -------------------------------------- |
+| VKWP_SPDLOG_LOGGING        | BOOL   | `OFF`            | Use spdlog for logging.                |
+| VKWP_SUPPORT_GLFW_SURFACE  | BOOL   | `OFF`            | glfw surface support.                  |
+| VKWP_SUPPORT_WIN32_SURFACE | BOOL   | `OFF`            | win32 surface support. (Windows only.) |
+| VKWP_BUILD_TESTS           | BOOL   | `OFF`            | Build test projects.                   |
+| VKWP_BUILD_DOCS            | BOOL   | `OFF`            | Build documentation.                   |
+| VKWP_INSTALL               | BOOL   | `ON` (when root) | Install libraries.                     |
+| (CMAKE_DEBUG_POSTFIX)      | STRING | `d`              |                                        |

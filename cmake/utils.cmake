@@ -1,6 +1,4 @@
 
-option(BUILD_TESTS "Build test project." OFF)
-
 # =============================================================================================== #
 # 
 # vkwp_add_library
@@ -99,13 +97,20 @@ function(vkwp_add_library ARG_TARGET_NAME)
 
     # --- Add library ---
     add_library(${ARG_TARGET_NAME} STATIC)
+    add_library(${PROJECT_NAME}::${ARG_TARGET_NAME} ALIAS ${ARG_TARGET_NAME})
+
     set_target_properties(${ARG_TARGET_NAME}
         PROPERTIES
             CXX_STANDARD 20
             CXX_STANDARD_REQUIRED ON
             CXX_EXTENSIONS OFF
-            FOLDER "${TARGET_FOLDER}"
     )
+    if (VKWP_IS_MASTER_PROJECT)
+        set_target_properties(${ARG_TARGET_NAME}
+            PROPERTIES
+                FOLDER "${TARGET_FOLDER}"
+        )
+    endif()
 
     # --- Link libraries ---
     if (DEFINED ARG_LIBRARIES)
@@ -186,7 +191,7 @@ function(vkwp_add_library ARG_TARGET_NAME)
             if (DEFINED ARG_MSVC_HEADERS_FILTER_ROOT)
                 string(REPLACE "/" "\\" headers_filter_root "${ARG_MSVC_HEADERS_FILTER_ROOT}")
             else()
-                set(headers_filter_root "include\\${CMAKE_PROJECT_NAME}")
+                set(headers_filter_root "include\\${PROJECT_NAME}")
             endif()
 
             foreach (rel_header_file IN LISTS ARG_HEADERS)
@@ -203,16 +208,19 @@ function(vkwp_add_library ARG_TARGET_NAME)
         endif()
     endif()
 
-    install(
-        TARGETS ${ARG_TARGET_NAME}
-        EXPORT ${CMAKE_PROJECT_NAME}-export
-        FILE_SET HEADERS
-    )
+    if (VKWP_INSTALL)
+        install(
+            TARGETS ${ARG_TARGET_NAME}
+            EXPORT ${PROJECT_NAME}-export
+            FILE_SET HEADERS
+        )
+    endif()
 
     # ========================================= #
     # test
     # ========================================= #
-    if (BUILD_TESTS AND (DEFINED ARG_TESTS))
+    if (VKWP_BUILD_TESTS AND (DEFINED ARG_TESTS))
+        find_package(GTest REQUIRED)
 
         # --- TESTS の一覧を絶対パスに変換 ---
         if (DEFINED ARG_TESTS)
@@ -227,20 +235,23 @@ function(vkwp_add_library ARG_TARGET_NAME)
                 endif()
             endforeach()
         endif()  
-        
-        find_package(GTest REQUIRED)
-        include(GoogleTest)
 
         # --- Add executable ---
         add_executable(${ARG_TARGET_NAME}-test)
+
         set_target_properties(${ARG_TARGET_NAME}-test
             PROPERTIES
                 CXX_STANDARD 20
                 CXX_STANDARD_REQUIRED ON
                 CXX_EXTENSIONS OFF
-                FOLDER "${TEST_TARGET_FOLDER}"
                 VS_DEBUGGER_ENVIRONMENT "GTEST_CATCH_EXCEPTIONS=0"
         )
+        if (VKWP_IS_MASTER_PROJECT)
+            set_target_properties(${ARG_TARGET_NAME}-test
+                PROPERTIES
+                    FOLDER "${TEST_TARGET_FOLDER}"
+            )
+        endif()
 
         # --- Sources
         if (DEFINED ARG_ABS_TESTS)
@@ -404,8 +415,13 @@ function(vkwp_add_executable ARG_TARGET_NAME)
             CXX_STANDARD 20
             CXX_STANDARD_REQUIRED ON
             CXX_EXTENSIONS OFF
-            FOLDER "${TARGET_FOLDER}"
     )
+    if (VKWP_IS_MASTER_PROJECT)
+        set_target_properties(${ARG_TARGET_NAME}
+            PROPERTIES
+                FOLDER "${TARGET_FOLDER}"
+        )
+    endif()
 
     # --- Libraries ---
     if (DEFINED ARG_LIBRARIES)
@@ -478,7 +494,7 @@ function(vkwp_add_executable ARG_TARGET_NAME)
     # =======================================
     # test
     # =======================================
-    if (BUILD_TESTS AND (DEFINED ARG_TESTS))
+    if (VKWP_BUILD_TESTS AND (DEFINED ARG_TESTS))
 
         # ARG_TESTS を見て, test/ を付加する
         if (DEFINED ARG_TESTS)
@@ -503,9 +519,14 @@ function(vkwp_add_executable ARG_TARGET_NAME)
                 CXX_STANDARD 20
                 CXX_STANDARD_REQUIRED ON
                 CXX_EXTENSIONS OFF
-                FOLDER "${TEST_TARGET_FOLDER}"
                 VS_DEBUGGER_ENVIRONMENT "GTEST_CATCH_EXCEPTIONS=0"
         )
+        if (VKWP_IS_MASTER_PROJECT)
+            set_target_properties(${ARG_TARGET_NAME}-test
+                PROPERTIES
+                    FOLDER "${TEST_TARGET_FOLDER}"
+            )
+        endif()
 
         # --- sources
         if (DEFINED ARG_ABS_TESTS)
@@ -580,29 +601,33 @@ function(vkwp_add_executable ARG_TARGET_NAME)
 endfunction()
 
 function(export_config)
+    if (NOT VKWP_INSTALL)
+        return()
+    endif()
+
     install (
         EXPORT
-            ${CMAKE_PROJECT_NAME}-export
+            ${PROJECT_NAME}-export
         FILE
-            ${CMAKE_PROJECT_NAME}Targets.cmake
+            ${PROJECT_NAME}Targets.cmake
         DESTINATION
-            lib/cmake/${CMAKE_PROJECT_NAME}
+            lib/cmake/${PROJECT_NAME}
         NAMESPACE
-            ${CMAKE_PROJECT_NAME}::
+            ${PROJECT_NAME}::
         EXPORT_LINK_INTERFACE_LIBRARIES
     )
 
     include(CMakePackageConfigHelpers)
     configure_package_config_file(
         "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Config.cmake.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
         INSTALL_DESTINATION
-            "lib/cmake/${CMAKE_PROJECT_NAME}"
+            "lib/cmake/${PROJECT_NAME}"
         NO_SET_AND_CHECK_MACRO
     )
 
     write_basic_package_version_file(
-        "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}ConfigVersion.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
         VERSION
             "${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}"
         COMPATIBILITY
@@ -611,10 +636,10 @@ function(export_config)
 
     install(
         FILES
-            "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake"
-            "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}ConfigVersion.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
         DESTINATION
-            "lib/cmake/${CMAKE_PROJECT_NAME}"
+            "lib/cmake/${PROJECT_NAME}"
     )
 
 endfunction()
