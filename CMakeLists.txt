@@ -17,7 +17,7 @@ endif()
 
 option(VKWP_BUILD_TESTS "Build test project."  OFF)
 option(VKWP_BUILD_DOCS  "Build documentation." OFF)
-option(VKWP_INSTALL     "Install the project." VKWP_IS_MASTER_PROJECT)
+option(VKWP_INSTALL     "Install the project." ${VKWP_IS_MASTER_PROJECT})
 
 include(cmake/doxygen/doxygen.cmake)
 include(cmake/utils.cmake)
