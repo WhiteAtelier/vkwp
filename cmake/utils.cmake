@@ -104,8 +104,13 @@ function(vkwp_add_library ARG_TARGET_NAME)
             CXX_STANDARD 20
             CXX_STANDARD_REQUIRED ON
             CXX_EXTENSIONS OFF
-            FOLDER "${TARGET_FOLDER}"
     )
+    if (VKWP_IS_MASTER_PROJECT)
+        set_target_properties(${ARG_TARGET_NAME}
+            PROPERTIES
+                FOLDER "${TARGET_FOLDER}"
+        )
+    endif()
 
     # --- Link libraries ---
     if (DEFINED ARG_LIBRARIES)
@@ -233,14 +238,20 @@ function(vkwp_add_library ARG_TARGET_NAME)
 
         # --- Add executable ---
         add_executable(${ARG_TARGET_NAME}-test)
+
         set_target_properties(${ARG_TARGET_NAME}-test
             PROPERTIES
                 CXX_STANDARD 20
                 CXX_STANDARD_REQUIRED ON
                 CXX_EXTENSIONS OFF
-                FOLDER "${TEST_TARGET_FOLDER}"
                 VS_DEBUGGER_ENVIRONMENT "GTEST_CATCH_EXCEPTIONS=0"
         )
+        if (VKWP_IS_MASTER_PROJECT)
+            set_target_properties(${ARG_TARGET_NAME}-test
+                PROPERTIES
+                    FOLDER "${TEST_TARGET_FOLDER}"
+            )
+        endif()
 
         # --- Sources
         if (DEFINED ARG_ABS_TESTS)
@@ -404,8 +415,13 @@ function(vkwp_add_executable ARG_TARGET_NAME)
             CXX_STANDARD 20
             CXX_STANDARD_REQUIRED ON
             CXX_EXTENSIONS OFF
-            FOLDER "${TARGET_FOLDER}"
     )
+    if (VKWP_IS_MASTER_PROJECT)
+        set_target_properties(${ARG_TARGET_NAME}
+            PROPERTIES
+                FOLDER "${TARGET_FOLDER}"
+        )
+    endif()
 
     # --- Libraries ---
     if (DEFINED ARG_LIBRARIES)
@@ -503,9 +519,14 @@ function(vkwp_add_executable ARG_TARGET_NAME)
                 CXX_STANDARD 20
                 CXX_STANDARD_REQUIRED ON
                 CXX_EXTENSIONS OFF
-                FOLDER "${TEST_TARGET_FOLDER}"
                 VS_DEBUGGER_ENVIRONMENT "GTEST_CATCH_EXCEPTIONS=0"
         )
+        if (VKWP_IS_MASTER_PROJECT)
+            set_target_properties(${ARG_TARGET_NAME}-test
+                PROPERTIES
+                    FOLDER "${TEST_TARGET_FOLDER}"
+            )
+        endif()
 
         # --- sources
         if (DEFINED ARG_ABS_TESTS)
