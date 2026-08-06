@@ -5,6 +5,8 @@
 
 #include "vulkan.hpp"
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 
 namespace vkwp {
