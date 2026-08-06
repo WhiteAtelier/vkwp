@@ -368,7 +368,7 @@ createDebugReport(const VkInstance                           instance,
     EXPECT_NE(create_info->pUserData, nullptr);
     debug_state.callback_fn = create_info->pfnCallback;
     debug_state.user_data   = create_info->pUserData;
-    *callback = debug_state.callback;
+    *callback               = debug_state.callback;
     return VK_SUCCESS;
 }
 
@@ -651,10 +651,10 @@ TEST(VulkanFunctionsDebugTest, DebugReportUsesProvidedFunctionsAndResolvesOnlyMi
 {
     debug_state = {};
     vkwp::VulkanFunctions functions;
-    functions.vkGetInstanceProcAddr          = &getInstanceProcAddr;
-    functions.vkCreateDebugReportCallbackEXT = &createDebugReport;
-    auto callback                             = std::make_shared<RecordingDebugReportCallback>();
-    const auto * const callback_ptr           = callback.get();
+    functions.vkGetInstanceProcAddr                                 = &getInstanceProcAddr;
+    functions.vkCreateDebugReportCallbackEXT                        = &createDebugReport;
+    auto                                              callback      = std::make_shared<RecordingDebugReportCallback>();
+    const auto * const                                callback_ptr  = callback.get();
     const std::weak_ptr<RecordingDebugReportCallback> weak_callback = callback;
     {
         vkwp::DebugReportCallbackResource debug_report;
