@@ -7,6 +7,33 @@ namespace vkwp {
 
 #define VKWP_VULKAN_FUNCTION(fnName) PFN_##fnName fnName = nullptr
 
+/// @brief vkwp が呼び出す Vulkan 関数を指定する構造体.
+///
+/// 各メンバーに関数ポインタを設定すると, 対応する vkwp API は既定の Vulkan 関数の代わりに
+/// 設定された関数を使用します.
+/// テストや Vulkan 関数のフックなどに利用できます.
+/// nullptr のメンバーについては, 対応する既定の Vulkan 関数が使用されます.
+///
+/// Resource の create 系関数, allocate 系関数, initialize 関数に渡された場合, 生成, 操作,
+/// 破棄など, そのコンテキストに関連するすべての Vulkan 関数が生成時に Resource 内部へ
+/// キャッシュされます.
+/// そのため, 生成完了後にこの構造体を保持し続ける必要はありません.
+/// また, 生成後にメンバーを書き換えても, 生成済み Resource が使用する関数には反映されません.
+///
+/// @note
+///     設定した関数ポインタの参照先は, それをキャッシュした Resource が使用している間,
+///     呼び出し可能な状態を維持する必要がある.
+///
+/// @note
+///     この構造体は内部同期を行わない.
+///     メンバーを変更しない場合は, 複数スレッドの create 系関数から同時に参照できる.
+///     参照中にメンバーを変更してはならない.
+///
+/// @note
+///     関数ポインタのキャッシュは, 生成された Resource や設定された Vulkan 関数の
+///     スレッド安全性を保証しない.
+///     呼び出し時には Vulkan の外部同期要件と, 設定した関数のスレッド安全性に従う必要がある.
+///
 struct VulkanFunctions
 {
     VKWP_VULKAN_FUNCTION(vkAllocateCommandBuffers);
