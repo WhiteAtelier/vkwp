@@ -30,14 +30,14 @@ vkwp::impl::_delete(VkDevice i, PFN_vkDestroyDevice fn, const std::tuple<> &) no
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Device
-vkwp::Device::create(const std::string_view                       label,
+vkwp::Device::create(std::string                                  label,
                      const VkPhysicalDevice                       physical_device,
                      const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
                      const std::vector<std::string> &             enabled_layer_names,
                      const std::vector<std::string> &             enabled_extension_names,
                      const VkPhysicalDeviceFeatures * const       enabled_features)
 {
-    return Device::create(label,
+    return Device::create(std::move(label),
                           physical_device,
                           queue_create_infos,
                           enabled_layer_names,
@@ -48,7 +48,7 @@ vkwp::Device::create(const std::string_view                       label,
 
 /* STATIC */
 vkwp::Device
-vkwp::Device::create(const std::string_view                       label,
+vkwp::Device::create(std::string                                  label,
                      const VkPhysicalDevice                       physical_device,
                      const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
                      const std::vector<std::string> &             _enabled_layer_names,
@@ -60,7 +60,7 @@ vkwp::Device::create(const std::string_view                       label,
     VKWP_ASSERTION(queue_create_infos.size() <= (std::numeric_limits<std::uint32_t>::max)());
     VKWP_ASSERTION(_enabled_layer_names.size() <= (std::numeric_limits<std::uint32_t>::max)());
     VKWP_ASSERTION(_enabled_extension_names.size() <= (std::numeric_limits<std::uint32_t>::max)());
-    Device ret{ label };
+    Device ret{ std::move(label) };
 
     std::vector<const char *> enabled_layer_names;
     enabled_layer_names.reserve(_enabled_layer_names.size());

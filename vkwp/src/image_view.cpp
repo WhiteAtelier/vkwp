@@ -28,14 +28,14 @@ vkwp::impl::_delete(VkImageView i, PFN_vkDestroyImageView fn, const std::tuple<V
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::ImageView
-vkwp::ImageView::create(const std::string_view          label,
+vkwp::ImageView::create(std::string                     label,
                         const Device &                  device,
                         const Image &                   image,
                         const VkImageViewType           view_type,
                         const VkFormat                  format,
                         const VkImageSubresourceRange & subresource_range)
 {
-    return ImageView::create(label,  //
+    return ImageView::create(std::move(label),  //
                              device,
                              image,
                              view_type,
@@ -46,7 +46,7 @@ vkwp::ImageView::create(const std::string_view          label,
 
 /* STATIC */
 vkwp::ImageView
-vkwp::ImageView::create(const std::string_view          label,
+vkwp::ImageView::create(std::string                     label,
                         const Device &                  device,
                         const Image &                   image,
                         const VkImageViewType           view_type,
@@ -57,7 +57,7 @@ vkwp::ImageView::create(const std::string_view          label,
     VKWP_VALIDATE_ARG(device);
     VKWP_VALIDATE_ARG(image);
 
-    ImageView                   ret{ label };
+    ImageView                   ret{ std::move(label) };
     const VkImageViewCreateInfo ci{
         .sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         .pNext            = opt_args.p_next,
@@ -82,7 +82,7 @@ vkwp::ImageView::create(const std::string_view          label,
         opt_args.debug_utils->registDebugUtilsObjectName(device,
                                                          VK_OBJECT_TYPE_IMAGE_VIEW,
                                                          static_cast<VkImageView>(ret),
-                                                         label);
+                                                         ret.getLabel());
     }
     return ret;
 }

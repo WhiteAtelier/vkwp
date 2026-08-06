@@ -7,6 +7,7 @@
 #include "vulkan.hpp"
 
 #include <cstdint>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -37,7 +38,7 @@ public:
 
     [[nodiscard]]
     static SwapchainKHR
-    create(const std::string_view              label,
+    create(std::string                         label,
            const Device &                      device,
            const SurfaceKHR &                  surface,
            const std::uint32_t                 min_image_count,
@@ -50,7 +51,7 @@ public:
 
     [[nodiscard]]
     static SwapchainKHR
-    create(const std::string_view              label,
+    create(std::string                         label,
            const Device &                      device,
            const SurfaceKHR &                  surface,
            const std::uint32_t                 min_image_count,

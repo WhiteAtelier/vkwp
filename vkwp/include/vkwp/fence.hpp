@@ -8,6 +8,7 @@
 
 #include <cstdint>
 #include <limits>
+#include <string>
 #include <string_view>
 
 namespace vkwp {
@@ -29,10 +30,10 @@ public:
     };
 
     static Fence
-    create(const std::string_view label, const Device & device);
+    create(std::string label, const Device & device);
 
     static Fence
-    create(const std::string_view label, const Device & device, const OptionalCreateArgs & opt_args);
+    create(std::string label, const Device & device, const OptionalCreateArgs & opt_args);
 
     bool
     wait(const std::uint64_t timeout = (std::numeric_limits<std::uint64_t>::max)()) const;

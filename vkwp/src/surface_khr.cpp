@@ -35,12 +35,12 @@ vkwp::impl::_delete(VkSurfaceKHR i, PFN_vkDestroySurfaceKHR fn, const std::tuple
 /* STATIC */
 #if VKWP_SUPPORT_GLFW_SURFACE
 vkwp::SurfaceKHR
-vkwp::SurfaceKHR::createGLFWSurfaceKHR(const std::string &     label,
+vkwp::SurfaceKHR::createGLFWSurfaceKHR(std::string             label,
                                        const Instance &        instance,
                                        GLFWwindow * const      window,
                                        const VulkanFunctions * functions)
 {
-    SurfaceKHR   ret{ label };
+    SurfaceKHR   ret{ std::move(label) };
     auto * const destroy_fn = (functions != nullptr && functions->vkDestroySurfaceKHR != nullptr)
                                 ? functions->vkDestroySurfaceKHR
                                 : vkDestroySurfaceKHR;
@@ -54,13 +54,13 @@ vkwp::SurfaceKHR::createGLFWSurfaceKHR(const std::string &     label,
 #if VKWP_SUPPORT_WIN32_SURFACE
 /* STATIC */
 vkwp::SurfaceKHR
-vkwp::SurfaceKHR::createWin32SurfaceKHR(const std::string &             label,
+vkwp::SurfaceKHR::createWin32SurfaceKHR(std::string                     label,
                                         const Instance &                instance,
                                         const HINSTANCE                 h_instance,
                                         const HWND                      hwnd,
                                         const OptionalCreateArgsWin32 & opt_args)
 {
-    SurfaceKHR                  ret{ label };
+    SurfaceKHR                  ret{ std::move(label) };
     VkWin32SurfaceCreateInfoKHR ci{
         .sType     = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
         .pNext     = opt_args.p_next,

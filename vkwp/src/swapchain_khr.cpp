@@ -30,7 +30,7 @@ vkwp::impl::_delete(VkSwapchainKHR i, PFN_vkDestroySwapchainKHR fn, const std::t
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::SwapchainKHR
-vkwp::SwapchainKHR::create(const std::string_view              label,
+vkwp::SwapchainKHR::create(std::string                         label,
                            const Device &                      device,
                            const SurfaceKHR &                  surface,
                            const std::uint32_t                 min_image_count,
@@ -41,7 +41,7 @@ vkwp::SwapchainKHR::create(const std::string_view              label,
                            const VkPresentModeKHR              present_mode,
                            const VkSurfaceTransformFlagBitsKHR pre_transform)
 {
-    return SwapchainKHR::create(label,
+    return SwapchainKHR::create(std::move(label),
                                 device,
                                 surface,
                                 min_image_count,
@@ -56,7 +56,7 @@ vkwp::SwapchainKHR::create(const std::string_view              label,
 
 /* STATIC */
 vkwp::SwapchainKHR
-vkwp::SwapchainKHR::create(const std::string_view              label,
+vkwp::SwapchainKHR::create(std::string                         label,
                            const Device &                      device,
                            const SurfaceKHR &                  surface,
                            const std::uint32_t                 min_image_count,
@@ -69,7 +69,7 @@ vkwp::SwapchainKHR::create(const std::string_view              label,
                            const OptionalCreateArgs &          opt_args)
 {
     VKWP_VALIDATE_ARG(device);
-    SwapchainKHR                   ret{ label };
+    SwapchainKHR                   ret{ std::move(label) };
     const VkSwapchainCreateInfoKHR ci{
         .sType                 = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         .pNext                 = opt_args.p_next,

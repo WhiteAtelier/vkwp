@@ -44,38 +44,36 @@ public:
 
     [[nodiscard]]
     static std::vector<CommandBuffer>
-    allocateCommandBuffers(const CommandPool &              command_pool,
-                           const VkCommandBufferLevel       level,
-                           const std::vector<std::string> & command_buffer_labels);
+    allocateCommandBuffers(const CommandPool &        command_pool,
+                           const VkCommandBufferLevel level,
+                           std::vector<std::string>   command_buffer_labels);
 
     [[nodiscard]]
     static std::vector<CommandBuffer>
-    allocateCommandBuffers(const CommandPool &              command_pool,
-                           const VkCommandBufferLevel       level,
-                           const std::vector<std::string> & command_buffer_labels,
-                           const OptionalAllocateArgs &     opt_args);
+    allocateCommandBuffers(const CommandPool &          command_pool,
+                           const VkCommandBufferLevel   level,
+                           std::vector<std::string>     command_buffer_labels,
+                           const OptionalAllocateArgs & opt_args);
 
     [[nodiscard]]
     static CommandBuffer
-    allocateCommandBuffer(const std::string &        label,
-                          const CommandPool &        command_pool,
-                          const VkCommandBufferLevel level);
+    allocateCommandBuffer(std::string label, const CommandPool & command_pool, const VkCommandBufferLevel level);
 
     [[nodiscard]]
     static CommandBuffer
-    allocateCommandBuffer(const std::string &          label,
+    allocateCommandBuffer(std::string                  label,
                           const CommandPool &          command_pool,
                           const VkCommandBufferLevel   level,
                           const OptionalAllocateArgs & opt_args);
 
     [[nodiscard]]
     static CommandBuffer
-    allocatePrimaryCommandBuffer(const std::string & label,  //
+    allocatePrimaryCommandBuffer(std::string         label,  //
                                  const CommandPool & command_pool);
 
     [[nodiscard]]
     static CommandBuffer
-    allocatePrimaryCommandBuffer(const std::string &          label,
+    allocatePrimaryCommandBuffer(std::string                  label,
                                  const CommandPool &          command_pool,
                                  const OptionalAllocateArgs & opt_args);
 
@@ -113,7 +111,7 @@ private:
                         const void * const                     p_next) const;
 
     [[nodiscard]]
-    explicit CommandBuffer(const std::string_view label);
+    explicit CommandBuffer(std::string && label);
 
     Mutex *                  mutex_;
     PFN_vkBeginCommandBuffer _vkBeginCommandBuffer = nullptr;

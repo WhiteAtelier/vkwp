@@ -104,33 +104,33 @@ public:
     };
 
     static std::vector<Pipeline>
-    create(const Device &                                  device,  //
-           const std::vector<GraphicsPipelineCreateInfo> & create_info_list);
+    create(const Device &                          device,  //
+           std::vector<GraphicsPipelineCreateInfo> create_info_list);
 
     static std::vector<Pipeline>
-    create(const Device &                                  device,
-           const std::vector<GraphicsPipelineCreateInfo> & create_info_list,
-           const OptionalCreateArgs &                      opt_args);
+    create(const Device &                          device,
+           std::vector<GraphicsPipelineCreateInfo> create_info_list,
+           const OptionalCreateArgs &              opt_args);
 
     static std::vector<Pipeline>
-    create(const Device &                                 device,  //
-           const std::vector<ComputePipelineCreateInfo> & create_info_list);
+    create(const Device &                         device,  //
+           std::vector<ComputePipelineCreateInfo> create_info_list);
 
     static std::vector<Pipeline>
-    create(const Device &                                 device,
-           const std::vector<ComputePipelineCreateInfo> & create_info_list,
-           const OptionalCreateArgs &                     opt_args);
+    create(const Device &                         device,
+           std::vector<ComputePipelineCreateInfo> create_info_list,
+           const OptionalCreateArgs &             opt_args);
 
     static std::vector<Pipeline>
-    create(const Device &                                       device,
-           const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
-           const RayTracingPipelineKHR_ExtFunctions &           ext_functions);
+    create(const Device &                               device,
+           std::vector<RayTracingPipelineCreateInfoKHR> create_info_list,
+           const RayTracingPipelineKHR_ExtFunctions &   ext_functions);
 
     static std::vector<Pipeline>
-    create(const Device &                                       device,
-           const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
-           const RayTracingPipelineKHR_ExtFunctions &           ext_functions,
-           const OptionalCreateRTPipelineArgs &                 opt_args);
+    create(const Device &                               device,
+           std::vector<RayTracingPipelineCreateInfoKHR> create_info_list,
+           const RayTracingPipelineKHR_ExtFunctions &   ext_functions,
+           const OptionalCreateRTPipelineArgs &         opt_args);
 };
 
 }  // namespace vkwp

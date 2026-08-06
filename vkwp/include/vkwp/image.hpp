@@ -7,6 +7,7 @@
 #include "vulkan.hpp"
 
 #include <cstdint>
+#include <string>
 #include <string_view>
 
 namespace vkwp {
@@ -33,7 +34,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create(const std::string_view  label,
+    create(std::string             label,
            const Device &          device,
            const VkImageType       image_type,
            const VkFormat          format,
@@ -42,7 +43,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create(const std::string_view     label,
+    create(std::string                label,
            const Device &             device,
            const VkImageType          image_type,
            const VkFormat             format,
@@ -52,7 +53,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create1D(const std::string_view  label,
+    create1D(std::string             label,
              const Device &          device,
              const VkFormat          format,
              const std::uint32_t     width,
@@ -60,7 +61,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create1D(const std::string_view     label,
+    create1D(std::string                label,
              const Device &             device,
              const VkFormat             format,
              const std::uint32_t        width,
@@ -69,7 +70,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create2D(const std::string_view  label,
+    create2D(std::string             label,
              const Device &          device,
              const VkFormat          format,
              const std::uint32_t     width,
@@ -78,7 +79,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create2D(const std::string_view     label,
+    create2D(std::string                label,
              const Device &             device,
              const VkFormat             format,
              const std::uint32_t        width,
@@ -88,7 +89,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create3D(const std::string_view  label,
+    create3D(std::string             label,
              const Device &          device,
              const VkFormat          format,
              const std::uint32_t     width,
@@ -98,7 +99,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create3D(const std::string_view     label,
+    create3D(std::string                label,
              const Device &             device,
              const VkFormat             format,
              const std::uint32_t        width,

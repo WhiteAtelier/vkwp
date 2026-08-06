@@ -29,10 +29,10 @@ public:
 
     [[nodiscard]]
     static Instance
-    create(const std::string_view           label,
-           const std::string_view           application_name,
+    create(std::string                      label,
+           const std::string &              application_name,
            const std::uint32_t              application_version,
-           const std::string_view           engine_name,
+           const std::string &              engine_name,
            const std::uint32_t              engine_version,
            const std::uint32_t              api_version,
            const std::vector<std::string> & enabled_layer_names,
@@ -40,10 +40,10 @@ public:
 
     [[nodiscard]]
     static Instance
-    create(const std::string_view           label,
-           const std::string_view           application_name,
+    create(std::string                      label,
+           const std::string &              application_name,
            const std::uint32_t              application_version,
-           const std::string_view           engine_name,
+           const std::string &              engine_name,
            const std::uint32_t              engine_version,
            const std::uint32_t              api_version,
            const std::vector<std::string> & enabled_layer_names,

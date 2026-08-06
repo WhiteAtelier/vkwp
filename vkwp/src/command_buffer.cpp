@@ -33,30 +33,30 @@ vkwp::impl::_delete(VkCommandBuffer                             i,
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 std::vector<vkwp::CommandBuffer>
-vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              command_pool,
-                                            const VkCommandBufferLevel       level,
-                                            const std::vector<std::string> & command_buffer_labels)
+vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &        command_pool,
+                                            const VkCommandBufferLevel level,
+                                            std::vector<std::string>   command_buffer_labels)
 {
     return CommandBuffer::allocateCommandBuffers(command_pool,  //
                                                  level,
-                                                 command_buffer_labels,
+                                                 std::move(command_buffer_labels),
                                                  {});
 }
 
 /* STATIC */
 std::vector<vkwp::CommandBuffer>
-vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              command_pool,
-                                            const VkCommandBufferLevel       level,
-                                            const std::vector<std::string> & command_buffer_labels,
-                                            const OptionalAllocateArgs &     opt_args)
+vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &          command_pool,
+                                            const VkCommandBufferLevel   level,
+                                            std::vector<std::string>     command_buffer_labels,
+                                            const OptionalAllocateArgs & opt_args)
 {
     VKWP_VALIDATE_ARG(command_pool);
 
     std::vector<CommandBuffer> ret;
     ret.reserve(command_buffer_labels.size());
-    for (const auto & label : command_buffer_labels)
+    for (auto & label : command_buffer_labels)
     {
-        ret.emplace_back(CommandBuffer{ label });
+        ret.emplace_back(CommandBuffer{ std::move(label) });
     }
 
     std::vector<VkCommandBuffer>      cmdbufs(command_buffer_labels.size(), nullptr);
@@ -129,11 +129,11 @@ vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              com
 
 /* STATIC */
 vkwp::CommandBuffer
-vkwp::CommandBuffer::allocateCommandBuffer(const std::string &        label,
+vkwp::CommandBuffer::allocateCommandBuffer(std::string                label,
                                            const CommandPool &        command_pool,
                                            const VkCommandBufferLevel level)
 {
-    return CommandBuffer::allocateCommandBuffer(label,  //
+    return CommandBuffer::allocateCommandBuffer(std::move(label),  //
                                                 command_pool,
                                                 level,
                                                 {});
@@ -141,12 +141,12 @@ vkwp::CommandBuffer::allocateCommandBuffer(const std::string &        label,
 
 /* STATIC */
 vkwp::CommandBuffer
-vkwp::CommandBuffer::allocateCommandBuffer(const std::string &          label,
+vkwp::CommandBuffer::allocateCommandBuffer(std::string                  label,
                                            const CommandPool &          command_pool,
                                            const VkCommandBufferLevel   level,
                                            const OptionalAllocateArgs & opt_args)
 {
-    CommandBuffer                     ret{ label };
+    CommandBuffer                     ret{ std::move(label) };
     const VkCommandBufferAllocateInfo ai{
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .pNext              = opt_args.p_next,
@@ -204,18 +204,18 @@ vkwp::CommandBuffer::allocateCommandBuffer(const std::string &          label,
 
 /* STATIC */
 vkwp::CommandBuffer
-vkwp::CommandBuffer::allocatePrimaryCommandBuffer(const std::string & label, const CommandPool & command_pool)
+vkwp::CommandBuffer::allocatePrimaryCommandBuffer(std::string label, const CommandPool & command_pool)
 {
-    return CommandBuffer::allocatePrimaryCommandBuffer(label, command_pool, {});
+    return CommandBuffer::allocatePrimaryCommandBuffer(std::move(label), command_pool, {});
 }
 
 /* STATIC */
 vkwp::CommandBuffer
-vkwp::CommandBuffer::allocatePrimaryCommandBuffer(const std::string &          label,
+vkwp::CommandBuffer::allocatePrimaryCommandBuffer(std::string                  label,
                                                   const CommandPool &          command_pool,
                                                   const OptionalAllocateArgs & opt_args)
 {
-    return allocateCommandBuffer(label, command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, opt_args);
+    return allocateCommandBuffer(std::move(label), command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, opt_args);
 }
 
 vkwp::CommandBuffer::CommandBuffer()
@@ -223,8 +223,8 @@ vkwp::CommandBuffer::CommandBuffer()
     , mutex_{ nullptr }
 {}
 
-vkwp::CommandBuffer::CommandBuffer(const std::string_view label)
-    : Resource{ label }
+vkwp::CommandBuffer::CommandBuffer(std::string && label)
+    : Resource{ std::move(label) }
     , mutex_{ nullptr }
 {}
 

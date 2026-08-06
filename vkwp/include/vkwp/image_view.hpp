@@ -7,6 +7,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string>
 #include <string_view>
 
 namespace vkwp {
@@ -33,7 +34,7 @@ public:
 
     [[nodiscard]]
     static ImageView
-    create(const std::string_view          label,
+    create(std::string                     label,
            const Device &                  device,
            const Image &                   image,
            const VkImageViewType           view_type,
@@ -42,7 +43,7 @@ public:
 
     [[nodiscard]]
     static ImageView
-    create(const std::string_view          label,
+    create(std::string                     label,
            const Device &                  device,
            const Image &                   image,
            const VkImageViewType           view_type,

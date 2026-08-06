@@ -6,6 +6,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string>
 #include <string_view>
 
 namespace vkwp {
@@ -40,7 +41,7 @@ public:
     };
 
     static AccelerationStructureKHR
-    create(const std::string_view               label,
+    create(std::string                          label,
            const Device &                       device,
            const Buffer &                       buffer,
            const VkDeviceSize                   offset,
@@ -48,7 +49,7 @@ public:
            const VkAccelerationStructureTypeKHR type);
 
     static AccelerationStructureKHR
-    create(const std::string_view               label,
+    create(std::string                          label,
            const Device &                       device,
            const Buffer &                       buffer,
            const VkDeviceSize                   offset,
@@ -57,7 +58,7 @@ public:
            const OptionalCreateArgs &           opt_args);
 
     static AccelerationStructureKHR
-    createEXT(const std::string_view                        label,
+    createEXT(std::string                                   label,
               const Device &                                device,
               const Buffer &                                buffer,
               const VkDeviceSize                            offset,
@@ -66,7 +67,7 @@ public:
               const AccelerationStructureKHR_ExtFunctions & ext_functions);
 
     static AccelerationStructureKHR
-    createEXT(const std::string_view                        label,
+    createEXT(std::string                                   label,
               const Device &                                device,
               const Buffer &                                buffer,
               const VkDeviceSize                            offset,

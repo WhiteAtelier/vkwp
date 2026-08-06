@@ -24,8 +24,8 @@ vkwp::impl::_delete(VkPhysicalDevice, std::nullptr_t, const std::tuple<> &) noex
 // PhysicalDevice class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-vkwp::PhysicalDevice::PhysicalDevice(const std::string_view label, VkPhysicalDeviceProperties && pd_properties)
-    : Resource{ label }
+vkwp::PhysicalDevice::PhysicalDevice(std::string && label, VkPhysicalDeviceProperties && pd_properties)
+    : Resource{ std::move(label) }
     , properties_{ std::move(pd_properties) }
 {}
 
@@ -69,9 +69,9 @@ vkwp::PhysicalDevice::enumeratePhysicalDevices(const Instance & instance, const 
         VkPhysicalDeviceProperties prop;
         get_properties_fn(phys_dev, &prop);
 
-        const auto label = "/PhysicalDevice/ID" + std::to_string(prop.deviceID)  //
-                         + "/" + std::string{ prop.deviceName };
-        auto & pdev           = ret.emplace_back(PhysicalDevice{ label, std::move(prop) });
+        auto label = "/PhysicalDevice/ID" + std::to_string(prop.deviceID)  //
+                   + "/" + std::string{ prop.deviceName };
+        auto & pdev           = ret.emplace_back(PhysicalDevice{ std::move(label), std::move(prop) });
         *pdev._reset(nullptr) = phys_dev;
         if (opt_args.functions != nullptr)
         {

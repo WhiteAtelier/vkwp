@@ -6,6 +6,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string>
 #include <string_view>
 
 namespace vkwp {
@@ -36,7 +37,7 @@ public:
     };
 
     static Sampler
-    create(const std::string_view     label,
+    create(std::string                label,
            const Device &             device,
            const VkFilter             mag_filter,
            const VkFilter             min_filter,
@@ -46,7 +47,7 @@ public:
            const VkSamplerAddressMode address_mode_w);
 
     static Sampler
-    create(const std::string_view     label,
+    create(std::string                label,
            const Device &             device,
            const VkFilter             mag_filter,
            const VkFilter             min_filter,

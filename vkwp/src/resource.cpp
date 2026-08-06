@@ -14,8 +14,8 @@ vkwp::Resource<T, DFn, ParentTs...>::Resource()
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename DFn, typename... ParentTs>
-vkwp::Resource<T, DFn, ParentTs...>::Resource(const std::string_view label)
-    : label_{ label }
+vkwp::Resource<T, DFn, ParentTs...>::Resource(std::string && label)
+    : label_{ std::move(label) }
     , instance_{ nullptr }
     , destroy_fn_{ nullptr }
     , external_{ false }
@@ -23,8 +23,8 @@ vkwp::Resource<T, DFn, ParentTs...>::Resource(const std::string_view label)
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename DFn, typename... ParentTs>
-vkwp::Resource<T, DFn, ParentTs...>::Resource(const std::string_view label, const T & external)
-    : label_{ label }
+vkwp::Resource<T, DFn, ParentTs...>::Resource(std::string && label, const T & external)
+    : label_{ std::move(label) }
     , instance_{ external }
     , destroy_fn_{ nullptr }
     , external_{ true }

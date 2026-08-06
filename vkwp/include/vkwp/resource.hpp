@@ -23,7 +23,7 @@ public:
     explicit Resource();
 
     [[nodiscard]]
-    explicit Resource(const std::string_view label, const T & external);
+    explicit Resource(std::string && label, const T & external);
 
     Resource(const Resource &) = delete;
 
@@ -77,7 +77,7 @@ public:
 protected:
     using BaseType = Resource<T, DestroyFn, ParentTs...>;
 
-    Resource(const std::string_view label);
+    Resource(std::string && label);
 
     T *
     _reset(DestroyFn fn, ParentTs... parents) & noexcept;

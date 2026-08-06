@@ -28,12 +28,12 @@ vkwp::impl::_delete(VkPipelineLayout i, PFN_vkDestroyPipelineLayout fn, const st
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::PipelineLayout
-vkwp::PipelineLayout::create(const std::string_view                                                 label,
+vkwp::PipelineLayout::create(std::string                                                            label,
                              const Device &                                                         device,
                              const std::vector<std::reference_wrapper<const DescriptorSetLayout>> & _set_layouts,
                              const std::vector<VkPushConstantRange> & push_constant_ranges)
 {
-    return PipelineLayout::create(label,  //
+    return PipelineLayout::create(std::move(label),  //
                                   device,
                                   _set_layouts,
                                   push_constant_ranges,
@@ -42,7 +42,7 @@ vkwp::PipelineLayout::create(const std::string_view                             
 
 /* STATIC */
 vkwp::PipelineLayout
-vkwp::PipelineLayout::create(const std::string_view                                                 label,
+vkwp::PipelineLayout::create(std::string                                                            label,
                              const Device &                                                         device,
                              const std::vector<std::reference_wrapper<const DescriptorSetLayout>> & _set_layouts,
                              const std::vector<VkPushConstantRange> & push_constant_ranges,
@@ -59,7 +59,7 @@ vkwp::PipelineLayout::create(const std::string_view                             
         set_layouts.emplace_back(layout.get());
     }
 
-    PipelineLayout                   ret{ label };
+    PipelineLayout                   ret{ std::move(label) };
     const VkPipelineLayoutCreateInfo ci{
         .sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .pNext                  = opt_args.p_next,

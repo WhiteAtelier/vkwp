@@ -10,6 +10,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -33,20 +34,20 @@ public:
 
     [[nodiscard]]
     static CommandPool
-    create(const std::string_view label,  //
-           const Device &         device,
-           const std::uint32_t    queue_family_index);
+    create(std::string         label,  //
+           const Device &      device,
+           const std::uint32_t queue_family_index);
 
     [[nodiscard]]
     static CommandPool
-    create(const std::string_view    label,
+    create(std::string               label,
            const Device &            device,
            const std::uint32_t       queue_family_index,
            std::unique_ptr<Mutex> && mutex);
 
     [[nodiscard]]
     static CommandPool
-    create(const std::string_view     label,
+    create(std::string                label,
            const Device &             device,
            const std::uint32_t        queue_family_index,
            std::unique_ptr<Mutex> &&  mutex,

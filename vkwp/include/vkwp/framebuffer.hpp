@@ -7,6 +7,7 @@
 #include "vulkan.hpp"
 
 #include <cstdint>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -29,7 +30,7 @@ public:
     };
 
     static Framebuffer
-    create(const std::string_view                                     label,
+    create(std::string                                                label,
            const Device &                                             device,
            const RenderPass &                                         render_pass,
            const std::vector<std::reference_wrapper<const ImageView>> attachments,
@@ -38,7 +39,7 @@ public:
            const std::uint32_t                                        layers);
 
     static Framebuffer
-    create(const std::string_view                                     label,
+    create(std::string                                                label,
            const Device &                                             device,
            const RenderPass &                                         render_pass,
            const std::vector<std::reference_wrapper<const ImageView>> attachments,

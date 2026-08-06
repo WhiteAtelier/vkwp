@@ -32,13 +32,13 @@ vkwp::impl::_delete(VkDeviceMemory i, PFN_vkFreeMemory fn, const std::tuple<VkDe
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::DeviceMemory
-vkwp::DeviceMemory::allocate(const std::string_view       label,
+vkwp::DeviceMemory::allocate(std::string                  label,
                              const Device &               device,
                              const PhysicalDevice &       physical_device,
                              const VkMemoryRequirements & memory_requirements,
                              const VkMemoryPropertyFlags  memory_property_flags)
 {
-    return DeviceMemory::allocate(label,  //
+    return DeviceMemory::allocate(std::move(label),  //
                                   device,
                                   physical_device,
                                   memory_requirements,
@@ -48,7 +48,7 @@ vkwp::DeviceMemory::allocate(const std::string_view       label,
 
 /* STATIC */
 vkwp::DeviceMemory
-vkwp::DeviceMemory::allocate(const std::string_view       label,
+vkwp::DeviceMemory::allocate(std::string                  label,
                              const Device &               device,
                              const PhysicalDevice &       physical_device,
                              const VkMemoryRequirements & memory_requirements,
@@ -58,7 +58,7 @@ vkwp::DeviceMemory::allocate(const std::string_view       label,
     VKWP_VALIDATE_ARG(device);
     VKWP_VALIDATE_ARG(physical_device);
 
-    DeviceMemory ret{ label };
+    DeviceMemory ret{ std::move(label) };
     const auto   memory_type_index
         = physical_device.getMemoryTypeIndex(memory_property_flags, memory_requirements.memoryTypeBits);
     if (!memory_type_index.first)
@@ -76,7 +76,7 @@ vkwp::DeviceMemory::allocate(const std::string_view       label,
         .memoryTypeIndex = memory_type_index.second,
     };
     SPDLOG_DEBUG("DeviceMemory: {} - {}Bytes, {:.03f}MiB",
-                 label,
+                 ret.getLabel(),
                  memory_requirements.size,
                  static_cast<double>(memory_requirements.size) / 1024.0 / 1024.0);
     auto * const allocate_fn = (opt_args.functions != nullptr && opt_args.functions->vkAllocateMemory != nullptr)
@@ -93,7 +93,7 @@ vkwp::DeviceMemory::allocate(const std::string_view       label,
         opt_args.debug_utils->registDebugUtilsObjectName(device,
                                                          VK_OBJECT_TYPE_DEVICE_MEMORY,
                                                          static_cast<VkDeviceMemory>(ret),
-                                                         label);
+                                                         ret.getLabel());
     }
     if (opt_args.functions != nullptr)
     {
@@ -107,7 +107,7 @@ vkwp::DeviceMemory::allocate(const std::string_view       label,
 #if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
 /* STATIC */
 vkwp::DeviceMemory
-vkwp::DeviceMemory::importWin32ExternalMemory(const std::string_view                   label,
+vkwp::DeviceMemory::importWin32ExternalMemory(std::string                              label,
                                               const Device &                           device,
                                               const PhysicalDevice &                   physical_device,
                                               const std::size_t                        size,
@@ -117,7 +117,7 @@ vkwp::DeviceMemory::importWin32ExternalMemory(const std::string_view            
                                               const VkImage &                          image,
                                               const VkBuffer &                         buffer)
 {
-    return DeviceMemory::importWin32ExternalMemory(label,
+    return DeviceMemory::importWin32ExternalMemory(std::move(label),
                                                    device,
                                                    physical_device,
                                                    size,
@@ -131,7 +131,7 @@ vkwp::DeviceMemory::importWin32ExternalMemory(const std::string_view            
 
 /* STATIC */
 vkwp::DeviceMemory
-vkwp::DeviceMemory::importWin32ExternalMemory(const std::string_view                   label,
+vkwp::DeviceMemory::importWin32ExternalMemory(std::string                              label,
                                               const Device &                           device,
                                               const PhysicalDevice &                   physical_device,
                                               const std::size_t                        size,
@@ -187,7 +187,7 @@ vkwp::DeviceMemory::importWin32ExternalMemory(const std::string_view            
         .name       = name,
     };
 
-    return DeviceMemory::allocate(label,
+    return DeviceMemory::allocate(std::move(label),
                                   device,
                                   physical_device,
                                   VkMemoryRequirements{

@@ -30,33 +30,33 @@ vkwp::impl::_delete(VkCommandPool i, PFN_vkDestroyCommandPool fn, const std::tup
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::CommandPool
-vkwp::CommandPool::create(const std::string_view label,  //
-                          const Device &         device,
-                          const std::uint32_t    queue_family_index)
+vkwp::CommandPool::create(std::string         label,  //
+                          const Device &      device,
+                          const std::uint32_t queue_family_index)
 {
-    return create(label, device, queue_family_index, nullptr, {});
+    return create(std::move(label), device, queue_family_index, nullptr, {});
 }
 
 /* STATIC */
 vkwp::CommandPool
-vkwp::CommandPool::create(const std::string_view    label,
+vkwp::CommandPool::create(std::string               label,
                           const Device &            device,
                           const std::uint32_t       queue_family_index,
                           std::unique_ptr<Mutex> && mutex)
 {
-    return create(label, device, queue_family_index, std::move(mutex), {});
+    return create(std::move(label), device, queue_family_index, std::move(mutex), {});
 }
 
 /* STATIC */
 vkwp::CommandPool
-vkwp::CommandPool::create(const std::string_view     label,
+vkwp::CommandPool::create(std::string                label,
                           const Device &             device,
                           const std::uint32_t        queue_family_index,
                           std::unique_ptr<Mutex> &&  mutex,
                           const OptionalCreateArgs & opt_args)
 {
     VKWP_VALIDATE_ARG(device);
-    CommandPool                   ret{ label };
+    CommandPool                   ret{ std::move(label) };
     const VkCommandPoolCreateInfo ci{
         .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         .pNext            = opt_args.p_next,

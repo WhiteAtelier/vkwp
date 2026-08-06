@@ -6,6 +6,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -28,12 +29,10 @@ public:
     };
 
     static DescriptorSetLayout
-    create(const std::string_view                            label,
-           const Device &                                    device,
-           const std::vector<VkDescriptorSetLayoutBinding> & bindings);
+    create(std::string label, const Device & device, const std::vector<VkDescriptorSetLayoutBinding> & bindings);
 
     static DescriptorSetLayout
-    create(const std::string_view                            label,
+    create(std::string                                       label,
            const Device &                                    device,
            const std::vector<VkDescriptorSetLayoutBinding> & bindings,
            const OptionalCreateArgs &                        opt_args);

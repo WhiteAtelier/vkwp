@@ -28,19 +28,19 @@ vkwp::impl::_delete(VkImage i, PFN_vkDestroyImage fn, const std::tuple<VkDevice>
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Image
-vkwp::Image::create(const std::string_view  label,
+vkwp::Image::create(std::string             label,
                     const Device &          device,
                     const VkImageType       image_type,
                     const VkFormat          format,
                     const VkExtent3D        extent,
                     const VkImageUsageFlags usage)
 {
-    return Image::create(label, device, image_type, format, extent, usage, {});
+    return Image::create(std::move(label), device, image_type, format, extent, usage, {});
 }
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create(const std::string_view     label,
+vkwp::Image::create(std::string                label,
                     const Device &             device,
                     const VkImageType          image_type,
                     const VkFormat             format,
@@ -52,7 +52,7 @@ vkwp::Image::create(const std::string_view     label,
     VKWP_ASSERTION(extent.width >= 1);
     VKWP_ASSERTION(extent.height >= 1);
     VKWP_ASSERTION(extent.depth >= 1);
-    Image                   ret{ label };
+    Image                   ret{ std::move(label) };
     const VkImageCreateInfo ci{
         .sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
         .pNext                 = opt_args.p_next,
@@ -84,7 +84,7 @@ vkwp::Image::create(const std::string_view     label,
         opt_args.debug_utils->registDebugUtilsObjectName(device,
                                                          VK_OBJECT_TYPE_IMAGE,
                                                          static_cast<VkImage>(ret),
-                                                         label);
+                                                         ret.getLabel());
     }
     if (opt_args.functions != nullptr)
     {
@@ -103,13 +103,13 @@ vkwp::Image::create(const std::string_view     label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create1D(const std::string_view  label,
+vkwp::Image::create1D(std::string             label,
                       const Device &          device,
                       const VkFormat          format,
                       const std::uint32_t     width,
                       const VkImageUsageFlags usage)
 {
-    return Image::create1D(label,  //
+    return Image::create1D(std::move(label),  //
                            device,
                            format,
                            width,
@@ -119,14 +119,14 @@ vkwp::Image::create1D(const std::string_view  label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create1D(const std::string_view     label,
+vkwp::Image::create1D(std::string                label,
                       const Device &             device,
                       const VkFormat             format,
                       const std::uint32_t        width,
                       const VkImageUsageFlags    usage,
                       const OptionalCreateArgs & opt_args)
 {
-    return Image::create(label,
+    return Image::create(std::move(label),
                          device,
                          VK_IMAGE_TYPE_1D,
                          format,
@@ -137,14 +137,14 @@ vkwp::Image::create1D(const std::string_view     label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create2D(const std::string_view  label,
+vkwp::Image::create2D(std::string             label,
                       const Device &          device,
                       const VkFormat          format,
                       const std::uint32_t     width,
                       const std::uint32_t     height,
                       const VkImageUsageFlags usage)
 {
-    return Image::create2D(label,  //
+    return Image::create2D(std::move(label),  //
                            device,
                            format,
                            width,
@@ -155,7 +155,7 @@ vkwp::Image::create2D(const std::string_view  label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create2D(const std::string_view     label,
+vkwp::Image::create2D(std::string                label,
                       const Device &             device,
                       const VkFormat             format,
                       const std::uint32_t        width,
@@ -163,7 +163,7 @@ vkwp::Image::create2D(const std::string_view     label,
                       const VkImageUsageFlags    usage,
                       const OptionalCreateArgs & opt_args)
 {
-    return Image::create(label,
+    return Image::create(std::move(label),
                          device,
                          VK_IMAGE_TYPE_2D,
                          format,
@@ -174,7 +174,7 @@ vkwp::Image::create2D(const std::string_view     label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create3D(const std::string_view  label,
+vkwp::Image::create3D(std::string             label,
                       const Device &          device,
                       const VkFormat          format,
                       const std::uint32_t     width,
@@ -182,7 +182,7 @@ vkwp::Image::create3D(const std::string_view  label,
                       const std::uint32_t     depth,
                       const VkImageUsageFlags usage)
 {
-    return Image::create(label,
+    return Image::create(std::move(label),
                          device,
                          VK_IMAGE_TYPE_3D,
                          format,
@@ -193,7 +193,7 @@ vkwp::Image::create3D(const std::string_view  label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create3D(const std::string_view     label,
+vkwp::Image::create3D(std::string                label,
                       const Device &             device,
                       const VkFormat             format,
                       const std::uint32_t        width,
@@ -202,7 +202,7 @@ vkwp::Image::create3D(const std::string_view     label,
                       const VkImageUsageFlags    usage,
                       const OptionalCreateArgs & opt_args)
 {
-    return Image::create(label,
+    return Image::create(std::move(label),
                          device,
                          VK_IMAGE_TYPE_3D,
                          format,

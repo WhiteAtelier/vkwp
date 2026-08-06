@@ -25,16 +25,16 @@ vkwp::Queue::Queue()
     , queue_family_index_{ (std::numeric_limits<std::uint32_t>::max)() }
 {}
 
-vkwp::Queue::Queue(const std::string_view label)
-    : Resource{ label }
+vkwp::Queue::Queue(std::string && label)
+    : Resource{ std::move(label) }
     , queue_family_index_{ (std::numeric_limits<std::uint32_t>::max)() }
 {}
 
-vkwp::Queue::Queue(const std::string_view    label,
+vkwp::Queue::Queue(std::string &&            label,
                    const VkQueue             external_queue,
                    const std::uint32_t       family_index,
                    std::unique_ptr<Mutex> && mutex)
-    : Resource{ label, external_queue }
+    : Resource{ std::move(label), external_queue }
     , queue_family_index_{ family_index }
     , mutex_{ std::move(mutex) }
 {}

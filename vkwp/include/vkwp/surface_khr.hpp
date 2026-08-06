@@ -6,6 +6,8 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string>
+
 #if defined(VKWP_USE_GLFW_SURFACE)
 struct GLFWwindow;
 #endif
@@ -27,7 +29,7 @@ public:
 #if defined(VKWP_USE_GLFW_SURFACE)
     [[nodiscard]]
     static SurfaceKHR
-    createGLFWSurfaceKHR(const std::string &     label,
+    createGLFWSurfaceKHR(std::string             label,
                          const Instance &        instance,
                          GLFWwindow * const      window,
                          const VulkanFunctions * functions = nullptr);
@@ -43,7 +45,7 @@ public:
 
     [[nodiscard]]
     static SurfaceKHR
-    createWin32SurfaceKHR(const std::string &             label,
+    createWin32SurfaceKHR(std::string                     label,
                           const Instance &                instance,
                           const HINSTANCE                 h_instance,
                           const HWND                      hwnd,

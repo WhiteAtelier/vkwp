@@ -6,6 +6,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <vector>
@@ -29,13 +30,13 @@ public:
     };
 
     static PipelineLayout
-    create(const std::string_view                                                 label,
+    create(std::string                                                            label,
            const Device &                                                         device,
            const std::vector<std::reference_wrapper<const DescriptorSetLayout>> & set_layouts,
            const std::vector<VkPushConstantRange> &                               push_constant_ranges);
 
     static PipelineLayout
-    create(const std::string_view                                                 label,
+    create(std::string                                                            label,
            const Device &                                                         device,
            const std::vector<std::reference_wrapper<const DescriptorSetLayout>> & set_layouts,
            const std::vector<VkPushConstantRange> &                               push_constant_ranges,

@@ -27,24 +27,24 @@ vkwp::impl::_delete(VkDescriptorPool i, PFN_vkDestroyDescriptorPool fn, const st
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::DescriptorPool
-vkwp::DescriptorPool::create(const std::string_view                    label,
+vkwp::DescriptorPool::create(std::string                               label,
                              const Device &                            device,
                              const std::uint32_t                       max_sets,
                              const std::vector<VkDescriptorPoolSize> & pool_sizes)
 {
-    return DescriptorPool::create(label, device, max_sets, pool_sizes, {});
+    return DescriptorPool::create(std::move(label), device, max_sets, pool_sizes, {});
 }
 
 /* STATIC */
 vkwp::DescriptorPool
-vkwp::DescriptorPool::create(const std::string_view                    label,
+vkwp::DescriptorPool::create(std::string                               label,
                              const Device &                            device,
                              const std::uint32_t                       max_sets,
                              const std::vector<VkDescriptorPoolSize> & pool_sizes,
                              const OptionalCreateArgs &                opt_args)
 {
     VKWP_VALIDATE_ARG(device);
-    DescriptorPool                   ret{ label };
+    DescriptorPool                   ret{ std::move(label) };
     const VkDescriptorPoolCreateInfo ci{
         .sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .pNext         = opt_args.p_next,

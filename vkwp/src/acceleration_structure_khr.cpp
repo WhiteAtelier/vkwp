@@ -80,18 +80,18 @@ vkwp::AccelerationStructureKHR_ExtFunctions::create(const VkDevice device, const
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 vkwp::AccelerationStructureKHR
-vkwp::AccelerationStructureKHR::create(const std::string_view               label,
+vkwp::AccelerationStructureKHR::create(std::string                          label,
                                        const Device &                       device,
                                        const Buffer &                       buffer,
                                        const VkDeviceSize                   offset,
                                        const VkDeviceSize                   size,
                                        const VkAccelerationStructureTypeKHR type)
 {
-    return AccelerationStructureKHR::create(label, device, buffer, offset, size, type, {});
+    return AccelerationStructureKHR::create(std::move(label), device, buffer, offset, size, type, {});
 }
 
 vkwp::AccelerationStructureKHR
-vkwp::AccelerationStructureKHR::create(const std::string_view               label,
+vkwp::AccelerationStructureKHR::create(std::string                          label,
                                        const Device &                       device,
                                        const Buffer &                       buffer,
                                        const VkDeviceSize                   offset,
@@ -99,7 +99,7 @@ vkwp::AccelerationStructureKHR::create(const std::string_view               labe
                                        const VkAccelerationStructureTypeKHR type,
                                        const OptionalCreateArgs &           opt_args)
 {
-    return AccelerationStructureKHR::createEXT(label,
+    return AccelerationStructureKHR::createEXT(std::move(label),
                                                device,
                                                buffer,
                                                offset,
@@ -111,7 +111,7 @@ vkwp::AccelerationStructureKHR::create(const std::string_view               labe
 
 /* STATIC */
 vkwp::AccelerationStructureKHR
-vkwp::AccelerationStructureKHR::createEXT(const std::string_view                        label,
+vkwp::AccelerationStructureKHR::createEXT(std::string                                   label,
                                           const Device &                                device,
                                           const Buffer &                                buffer,
                                           const VkDeviceSize                            offset,
@@ -119,7 +119,7 @@ vkwp::AccelerationStructureKHR::createEXT(const std::string_view                
                                           const VkAccelerationStructureTypeKHR          type,
                                           const AccelerationStructureKHR_ExtFunctions & ext_functions)
 {
-    return AccelerationStructureKHR::createEXT(label,  //
+    return AccelerationStructureKHR::createEXT(std::move(label),  //
                                                device,
                                                buffer,
                                                offset,
@@ -131,7 +131,7 @@ vkwp::AccelerationStructureKHR::createEXT(const std::string_view                
 
 /* STATIC */
 vkwp::AccelerationStructureKHR
-vkwp::AccelerationStructureKHR::createEXT(const std::string_view                        label,
+vkwp::AccelerationStructureKHR::createEXT(std::string                                   label,
                                           const Device &                                device,
                                           const Buffer &                                buffer,
                                           const VkDeviceSize                            offset,
@@ -145,7 +145,7 @@ vkwp::AccelerationStructureKHR::createEXT(const std::string_view                
     const auto resolved_functions = resolveFunctions(device, ext_functions, opt_args.functions);
     VKWP_VALIDATE_ARG(resolved_functions.vkCreateAccelerationStructureKHR);
     VKWP_VALIDATE_ARG(resolved_functions.vkDestroyAccelerationStructureKHR);
-    AccelerationStructureKHR                   ret{ label };
+    AccelerationStructureKHR                   ret{ std::move(label) };
     const VkAccelerationStructureCreateInfoKHR acceleration_structure_create_info_khr{
         .sType         = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR,
         .pNext         = opt_args.p_next,
@@ -165,7 +165,10 @@ vkwp::AccelerationStructureKHR::createEXT(const std::string_view                
         "Failed to vkCreateAccelerationStructureKHR().");
     if (opt_args.debug_utils != nullptr)
     {
-        opt_args.debug_utils->registDebugUtilsObjectName(device, VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR, ret, label);
+        opt_args.debug_utils->registDebugUtilsObjectName(device,
+                                                         VK_OBJECT_TYPE_ACCELERATION_STRUCTURE_KHR,
+                                                         ret,
+                                                         ret.getLabel());
     }
     return ret;
 }

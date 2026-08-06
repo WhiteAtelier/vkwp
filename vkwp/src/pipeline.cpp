@@ -49,27 +49,27 @@ vkwp::RayTracingPipelineKHR_ExtFunctions::create(const VkInstance instance, cons
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 std::vector<vkwp::Pipeline>
-vkwp::Pipeline::create(const Device &                                  device,  //
-                       const std::vector<GraphicsPipelineCreateInfo> & create_info_list)
+vkwp::Pipeline::create(const Device &                          device,  //
+                       std::vector<GraphicsPipelineCreateInfo> create_info_list)
 {
-    return Pipeline::create(device, create_info_list, {});
+    return Pipeline::create(device, std::move(create_info_list), {});
 }
 
 /* STATIC */
 std::vector<vkwp::Pipeline>
-vkwp::Pipeline::create(const Device &                                  device,
-                       const std::vector<GraphicsPipelineCreateInfo> & create_info_list,
-                       const OptionalCreateArgs &                      opt_args)
+vkwp::Pipeline::create(const Device &                          device,
+                       std::vector<GraphicsPipelineCreateInfo> create_info_list,
+                       const OptionalCreateArgs &              opt_args)
 {
     VKWP_VALIDATE_ARG(device);
     std::vector<Pipeline>                     ret;
     std::vector<VkGraphicsPipelineCreateInfo> cis;
     ret.reserve(create_info_list.size());
     cis.reserve(create_info_list.size());
-    for (const auto & ci : create_info_list)
+    for (auto & ci : create_info_list)
     {
         cis.emplace_back(ci.create_info);
-        ret.emplace_back(Pipeline{ ci.label });
+        ret.emplace_back(Pipeline{ std::move(ci.label) });
     }
 
     std::vector<VkPipeline> vk_pipelines(create_info_list.size(), nullptr);
@@ -111,27 +111,27 @@ vkwp::Pipeline::create(const Device &                                  device,
 
 /* STATIC */
 std::vector<vkwp::Pipeline>
-vkwp::Pipeline::create(const Device &                                 device,  //
-                       const std::vector<ComputePipelineCreateInfo> & create_info_list)
+vkwp::Pipeline::create(const Device &                         device,  //
+                       std::vector<ComputePipelineCreateInfo> create_info_list)
 {
-    return Pipeline::create(device, create_info_list, {});
+    return Pipeline::create(device, std::move(create_info_list), {});
 }
 
 /* STATIC */
 std::vector<vkwp::Pipeline>
-vkwp::Pipeline::create(const Device &                                 device,
-                       const std::vector<ComputePipelineCreateInfo> & create_info_list,
-                       const OptionalCreateArgs &                     opt_args)
+vkwp::Pipeline::create(const Device &                         device,
+                       std::vector<ComputePipelineCreateInfo> create_info_list,
+                       const OptionalCreateArgs &             opt_args)
 {
     VKWP_VALIDATE_ARG(device);
     std::vector<Pipeline>                    ret;
     std::vector<VkComputePipelineCreateInfo> cis;
     ret.reserve(create_info_list.size());
     cis.reserve(create_info_list.size());
-    for (const auto & ci : create_info_list)
+    for (auto & ci : create_info_list)
     {
         cis.emplace_back(ci.create_info);
-        ret.emplace_back(Pipeline{ ci.label });
+        ret.emplace_back(Pipeline{ std::move(ci.label) });
     }
 
     std::vector<VkPipeline> vk_pipelines(create_info_list.size(), nullptr);
@@ -173,29 +173,29 @@ vkwp::Pipeline::create(const Device &                                 device,
 
 /* STATIC */
 std::vector<vkwp::Pipeline>
-vkwp::Pipeline::create(const Device &                                       device,
-                       const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
-                       const RayTracingPipelineKHR_ExtFunctions &           ext_functions)
+vkwp::Pipeline::create(const Device &                               device,
+                       std::vector<RayTracingPipelineCreateInfoKHR> create_info_list,
+                       const RayTracingPipelineKHR_ExtFunctions &   ext_functions)
 {
-    return Pipeline::create(device, create_info_list, ext_functions, {});
+    return Pipeline::create(device, std::move(create_info_list), ext_functions, {});
 }
 
 /* STATIC */
 std::vector<vkwp::Pipeline>
-vkwp::Pipeline::create(const Device &                                       device,
-                       const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
-                       const RayTracingPipelineKHR_ExtFunctions &           ext_functions,
-                       const OptionalCreateRTPipelineArgs &                 opt_args)
+vkwp::Pipeline::create(const Device &                               device,
+                       std::vector<RayTracingPipelineCreateInfoKHR> create_info_list,
+                       const RayTracingPipelineKHR_ExtFunctions &   ext_functions,
+                       const OptionalCreateRTPipelineArgs &         opt_args)
 {
     VKWP_VALIDATE_ARG(device);
     std::vector<Pipeline>                          ret;
     std::vector<VkRayTracingPipelineCreateInfoKHR> cis;
     ret.reserve(create_info_list.size());
     cis.reserve(create_info_list.size());
-    for (const auto & ci : create_info_list)
+    for (auto & ci : create_info_list)
     {
         cis.emplace_back(ci.create_info);
-        ret.emplace_back(Pipeline{ ci.label });
+        ret.emplace_back(Pipeline{ std::move(ci.label) });
     }
 
     std::vector<VkPipeline> vk_pipelines(create_info_list.size(), nullptr);

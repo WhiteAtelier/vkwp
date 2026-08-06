@@ -6,6 +6,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string>
 #include <string_view>
 
 namespace vkwp {
@@ -27,7 +28,7 @@ public:
 
     [[nodiscard]]
     static DeviceMemory
-    allocate(const std::string_view       label,
+    allocate(std::string                  label,
              const Device &               device,
              const PhysicalDevice &       physical_device,
              const VkMemoryRequirements & memory_requirements,
@@ -35,7 +36,7 @@ public:
 
     [[nodiscard]]
     static DeviceMemory
-    allocate(const std::string_view       label,
+    allocate(std::string                  label,
              const Device &               device,
              const PhysicalDevice &       physical_device,
              const VkMemoryRequirements & memory_requirements,
@@ -44,7 +45,7 @@ public:
 
     [[nodiscard]]
     static DeviceMemory
-    importWin32ExternalMemory(const std::string_view                   label,
+    importWin32ExternalMemory(std::string                              label,
                               const Device &                           device,
                               const PhysicalDevice &                   physical_device,
                               const std::size_t                        size,
@@ -56,7 +57,7 @@ public:
 
     [[nodiscard]]
     static DeviceMemory
-    importWin32ExternalMemory(const std::string_view                   label,
+    importWin32ExternalMemory(std::string                              label,
                               const Device &                           device,
                               const PhysicalDevice &                   physical_device,
                               const std::size_t                        size,

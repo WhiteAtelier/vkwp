@@ -9,6 +9,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
 #include <string_view>
 
 namespace vkwp {
@@ -22,7 +23,7 @@ public:
     explicit Queue();
 
     [[nodiscard]]
-    explicit Queue(const std::string_view    label,
+    explicit Queue(std::string &&            label,
                    const VkQueue             external_queue,
                    const std::uint32_t       family_index,
                    std::unique_ptr<Mutex> && mutex);
@@ -49,7 +50,7 @@ public:
     unlock() const;
 
 private:
-    explicit Queue(const std::string_view label);
+    explicit Queue(std::string && label);
 
     friend Device;
     std::uint32_t          queue_family_index_;

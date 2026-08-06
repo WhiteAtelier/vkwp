@@ -29,17 +29,17 @@ vkwp::impl::_delete(VkFence i, PFN_vkDestroyFence fn, const std::tuple<VkDevice>
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Fence
-vkwp::Fence::create(const std::string_view label, const Device & device)
+vkwp::Fence::create(std::string label, const Device & device)
 {
-    return Fence::create(label, device, {});
+    return Fence::create(std::move(label), device, {});
 }
 
 /* STATIC */
 vkwp::Fence
-vkwp::Fence::create(const std::string_view label, const Device & device, const OptionalCreateArgs & opt_args)
+vkwp::Fence::create(std::string label, const Device & device, const OptionalCreateArgs & opt_args)
 {
     VKWP_VALIDATE_ARG(device);
-    Fence                   ret{ label };
+    Fence                   ret{ std::move(label) };
     const VkFenceCreateInfo ci{
         .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
         .pNext = opt_args.p_next,

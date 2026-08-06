@@ -8,6 +8,7 @@
 #include "vulkan.hpp"
 
 #include <memory>
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -29,7 +30,7 @@ public:
     };
 
     static Device
-    create(const std::string_view                       label,
+    create(std::string                                  label,
            const VkPhysicalDevice                       physical_device,
            const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
            const std::vector<std::string> &             enabled_layer_names,
@@ -37,7 +38,7 @@ public:
            const VkPhysicalDeviceFeatures * const       enabled_features);
 
     static Device
-    create(const std::string_view                       label,
+    create(std::string                                  label,
            const VkPhysicalDevice                       physical_device,
            const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
            const std::vector<std::string> &             enabled_layer_names,

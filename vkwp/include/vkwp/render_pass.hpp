@@ -6,6 +6,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -28,14 +29,14 @@ public:
     };
 
     static RenderPass
-    create(const std::string_view                       label,
+    create(std::string                                  label,
            const Device &                               device,
            const std::vector<VkAttachmentDescription> & attachments,
            const std::vector<VkSubpassDescription> &    subpasses,
            const std::vector<VkSubpassDependency> &     dependencies);
 
     static RenderPass
-    create(const std::string_view                       label,
+    create(std::string                                  label,
            const Device &                               device,
            const std::vector<VkAttachmentDescription> & attachments,
            const std::vector<VkSubpassDescription> &    subpasses,

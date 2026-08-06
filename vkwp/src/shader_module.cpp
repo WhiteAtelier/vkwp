@@ -27,43 +27,43 @@ vkwp::impl::_delete(VkShaderModule i, PFN_vkDestroyShaderModule fn, const std::t
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::ShaderModule
-vkwp::ShaderModule::create(const std::string_view             label,  //
+vkwp::ShaderModule::create(std::string                        label,  //
                            const Device &                     device,
                            const std::vector<std::uint32_t> & code)
 {
-    return ShaderModule::create(label, device, code.data(), code.size(), {});
+    return ShaderModule::create(std::move(label), device, code.data(), code.size(), {});
 }
 
 /* STATIC */
 vkwp::ShaderModule
-vkwp::ShaderModule::create(const std::string_view             label,
+vkwp::ShaderModule::create(std::string                        label,
                            const Device &                     device,
                            const std::vector<std::uint32_t> & code,
                            const OptionalCreateArgs &         opt_args)
 {
-    return create(label, device, code.data(), code.size(), opt_args);
+    return create(std::move(label), device, code.data(), code.size(), opt_args);
 }
 
 /* STATIC */
 vkwp::ShaderModule
-vkwp::ShaderModule::create(const std::string_view      label,
+vkwp::ShaderModule::create(std::string                 label,
                            const Device &              device,
                            const std::uint32_t * const data,
                            const std::size_t           data_length)
 {
-    return ShaderModule::create(label, device, data, data_length, {});
+    return ShaderModule::create(std::move(label), device, data, data_length, {});
 }
 
 /* STATIC */
 vkwp::ShaderModule
-vkwp::ShaderModule::create(const std::string_view      label,
+vkwp::ShaderModule::create(std::string                 label,
                            const Device &              device,
                            const std::uint32_t * const data,
                            const std::size_t           data_length,
                            const OptionalCreateArgs &  opt_args)
 {
     VKWP_VALIDATE_ARG(device);
-    ShaderModule                   ret{ label };
+    ShaderModule                   ret{ std::move(label) };
     const VkShaderModuleCreateInfo ci{
         .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
         .pNext    = opt_args.p_next,

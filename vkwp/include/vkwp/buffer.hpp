@@ -6,6 +6,7 @@
 #include "resource.hpp"
 #include "vulkan.hpp"
 
+#include <string>
 #include <string_view>
 
 namespace vkwp {
@@ -47,7 +48,7 @@ public:
     ///     Buffer instance.
     ///
     static Buffer
-    create(const std::string_view   label,  //
+    create(std::string              label,  //
            const Device &           device,
            const VkDeviceSize       size,
            const VkBufferUsageFlags usage);
@@ -74,7 +75,7 @@ public:
     ///     Buffer instance.
     ///
     static Buffer
-    create(const std::string_view     label,
+    create(std::string                label,
            const Device &             device,
            const VkDeviceSize         size,
            const VkBufferUsageFlags   usage,

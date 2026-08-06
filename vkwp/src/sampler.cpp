@@ -27,7 +27,7 @@ vkwp::impl::_delete(VkSampler i, PFN_vkDestroySampler fn, const std::tuple<VkDev
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Sampler
-vkwp::Sampler::create(const std::string_view     label,
+vkwp::Sampler::create(std::string                label,
                       const Device &             device,
                       const VkFilter             mag_filter,
                       const VkFilter             min_filter,
@@ -36,7 +36,7 @@ vkwp::Sampler::create(const std::string_view     label,
                       const VkSamplerAddressMode address_mode_v,
                       const VkSamplerAddressMode address_mode_w)
 {
-    return Sampler::create(label,
+    return Sampler::create(std::move(label),
                            device,
                            mag_filter,
                            min_filter,
@@ -49,7 +49,7 @@ vkwp::Sampler::create(const std::string_view     label,
 
 /* STATIC */
 vkwp::Sampler
-vkwp::Sampler::create(const std::string_view     label,
+vkwp::Sampler::create(std::string                label,
                       const Device &             device,
                       const VkFilter             mag_filter,
                       const VkFilter             min_filter,
@@ -59,7 +59,7 @@ vkwp::Sampler::create(const std::string_view     label,
                       const VkSamplerAddressMode address_mode_w,
                       const OptionalCreateArgs & opt_args)
 {
-    Sampler                   ret{ label };
+    Sampler                   ret{ std::move(label) };
     const VkSamplerCreateInfo ci{
         .sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
         .pNext                   = opt_args.p_next,

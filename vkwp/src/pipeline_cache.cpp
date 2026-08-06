@@ -28,17 +28,17 @@ vkwp::impl::_delete(VkPipelineCache i, PFN_vkDestroyPipelineCache fn, const std:
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::PipelineCache
-vkwp::PipelineCache::create(const std::string_view label, const Device & device)
+vkwp::PipelineCache::create(std::string label, const Device & device)
 {
-    return PipelineCache::create(label, device, {});
+    return PipelineCache::create(std::move(label), device, {});
 }
 
 /* STATIC */
 vkwp::PipelineCache
-vkwp::PipelineCache::create(const std::string_view label, const Device & device, const OptionalCreateArgs & opt_args)
+vkwp::PipelineCache::create(std::string label, const Device & device, const OptionalCreateArgs & opt_args)
 {
     VKWP_VALIDATE_ARG(device);
-    vkwp::PipelineCache             ret{ label };
+    vkwp::PipelineCache             ret{ std::move(label) };
     const VkPipelineCacheCreateInfo pipeline_cache_create_info{
         .sType           = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,
         .pNext           = opt_args.p_next,

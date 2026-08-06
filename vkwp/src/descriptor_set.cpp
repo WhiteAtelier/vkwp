@@ -35,28 +35,28 @@ vkwp::impl::_delete(VkDescriptorSet                                i,
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 std::vector<vkwp::DescriptorSet>
-vkwp::DescriptorSet::allocate(const DescriptorPool &                         descriptor_pool,
-                              const std::vector<DescriptorSetAllocateInfo> & allocate_info_list)
+vkwp::DescriptorSet::allocate(const DescriptorPool &                 descriptor_pool,
+                              std::vector<DescriptorSetAllocateInfo> allocate_info_list)
 {
-    return DescriptorSet::allocate(descriptor_pool, allocate_info_list, {});
+    return DescriptorSet::allocate(descriptor_pool, std::move(allocate_info_list), {});
 }
 
 /* STATIC */
 std::vector<vkwp::DescriptorSet>
-vkwp::DescriptorSet::allocate(const DescriptorPool &                         descriptor_pool,
-                              const std::vector<DescriptorSetAllocateInfo> & allocate_info_list,
-                              const OptionalAllocateArgs &                   opt_args)
+vkwp::DescriptorSet::allocate(const DescriptorPool &                 descriptor_pool,
+                              std::vector<DescriptorSetAllocateInfo> allocate_info_list,
+                              const OptionalAllocateArgs &           opt_args)
 {
     VKWP_VALIDATE_ARG(descriptor_pool);
     std::vector<DescriptorSet>         ret;
     std::vector<VkDescriptorSetLayout> dset_layouts;
     ret.reserve(allocate_info_list.size());
     dset_layouts.reserve(allocate_info_list.size());
-    for (const auto & ai : allocate_info_list)
+    for (auto & ai : allocate_info_list)
     {
         VKWP_VALIDATE_ARG(ai.descriptor_set_layout != nullptr);
         dset_layouts.emplace_back(ai.descriptor_set_layout);
-        ret.emplace_back(DescriptorSet{ ai.label });
+        ret.emplace_back(DescriptorSet{ std::move(ai.label) });
     }
 
     const auto device = std::get<0>(descriptor_pool.parents_);

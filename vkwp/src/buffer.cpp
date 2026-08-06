@@ -28,16 +28,13 @@ vkwp::impl::_delete(VkBuffer i, PFN_vkDestroyBuffer fn, const std::tuple<VkDevic
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 vkwp::Buffer
-vkwp::Buffer::create(const std::string_view   label,
-                     const Device &           device,
-                     const VkDeviceSize       size,
-                     const VkBufferUsageFlags usage)
+vkwp::Buffer::create(std::string label, const Device & device, const VkDeviceSize size, const VkBufferUsageFlags usage)
 {
-    return create(label, device, size, usage, {});
+    return create(std::move(label), device, size, usage, {});
 }
 
 vkwp::Buffer
-vkwp::Buffer::create(const std::string_view     label,
+vkwp::Buffer::create(std::string                label,
                      const Device &             device,
                      const VkDeviceSize         size,
                      const VkBufferUsageFlags   usage,
@@ -45,7 +42,7 @@ vkwp::Buffer::create(const std::string_view     label,
 {
     VKWP_VALIDATE_ARG(device);
 
-    Buffer                   ret{ label };
+    Buffer                   ret{ std::move(label) };
     const VkBufferCreateInfo buffer_create_info{
         .sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .pNext                 = opt_args.p_next,
@@ -67,7 +64,7 @@ vkwp::Buffer::create(const std::string_view     label,
                        "Failed to vkCreateBuffer().");
     if (opt_args.debug_utils != nullptr)
     {
-        opt_args.debug_utils->registDebugUtilsObjectName(device, VK_OBJECT_TYPE_BUFFER, ret, label);
+        opt_args.debug_utils->registDebugUtilsObjectName(device, VK_OBJECT_TYPE_BUFFER, ret, ret.getLabel());
     }
 
     if (opt_args.functions != nullptr)

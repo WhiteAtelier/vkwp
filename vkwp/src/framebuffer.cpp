@@ -29,7 +29,7 @@ vkwp::impl::_delete(VkFramebuffer i, PFN_vkDestroyFramebuffer fn, const std::tup
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Framebuffer
-vkwp::Framebuffer::create(const std::string_view                                     label,
+vkwp::Framebuffer::create(std::string                                                label,
                           const Device &                                             device,
                           const RenderPass &                                         render_pass,
                           const std::vector<std::reference_wrapper<const ImageView>> _attachments,
@@ -37,7 +37,7 @@ vkwp::Framebuffer::create(const std::string_view                                
                           const std::uint32_t                                        height,
                           const std::uint32_t                                        layers)
 {
-    return Framebuffer::create(label,  //
+    return Framebuffer::create(std::move(label),  //
                                device,
                                render_pass,
                                _attachments,
@@ -49,7 +49,7 @@ vkwp::Framebuffer::create(const std::string_view                                
 
 /* STATIC */
 vkwp::Framebuffer
-vkwp::Framebuffer::create(const std::string_view                                     label,
+vkwp::Framebuffer::create(std::string                                                label,
                           const Device &                                             device,
                           const RenderPass &                                         render_pass,
                           const std::vector<std::reference_wrapper<const ImageView>> _attachments,
@@ -68,7 +68,7 @@ vkwp::Framebuffer::create(const std::string_view                                
         attachments.emplace_back(attachment.get());
     }
 
-    Framebuffer                   ret{ label };
+    Framebuffer                   ret{ std::move(label) };
     const VkFramebufferCreateInfo ci{
         .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
         .pNext           = opt_args.p_next,
