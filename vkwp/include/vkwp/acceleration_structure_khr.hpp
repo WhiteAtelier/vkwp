@@ -46,7 +46,6 @@ public:
            const VkDeviceSize                   size,
            const VkAccelerationStructureTypeKHR type,
            const OptionalCreateArgs &           opt_args);
-
 };
 
 }  // namespace vkwp

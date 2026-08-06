@@ -88,10 +88,7 @@ vkwp::AccelerationStructureKHR::create(std::string                          labe
         .deviceAddress = opt_args.device_address,
     };
     VulkanError::check(  //
-        create_fn(device,
-                  &acceleration_structure_create_info_khr,
-                  nullptr,
-                  ret._reset(destroy_fn, device)),
+        create_fn(device, &acceleration_structure_create_info_khr, nullptr, ret._reset(destroy_fn, device)),
         "Failed to vkCreateAccelerationStructureKHR().");
     if (opt_args.debug_utils != nullptr)
     {
