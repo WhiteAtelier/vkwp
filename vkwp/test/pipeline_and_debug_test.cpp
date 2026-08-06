@@ -17,6 +17,7 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -308,16 +309,50 @@ getDeviceProcAddr(const VkDevice device, const char * name)
 
 struct DebugState
 {
-    VkInstance               instance             = fakeHandle<VkInstance>(0x3401);
-    VkDevice                 device               = fakeHandle<VkDevice>(0x3402);
-    VkDebugReportCallbackEXT callback             = fakeHandle<VkDebugReportCallbackEXT>(0x3403);
-    int                      get_proc_calls       = 0;
-    int                      create_report_calls  = 0;
-    int                      destroy_report_calls = 0;
-    int                      object_name_calls    = 0;
+    VkInstance                   instance             = fakeHandle<VkInstance>(0x3401);
+    VkDevice                     device               = fakeHandle<VkDevice>(0x3402);
+    VkDebugReportCallbackEXT     callback             = fakeHandle<VkDebugReportCallbackEXT>(0x3403);
+    PFN_vkDebugReportCallbackEXT callback_fn          = nullptr;
+    void *                       user_data            = nullptr;
+    int                          get_proc_calls       = 0;
+    int                          create_report_calls  = 0;
+    int                          destroy_report_calls = 0;
+    int                          object_name_calls    = 0;
 };
 
 DebugState debug_state;
+
+class RecordingDebugReportCallback final : public vkwp::DebugReportCallback
+{
+public:
+    void
+    operator()(const VkDebugReportFlagsEXT      flags,
+               const VkDebugReportObjectTypeEXT object_type,
+               const std::uint64_t              object,
+               const std::size_t                location,
+               const std::int32_t               message_code,
+               const char *                     layer_prefix,
+               const char *                     message) override
+    {
+        ++call_count;
+        received_flags        = flags;
+        received_object_type  = object_type;
+        received_object       = object;
+        received_location     = location;
+        received_message_code = message_code;
+        received_layer_prefix = layer_prefix != nullptr ? layer_prefix : "";
+        received_message      = message != nullptr ? message : "";
+    }
+
+    int                        call_count            = 0;
+    VkDebugReportFlagsEXT      received_flags        = 0;
+    VkDebugReportObjectTypeEXT received_object_type  = VK_DEBUG_REPORT_OBJECT_TYPE_UNKNOWN_EXT;
+    std::uint64_t              received_object       = 0;
+    std::size_t                received_location     = 0;
+    std::int32_t               received_message_code = 0;
+    std::string                received_layer_prefix;
+    std::string                received_message;
+};
 
 VkResult VKAPI_CALL
 createDebugReport(const VkInstance                           instance,
@@ -330,6 +365,9 @@ createDebugReport(const VkInstance                           instance,
     EXPECT_EQ(allocator, nullptr);
     EXPECT_EQ(create_info->flags, VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT);
     EXPECT_NE(create_info->pfnCallback, nullptr);
+    EXPECT_NE(create_info->pUserData, nullptr);
+    debug_state.callback_fn = create_info->pfnCallback;
+    debug_state.user_data   = create_info->pUserData;
     *callback = debug_state.callback;
     return VK_SUCCESS;
 }
@@ -615,14 +653,46 @@ TEST(VulkanFunctionsDebugTest, DebugReportUsesProvidedFunctionsAndResolvesOnlyMi
     vkwp::VulkanFunctions functions;
     functions.vkGetInstanceProcAddr          = &getInstanceProcAddr;
     functions.vkCreateDebugReportCallbackEXT = &createDebugReport;
+    auto callback                             = std::make_shared<RecordingDebugReportCallback>();
+    const auto * const callback_ptr           = callback.get();
+    const std::weak_ptr<RecordingDebugReportCallback> weak_callback = callback;
     {
         vkwp::DebugReportCallbackResource debug_report;
-        debug_report.initialize(debug_state.instance, &functions);
+        debug_report.initialize(debug_state.instance, callback, &functions);
+        callback.reset();
+
         EXPECT_EQ(debug_state.create_report_calls, 1);
         EXPECT_EQ(debug_state.destroy_report_calls, 0);
         EXPECT_EQ(debug_state.get_proc_calls, 2);
+        EXPECT_FALSE(weak_callback.expired());
+        ASSERT_NE(debug_state.callback_fn, nullptr);
+        ASSERT_NE(debug_state.user_data, nullptr);
+
+        constexpr VkDebugReportFlagsEXT      flags        = VK_DEBUG_REPORT_WARNING_BIT_EXT;
+        constexpr VkDebugReportObjectTypeEXT object_type  = VK_DEBUG_REPORT_OBJECT_TYPE_BUFFER_EXT;
+        constexpr std::uint64_t              object       = 0x3410;
+        constexpr std::size_t                location     = 0x3411;
+        constexpr std::int32_t               message_code = -3412;
+        EXPECT_EQ(debug_state.callback_fn(flags,
+                                          object_type,
+                                          object,
+                                          location,
+                                          message_code,
+                                          "validation-layer",
+                                          "validation-message",
+                                          debug_state.user_data),
+                  VK_FALSE);
+        EXPECT_EQ(callback_ptr->call_count, 1);
+        EXPECT_EQ(callback_ptr->received_flags, flags);
+        EXPECT_EQ(callback_ptr->received_object_type, object_type);
+        EXPECT_EQ(callback_ptr->received_object, object);
+        EXPECT_EQ(callback_ptr->received_location, location);
+        EXPECT_EQ(callback_ptr->received_message_code, message_code);
+        EXPECT_EQ(callback_ptr->received_layer_prefix, "validation-layer");
+        EXPECT_EQ(callback_ptr->received_message, "validation-message");
     }
     EXPECT_EQ(debug_state.destroy_report_calls, 1);
+    EXPECT_TRUE(weak_callback.expired());
 }
 
 TEST(VulkanFunctionsDebugTest, DebugUtilsUsesProvidedFunctionAndResolvesRemainingFunctions)
