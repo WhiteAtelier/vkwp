@@ -2,9 +2,11 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -13,9 +15,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkSampler, VkDevice>(VkSampler i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkSampler i, PFN_vkDestroySampler fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroySampler(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -25,7 +27,7 @@ vkwp::impl::_delete<VkSampler, VkDevice>(VkSampler i, const std::tuple<VkDevice>
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Sampler
-vkwp::Sampler::create(const std::string_view     label,
+vkwp::Sampler::create(std::string                label,
                       const Device &             device,
                       const VkFilter             mag_filter,
                       const VkFilter             min_filter,
@@ -34,7 +36,7 @@ vkwp::Sampler::create(const std::string_view     label,
                       const VkSamplerAddressMode address_mode_v,
                       const VkSamplerAddressMode address_mode_w)
 {
-    return Sampler::create(label,
+    return Sampler::create(std::move(label),
                            device,
                            mag_filter,
                            min_filter,
@@ -47,7 +49,7 @@ vkwp::Sampler::create(const std::string_view     label,
 
 /* STATIC */
 vkwp::Sampler
-vkwp::Sampler::create(const std::string_view     label,
+vkwp::Sampler::create(std::string                label,
                       const Device &             device,
                       const VkFilter             mag_filter,
                       const VkFilter             min_filter,
@@ -57,7 +59,7 @@ vkwp::Sampler::create(const std::string_view     label,
                       const VkSamplerAddressMode address_mode_w,
                       const OptionalCreateArgs & opt_args)
 {
-    Sampler                   ret{ label };
+    Sampler                   ret{ std::move(label) };
     const VkSamplerCreateInfo ci{
         .sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
         .pNext                   = opt_args.p_next,
@@ -78,8 +80,15 @@ vkwp::Sampler::create(const std::string_view     label,
         .borderColor             = opt_args.border_color,
         .unnormalizedCoordinates = opt_args.unnormalized_coordinates,
     };
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateSampler != nullptr)
+                                ? opt_args.functions->vkCreateSampler
+                                : vkCreateSampler;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroySampler != nullptr)
+                                ? opt_args.functions->vkDestroySampler
+                                : vkDestroySampler;
+
     VulkanError::check(  //
-        vkCreateSampler(device, &ci, nullptr, ret._reset(device)),
+        create_fn(device, &ci, nullptr, ret._reset(destroy_fn, device)),
         "Failed to vkCreateSampler().");
     if (opt_args.debug_utils != nullptr)
     {

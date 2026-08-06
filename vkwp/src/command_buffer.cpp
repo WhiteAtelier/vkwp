@@ -2,9 +2,11 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/command_pool.hpp"
 #include "vkwp/mutex.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -13,13 +15,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkCommandBuffer, VkDevice, VkCommandPool>(VkCommandBuffer                             i,
-                                                              const std::tuple<VkDevice, VkCommandPool> & args) noexcept
+vkwp::impl::_delete(VkCommandBuffer                             i,
+                    PFN_vkFreeCommandBuffers                    fn,
+                    const std::tuple<VkDevice, VkCommandPool> & args) noexcept
 {
     if (std::get<1>(args) != nullptr)
     {
         // VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT がセットされた CommandPool の場合だけ呼び出す必要がある.
-        vkFreeCommandBuffers(std::get<0>(args), std::get<1>(args), 1, &i);
+        fn(std::get<0>(args), std::get<1>(args), 1, &i);
     }
 }
 
@@ -30,30 +33,30 @@ vkwp::impl::_delete<VkCommandBuffer, VkDevice, VkCommandPool>(VkCommandBuffer   
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 std::vector<vkwp::CommandBuffer>
-vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              command_pool,
-                                            const VkCommandBufferLevel       level,
-                                            const std::vector<std::string> & command_buffer_labels)
+vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &        command_pool,
+                                            const VkCommandBufferLevel level,
+                                            std::vector<std::string>   command_buffer_labels)
 {
     return CommandBuffer::allocateCommandBuffers(command_pool,  //
                                                  level,
-                                                 command_buffer_labels,
+                                                 std::move(command_buffer_labels),
                                                  {});
 }
 
 /* STATIC */
 std::vector<vkwp::CommandBuffer>
-vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              command_pool,
-                                            const VkCommandBufferLevel       level,
-                                            const std::vector<std::string> & command_buffer_labels,
-                                            const OptionalAllocateArgs &     opt_args)
+vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &          command_pool,
+                                            const VkCommandBufferLevel   level,
+                                            std::vector<std::string>     command_buffer_labels,
+                                            const OptionalAllocateArgs & opt_args)
 {
     VKWP_VALIDATE_ARG(command_pool);
 
     std::vector<CommandBuffer> ret;
     ret.reserve(command_buffer_labels.size());
-    for (const auto & label : command_buffer_labels)
+    for (auto & label : command_buffer_labels)
     {
-        ret.emplace_back(CommandBuffer{ label });
+        ret.emplace_back(CommandBuffer{ std::move(label) });
     }
 
     std::vector<VkCommandBuffer>      cmdbufs(command_buffer_labels.size(), nullptr);
@@ -67,6 +70,13 @@ vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              com
 
     const auto device          = std::get<0>(command_pool.parents_);
     const auto require_to_free = (command_pool.getCreateFlags() & VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) != 0;
+    auto * const allocate_fn
+        = (opt_args.functions != nullptr && opt_args.functions->vkAllocateCommandBuffers != nullptr)
+            ? opt_args.functions->vkAllocateCommandBuffers
+            : vkAllocateCommandBuffers;
+    auto * const free_fn = (opt_args.functions != nullptr && opt_args.functions->vkFreeCommandBuffers != nullptr)
+                             ? opt_args.functions->vkFreeCommandBuffers
+                             : vkFreeCommandBuffers;
 
     {
         // lock は destructor が noexcept 保証できないので,
@@ -74,12 +84,13 @@ vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              com
         LockGuardOpt lock{ command_pool.mutex_.get() };
 
         VulkanError::check(  //
-            vkAllocateCommandBuffers(device, &ai, cmdbufs.data()),
+            allocate_fn(device, &ai, cmdbufs.data()),
             "Failed to vkAllocateCommandBuffers().");
 
         for (std::size_t i = 0; i < cmdbufs.size(); ++i)
         {
-            *ret[i]._reset(device,
+            *ret[i]._reset(free_fn,
+                           device,
                            // vkFreeCommandBuffers を呼ばなくて良い場合は cmdpool に null を渡す
                            require_to_free  //
                                ? static_cast<VkCommandPool>(command_pool)
@@ -100,17 +111,29 @@ vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              com
                                                              cmdbuf.getLabel());
         }
     }
+    if (opt_args.functions != nullptr)
+    {
+        for (auto & cmdbuf : ret)
+        {
+            cmdbuf._vkBeginCommandBuffer = (opt_args.functions->vkBeginCommandBuffer != nullptr)
+                                             ? opt_args.functions->vkBeginCommandBuffer
+                                             : vkBeginCommandBuffer;
+            cmdbuf._vkEndCommandBuffer   = (opt_args.functions->vkEndCommandBuffer != nullptr)
+                                             ? opt_args.functions->vkEndCommandBuffer
+                                             : vkEndCommandBuffer;
+        }
+    }
 
     return ret;
 }
 
 /* STATIC */
 vkwp::CommandBuffer
-vkwp::CommandBuffer::allocateCommandBuffer(const std::string &        label,
+vkwp::CommandBuffer::allocateCommandBuffer(std::string                label,
                                            const CommandPool &        command_pool,
                                            const VkCommandBufferLevel level)
 {
-    return CommandBuffer::allocateCommandBuffer(label,  //
+    return CommandBuffer::allocateCommandBuffer(std::move(label),  //
                                                 command_pool,
                                                 level,
                                                 {});
@@ -118,12 +141,12 @@ vkwp::CommandBuffer::allocateCommandBuffer(const std::string &        label,
 
 /* STATIC */
 vkwp::CommandBuffer
-vkwp::CommandBuffer::allocateCommandBuffer(const std::string &          label,
+vkwp::CommandBuffer::allocateCommandBuffer(std::string                  label,
                                            const CommandPool &          command_pool,
                                            const VkCommandBufferLevel   level,
                                            const OptionalAllocateArgs & opt_args)
 {
-    CommandBuffer                     ret{ label };
+    CommandBuffer                     ret{ std::move(label) };
     const VkCommandBufferAllocateInfo ai{
         .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .pNext              = opt_args.p_next,
@@ -138,12 +161,20 @@ vkwp::CommandBuffer::allocateCommandBuffer(const std::string &          label,
 
     auto       device          = std::get<0>(command_pool.parents_);
     const auto require_to_free = (command_pool.getCreateFlags() & VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) != 0;
+    auto * const allocate_fn
+        = (opt_args.functions != nullptr && opt_args.functions->vkAllocateCommandBuffers != nullptr)
+            ? opt_args.functions->vkAllocateCommandBuffers
+            : vkAllocateCommandBuffers;
+    auto * const free_fn = (opt_args.functions != nullptr && opt_args.functions->vkFreeCommandBuffers != nullptr)
+                             ? opt_args.functions->vkFreeCommandBuffers
+                             : vkFreeCommandBuffers;
 
-    VulkanError::check(            //
-        vkAllocateCommandBuffers(  //
+    VulkanError::check(  //
+        allocate_fn(     //
             device,
             &ai,
-            ret._reset(device,
+            ret._reset(free_fn,
+                       device,
                        // vkFreeCommandBuffers を呼ばなくて良い場合は cmdpool に null を渡す
                        require_to_free  //
                            ? static_cast<VkCommandPool>(command_pool)
@@ -159,23 +190,32 @@ vkwp::CommandBuffer::allocateCommandBuffer(const std::string &          label,
                                                          static_cast<VkCommandBuffer>(ret),
                                                          ret.getLabel());
     }
+    if (opt_args.functions != nullptr)
+    {
+        ret._vkBeginCommandBuffer = (opt_args.functions->vkBeginCommandBuffer != nullptr)
+                                      ? opt_args.functions->vkBeginCommandBuffer
+                                      : vkBeginCommandBuffer;
+        ret._vkEndCommandBuffer   = (opt_args.functions->vkEndCommandBuffer != nullptr)
+                                      ? opt_args.functions->vkEndCommandBuffer
+                                      : vkEndCommandBuffer;
+    }
     return ret;
 }
 
 /* STATIC */
 vkwp::CommandBuffer
-vkwp::CommandBuffer::allocatePrimaryCommandBuffer(const std::string & label, const CommandPool & command_pool)
+vkwp::CommandBuffer::allocatePrimaryCommandBuffer(std::string label, const CommandPool & command_pool)
 {
-    return CommandBuffer::allocatePrimaryCommandBuffer(label, command_pool, {});
+    return CommandBuffer::allocatePrimaryCommandBuffer(std::move(label), command_pool, {});
 }
 
 /* STATIC */
 vkwp::CommandBuffer
-vkwp::CommandBuffer::allocatePrimaryCommandBuffer(const std::string &          label,
+vkwp::CommandBuffer::allocatePrimaryCommandBuffer(std::string                  label,
                                                   const CommandPool &          command_pool,
                                                   const OptionalAllocateArgs & opt_args)
 {
-    return allocateCommandBuffer(label, command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, opt_args);
+    return allocateCommandBuffer(std::move(label), command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, opt_args);
 }
 
 vkwp::CommandBuffer::CommandBuffer()
@@ -183,18 +223,22 @@ vkwp::CommandBuffer::CommandBuffer()
     , mutex_{ nullptr }
 {}
 
-vkwp::CommandBuffer::CommandBuffer(const std::string_view label)
-    : Resource{ label }
+vkwp::CommandBuffer::CommandBuffer(std::string && label)
+    : Resource{ std::move(label) }
     , mutex_{ nullptr }
 {}
 
 vkwp::CommandBuffer::CommandBuffer(CommandBuffer && m) noexcept
     : Resource{ std::move(m) }
     , mutex_{ m.mutex_ }
+    , _vkBeginCommandBuffer{ m._vkBeginCommandBuffer }
+    , _vkEndCommandBuffer{ m._vkEndCommandBuffer }
 {
     if (this != &m)
     {
-        m.mutex_ = nullptr;
+        m.mutex_                = nullptr;
+        m._vkBeginCommandBuffer = nullptr;
+        m._vkEndCommandBuffer   = nullptr;
     }
 }
 
@@ -214,7 +258,11 @@ vkwp::CommandBuffer::operator=(CommandBuffer && rhs) & noexcept
     {
         *static_cast<Resource *>(this) = std::move(rhs);
         this->mutex_                   = rhs.mutex_;
+        this->_vkBeginCommandBuffer    = rhs._vkBeginCommandBuffer;
+        this->_vkEndCommandBuffer      = rhs._vkEndCommandBuffer;
         rhs.mutex_                     = nullptr;
+        rhs._vkBeginCommandBuffer      = nullptr;
+        rhs._vkEndCommandBuffer        = nullptr;
     }
     return *this;
 }
@@ -244,17 +292,13 @@ vkwp::CommandBuffer::_beginCommandBuffer(const VkCommandBufferInheritanceInfo * 
         .flags            = flags,
         .pInheritanceInfo = inheritance_info,
     };
-    VulkanError::check(  //
-        vkBeginCommandBuffer(*this, &bi),
-        "Failed to vkBeginCommandBuffer().");
+    VulkanError::check(this->_vkBeginCommandBuffer(*this, &bi), "Failed to vkBeginCommandBuffer().");
 }
 
 void
 vkwp::CommandBuffer::endCommandBuffer() const
 {
-    VulkanError::check(  //
-        vkEndCommandBuffer(*this),
-        "Failed to vkEndCommandBuffer().");
+    VulkanError::check(this->_vkEndCommandBuffer(*this), "Failed to vkEndCommandBuffer().");
 }
 
 void

@@ -2,21 +2,22 @@
 #define VKWP_IMAGE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
 #include <cstdint>
-#include <string_view>
+#include <string>
 
 namespace vkwp {
 
 ///
 /// @brief VkImage wrapper.
 ///
-class Image final : public Resource<VkImage, VkDevice>
+class Image final : public Resource<VkImage, PFN_vkDestroyImage, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkImage, PFN_vkDestroyImage, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
@@ -27,11 +28,12 @@ public:
         VkSampleCountFlagBits      samples      = VK_SAMPLE_COUNT_1_BIT;
         VkImageTiling              tiling       = VK_IMAGE_TILING_OPTIMAL;
         const DebugUtilsResource * debug_utils  = nullptr;
+        const VulkanFunctions *    functions    = nullptr;
     };
 
     [[nodiscard]]
     static Image
-    create(const std::string_view  label,
+    create(std::string             label,
            const Device &          device,
            const VkImageType       image_type,
            const VkFormat          format,
@@ -40,7 +42,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create(const std::string_view     label,
+    create(std::string                label,
            const Device &             device,
            const VkImageType          image_type,
            const VkFormat             format,
@@ -50,7 +52,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create1D(const std::string_view  label,
+    create1D(std::string             label,
              const Device &          device,
              const VkFormat          format,
              const std::uint32_t     width,
@@ -58,7 +60,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create1D(const std::string_view     label,
+    create1D(std::string                label,
              const Device &             device,
              const VkFormat             format,
              const std::uint32_t        width,
@@ -67,7 +69,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create2D(const std::string_view  label,
+    create2D(std::string             label,
              const Device &          device,
              const VkFormat          format,
              const std::uint32_t     width,
@@ -76,7 +78,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create2D(const std::string_view     label,
+    create2D(std::string                label,
              const Device &             device,
              const VkFormat             format,
              const std::uint32_t        width,
@@ -86,7 +88,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create3D(const std::string_view  label,
+    create3D(std::string             label,
              const Device &          device,
              const VkFormat          format,
              const std::uint32_t     width,
@@ -96,7 +98,7 @@ public:
 
     [[nodiscard]]
     static Image
-    create3D(const std::string_view     label,
+    create3D(std::string                label,
              const Device &             device,
              const VkFormat             format,
              const std::uint32_t        width,
@@ -116,8 +118,10 @@ public:
     void
     bindMemory(const DeviceMemory & device_memory, const VkDeviceSize offset) const;
 
-    void
-    bindMemory(const DeviceMemoryNode & device_memory_node, const VkDeviceSize offset) const;
+private:
+    PFN_vkGetImageMemoryRequirements  _vkGetImageMemoryRequirements  = nullptr;
+    PFN_vkGetImageMemoryRequirements2 _vkGetImageMemoryRequirements2 = nullptr;
+    PFN_vkBindImageMemory             _vkBindImageMemory             = nullptr;
 };
 
 }  // namespace vkwp

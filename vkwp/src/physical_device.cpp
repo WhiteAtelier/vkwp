@@ -2,8 +2,10 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/instance.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 #include <limits>
 
@@ -14,36 +16,49 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkPhysicalDevice>(VkPhysicalDevice, const std::tuple<> &) noexcept
-{
-    // NOP
-}
+vkwp::impl::_delete(VkPhysicalDevice, std::nullptr_t, const std::tuple<> &) noexcept
+{}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // PhysicalDevice class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-vkwp::PhysicalDevice::PhysicalDevice(const std::string_view label, VkPhysicalDeviceProperties && pd_properties)
-    : Resource{ label }
+vkwp::PhysicalDevice::PhysicalDevice(std::string && label, VkPhysicalDeviceProperties && pd_properties)
+    : Resource{ std::move(label) }
     , properties_{ std::move(pd_properties) }
 {}
 
 std::vector<vkwp::PhysicalDevice>
 vkwp::PhysicalDevice::enumeratePhysicalDevices(const Instance & instance)
 {
+    return PhysicalDevice::enumeratePhysicalDevices(instance, {});
+}
+
+std::vector<vkwp::PhysicalDevice>
+vkwp::PhysicalDevice::enumeratePhysicalDevices(const Instance & instance, const OptionalEnumerateArgs & opt_args)
+{
     VKWP_VALIDATE_ARG(instance);
 
     std::vector<VkPhysicalDevice> phys_devs;
     std::uint32_t                 count = 0;
 
+    auto * const enumerate_fn
+        = (opt_args.functions != nullptr && opt_args.functions->vkEnumeratePhysicalDevices != nullptr)
+            ? opt_args.functions->vkEnumeratePhysicalDevices
+            : vkEnumeratePhysicalDevices;
+    auto * const get_properties_fn
+        = (opt_args.functions != nullptr && opt_args.functions->vkGetPhysicalDeviceProperties != nullptr)
+            ? opt_args.functions->vkGetPhysicalDeviceProperties
+            : vkGetPhysicalDeviceProperties;
+
     VulkanError::check(  //
-        vkEnumeratePhysicalDevices(instance, &count, nullptr),
+        enumerate_fn(instance, &count, nullptr),
         "Failed to vkEnumeratePhysicalDevice(). (Get array count.)");
 
     phys_devs.resize(count);
     VulkanError::check(  //
-        vkEnumeratePhysicalDevices(instance, &count, phys_devs.data()),
+        enumerate_fn(instance, &count, phys_devs.data()),
         "Failed to vkEnumeratePhysicalDevice(). (Get array data.)");
 
     std::vector<vkwp::PhysicalDevice> ret;
@@ -52,12 +67,43 @@ vkwp::PhysicalDevice::enumeratePhysicalDevices(const Instance & instance)
     for (const auto & phys_dev : phys_devs)
     {
         VkPhysicalDeviceProperties prop;
-        vkGetPhysicalDeviceProperties(phys_dev, &prop);
+        get_properties_fn(phys_dev, &prop);
 
-        const auto label = "/PhysicalDevice/ID" + std::to_string(prop.deviceID)  //
-                         + "/" + std::string{ prop.deviceName };
-        auto & pdev    = ret.emplace_back(PhysicalDevice{ label, std::move(prop) });
-        *pdev._reset() = phys_dev;
+        auto label = "/PhysicalDevice/ID" + std::to_string(prop.deviceID)  //
+                   + "/" + std::string{ prop.deviceName };
+        auto & pdev           = ret.emplace_back(PhysicalDevice{ std::move(label), std::move(prop) });
+        *pdev._reset(nullptr) = phys_dev;
+        if (opt_args.functions != nullptr)
+        {
+            pdev._vkGetPhysicalDeviceQueueFamilyProperties
+                = (opt_args.functions->vkGetPhysicalDeviceQueueFamilyProperties != nullptr)
+                    ? opt_args.functions->vkGetPhysicalDeviceQueueFamilyProperties
+                    : vkGetPhysicalDeviceQueueFamilyProperties;
+            pdev._vkGetPhysicalDeviceMemoryProperties
+                = (opt_args.functions->vkGetPhysicalDeviceMemoryProperties != nullptr)
+                    ? opt_args.functions->vkGetPhysicalDeviceMemoryProperties
+                    : vkGetPhysicalDeviceMemoryProperties;
+            pdev._vkEnumerateDeviceExtensionProperties
+                = (opt_args.functions->vkEnumerateDeviceExtensionProperties != nullptr)
+                    ? opt_args.functions->vkEnumerateDeviceExtensionProperties
+                    : vkEnumerateDeviceExtensionProperties;
+            pdev._vkGetPhysicalDeviceFormatProperties
+                = (opt_args.functions->vkGetPhysicalDeviceFormatProperties != nullptr)
+                    ? opt_args.functions->vkGetPhysicalDeviceFormatProperties
+                    : vkGetPhysicalDeviceFormatProperties;
+            pdev._vkGetPhysicalDeviceSurfaceFormatsKHR
+                = (opt_args.functions->vkGetPhysicalDeviceSurfaceFormatsKHR != nullptr)
+                    ? opt_args.functions->vkGetPhysicalDeviceSurfaceFormatsKHR
+                    : vkGetPhysicalDeviceSurfaceFormatsKHR;
+            pdev._vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+                = (opt_args.functions->vkGetPhysicalDeviceSurfaceCapabilitiesKHR != nullptr)
+                    ? opt_args.functions->vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+                    : vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+            pdev._vkGetPhysicalDeviceSurfaceSupportKHR
+                = (opt_args.functions->vkGetPhysicalDeviceSurfaceSupportKHR != nullptr)
+                    ? opt_args.functions->vkGetPhysicalDeviceSurfaceSupportKHR
+                    : vkGetPhysicalDeviceSurfaceSupportKHR;
+        }
     }
     return ret;
 }
@@ -71,12 +117,12 @@ vkwp::PhysicalDevice::getQueueFamilyProperties() const
         this->queue_family_properties_cache_.emplace();
         {
             uint32_t queue_family_properties_count{ 0 };
-            vkGetPhysicalDeviceQueueFamilyProperties(*this, &queue_family_properties_count, nullptr);
+            this->_vkGetPhysicalDeviceQueueFamilyProperties(*this, &queue_family_properties_count, nullptr);
             this->queue_family_properties_cache_->resize(queue_family_properties_count);
 
-            vkGetPhysicalDeviceQueueFamilyProperties(*this,
-                                                     &queue_family_properties_count,
-                                                     this->queue_family_properties_cache_->data());
+            this->_vkGetPhysicalDeviceQueueFamilyProperties(*this,
+                                                            &queue_family_properties_count,
+                                                            this->queue_family_properties_cache_->data());
         }
     }
     return *this->queue_family_properties_cache_;
@@ -95,7 +141,7 @@ vkwp::PhysicalDevice::getMemoryProperties() const
     if (!this->memory_properties_)
     {
         this->memory_properties_.emplace();
-        vkGetPhysicalDeviceMemoryProperties(*this, &*this->memory_properties_);
+        this->_vkGetPhysicalDeviceMemoryProperties(*this, &*this->memory_properties_);
     }
     return *this->memory_properties_;
 }
@@ -106,11 +152,11 @@ vkwp::PhysicalDevice::enumerateDeviceExtensionProperties() const
     VKWP_VALIDATE_THIS;
     std::uint32_t count = 0;
     VulkanError::check(  //
-        vkEnumerateDeviceExtensionProperties(*this, nullptr, &count, nullptr),
+        this->_vkEnumerateDeviceExtensionProperties(*this, nullptr, &count, nullptr),
         "Failed to vkEnumerateDeviceExtensionProperties(). (array size)");
     std::vector<VkExtensionProperties> ret(count);
     VulkanError::check(  //
-        vkEnumerateDeviceExtensionProperties(*this, nullptr, &count, ret.data()),
+        this->_vkEnumerateDeviceExtensionProperties(*this, nullptr, &count, ret.data()),
         "Failed to vkEnumerateDeviceExtensionProperties(). (array data)");
     return ret;
 }
@@ -120,7 +166,7 @@ vkwp::PhysicalDevice::getFormatProperties(const VkFormat format) const
 {
     VKWP_VALIDATE_THIS;
     VkFormatProperties prop;
-    vkGetPhysicalDeviceFormatProperties(*this, format, &prop);
+    this->_vkGetPhysicalDeviceFormatProperties(*this, format, &prop);
     return prop;
 }
 
@@ -130,12 +176,12 @@ vkwp::PhysicalDevice::getSurfaceFormats(const VkSurfaceKHR & surface) const
     VKWP_VALIDATE_THIS;
     std::uint32_t count = 0;
     VulkanError::check(  //
-        vkGetPhysicalDeviceSurfaceFormatsKHR(*this, surface, &count, nullptr),
+        this->_vkGetPhysicalDeviceSurfaceFormatsKHR(*this, surface, &count, nullptr),
         "Failed to vkGetPhysicalDeviceSurfaceFormatsKHR(). (array count)");
     std::vector<VkSurfaceFormatKHR> formats;
     formats.resize(count);
     VulkanError::check(  //
-        vkGetPhysicalDeviceSurfaceFormatsKHR(*this, surface, &count, formats.data()),
+        this->_vkGetPhysicalDeviceSurfaceFormatsKHR(*this, surface, &count, formats.data()),
         "Failed to vkGetPhysicalDeviceSurfaceFormatsKHR(). (array data)");
     return formats;
 }
@@ -146,7 +192,7 @@ vkwp::PhysicalDevice::getSurfaceCapabilities(const VkSurfaceKHR & surface) const
     VKWP_VALIDATE_THIS;
     VkSurfaceCapabilitiesKHR ret;
     VulkanError::check(  //
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*this, surface, &ret),
+        this->_vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*this, surface, &ret),
         "Failed to vkGetPhysicalDeviceSurfaceCapabilitiesKHR().");
     return ret;
 }
@@ -204,7 +250,7 @@ vkwp::PhysicalDevice::isSurfaceSupported(const std::uint32_t queue_index, const 
     VKWP_VALIDATE_THIS;
     VkBool32 supported = VK_FALSE;
     vkwp::VulkanError::check(  //
-        vkGetPhysicalDeviceSurfaceSupportKHR(*this, queue_index, surface, &supported),
+        this->_vkGetPhysicalDeviceSurfaceSupportKHR(*this, queue_index, surface, &supported),
         "Failed to vkGetPhysicalDeviceSurfaceSupportKHR().");
     return supported == VK_TRUE;
 }

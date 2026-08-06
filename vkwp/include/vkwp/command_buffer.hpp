@@ -2,6 +2,7 @@
 #define VKWP_COMMAND_BUFFER_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -15,7 +16,7 @@ namespace vkwp {
 ///
 /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkCommandBuffer.html
 ///
-class CommandBuffer final : public Resource<VkCommandBuffer, VkDevice, VkCommandPool>
+class CommandBuffer final : public Resource<VkCommandBuffer, PFN_vkFreeCommandBuffers, VkDevice, VkCommandPool>
 {
 public:
     /// @brief Default Constructor
@@ -38,42 +39,41 @@ public:
     {
         const void *               p_next      = nullptr;
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     [[nodiscard]]
     static std::vector<CommandBuffer>
-    allocateCommandBuffers(const CommandPool &              command_pool,
-                           const VkCommandBufferLevel       level,
-                           const std::vector<std::string> & command_buffer_labels);
+    allocateCommandBuffers(const CommandPool &        command_pool,
+                           const VkCommandBufferLevel level,
+                           std::vector<std::string>   command_buffer_labels);
 
     [[nodiscard]]
     static std::vector<CommandBuffer>
-    allocateCommandBuffers(const CommandPool &              command_pool,
-                           const VkCommandBufferLevel       level,
-                           const std::vector<std::string> & command_buffer_labels,
-                           const OptionalAllocateArgs &     opt_args);
+    allocateCommandBuffers(const CommandPool &          command_pool,
+                           const VkCommandBufferLevel   level,
+                           std::vector<std::string>     command_buffer_labels,
+                           const OptionalAllocateArgs & opt_args);
 
     [[nodiscard]]
     static CommandBuffer
-    allocateCommandBuffer(const std::string &        label,
-                          const CommandPool &        command_pool,
-                          const VkCommandBufferLevel level);
+    allocateCommandBuffer(std::string label, const CommandPool & command_pool, const VkCommandBufferLevel level);
 
     [[nodiscard]]
     static CommandBuffer
-    allocateCommandBuffer(const std::string &          label,
+    allocateCommandBuffer(std::string                  label,
                           const CommandPool &          command_pool,
                           const VkCommandBufferLevel   level,
                           const OptionalAllocateArgs & opt_args);
 
     [[nodiscard]]
     static CommandBuffer
-    allocatePrimaryCommandBuffer(const std::string & label,  //
+    allocatePrimaryCommandBuffer(std::string         label,  //
                                  const CommandPool & command_pool);
 
     [[nodiscard]]
     static CommandBuffer
-    allocatePrimaryCommandBuffer(const std::string &          label,
+    allocatePrimaryCommandBuffer(std::string                  label,
                                  const CommandPool &          command_pool,
                                  const OptionalAllocateArgs & opt_args);
 
@@ -111,9 +111,11 @@ private:
                         const void * const                     p_next) const;
 
     [[nodiscard]]
-    explicit CommandBuffer(const std::string_view label);
+    explicit CommandBuffer(std::string && label);
 
-    Mutex * mutex_;
+    Mutex *                  mutex_;
+    PFN_vkBeginCommandBuffer _vkBeginCommandBuffer = nullptr;
+    PFN_vkEndCommandBuffer   _vkEndCommandBuffer   = nullptr;
 };
 
 }  // namespace vkwp

@@ -2,6 +2,7 @@
 #define VKWP_PIPELINE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -13,7 +14,7 @@ namespace vkwp {
 struct RayTracingPipelineKHR_ExtFunctions
 {
     static RayTracingPipelineKHR_ExtFunctions
-    create(const VkInstance instance);
+    create(const VkInstance instance, const VulkanFunctions * functions = nullptr);
 
     PFN_vkCreateRayTracingPipelinesKHR vkCreateRayTracingPipelinesKHR = nullptr;
 };
@@ -82,15 +83,16 @@ struct RayTracingPipelineCreateInfoKHR
 ///
 /// @brief VkPipeline wrapper.
 ///
-class Pipeline final : public Resource<VkPipeline, VkDevice>
+class Pipeline final : public Resource<VkPipeline, PFN_vkDestroyPipeline, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkPipeline, PFN_vkDestroyPipeline, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const PipelineCache *      pipeline_cache = nullptr;
         const DebugUtilsResource * debug_utils    = nullptr;
+        const VulkanFunctions *    functions      = nullptr;
     };
 
     struct OptionalCreateRTPipelineArgs
@@ -98,36 +100,37 @@ public:
         const DeferredOperationKHR * deferred_operation = nullptr;
         const PipelineCache *        pipeline_cache     = nullptr;
         const DebugUtilsResource *   debug_utils        = nullptr;
+        const VulkanFunctions *      functions          = nullptr;
     };
 
     static std::vector<Pipeline>
-    create(const Device &                                  device,  //
-           const std::vector<GraphicsPipelineCreateInfo> & create_info_list);
+    create(const Device &                          device,  //
+           std::vector<GraphicsPipelineCreateInfo> create_info_list);
 
     static std::vector<Pipeline>
-    create(const Device &                                  device,
-           const std::vector<GraphicsPipelineCreateInfo> & create_info_list,
-           const OptionalCreateArgs &                      opt_args);
+    create(const Device &                          device,
+           std::vector<GraphicsPipelineCreateInfo> create_info_list,
+           const OptionalCreateArgs &              opt_args);
 
     static std::vector<Pipeline>
-    create(const Device &                                 device,  //
-           const std::vector<ComputePipelineCreateInfo> & create_info_list);
+    create(const Device &                         device,  //
+           std::vector<ComputePipelineCreateInfo> create_info_list);
 
     static std::vector<Pipeline>
-    create(const Device &                                 device,
-           const std::vector<ComputePipelineCreateInfo> & create_info_list,
-           const OptionalCreateArgs &                     opt_args);
+    create(const Device &                         device,
+           std::vector<ComputePipelineCreateInfo> create_info_list,
+           const OptionalCreateArgs &             opt_args);
 
     static std::vector<Pipeline>
-    create(const Device &                                       device,
-           const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
-           const RayTracingPipelineKHR_ExtFunctions &           ext_functions);
+    create(const Device &                               device,
+           std::vector<RayTracingPipelineCreateInfoKHR> create_info_list,
+           const RayTracingPipelineKHR_ExtFunctions &   ext_functions);
 
     static std::vector<Pipeline>
-    create(const Device &                                       device,
-           const std::vector<RayTracingPipelineCreateInfoKHR> & create_info_list,
-           const RayTracingPipelineKHR_ExtFunctions &           ext_functions,
-           const OptionalCreateRTPipelineArgs &                 opt_args);
+    create(const Device &                               device,
+           std::vector<RayTracingPipelineCreateInfoKHR> create_info_list,
+           const RayTracingPipelineKHR_ExtFunctions &   ext_functions,
+           const OptionalCreateRTPipelineArgs &         opt_args);
 };
 
 }  // namespace vkwp

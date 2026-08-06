@@ -1,11 +1,41 @@
 #ifndef VKWP_DEBUG_REPORT_CALLBACK_RESOURCE_HPP
 #define VKWP_DEBUG_REPORT_CALLBACK_RESOURCE_HPP
 
+#include "fwd.hpp"
+
 #include "vulkan.hpp"
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
 
 namespace vkwp {
+
+struct DebugReportCallback
+{
+public:
+    DebugReportCallback();
+    virtual ~DebugReportCallback() noexcept;
+
+    DebugReportCallback(const DebugReportCallback &) = delete;
+    DebugReportCallback(DebugReportCallback &&)      = delete;
+    DebugReportCallback &
+    operator=(const DebugReportCallback &)
+        = delete;
+    DebugReportCallback &
+    operator=(DebugReportCallback &&)
+        = delete;
+
+    virtual void
+    operator()(const VkDebugReportFlagsEXT      flags,
+               const VkDebugReportObjectTypeEXT object_type,
+               const std::uint64_t              object,
+               const std::size_t                location,
+               const std::int32_t               message_code,
+               const char *                     layer_prefix,
+               const char *                     message)
+        = 0;
+};
 
 ///
 /// @brief Vulkan Debug Report.
@@ -25,7 +55,9 @@ public:
     ///     初期化済み Vulkan Instance.
     ///
     void
-    initialize(const VkInstance instance);
+    initialize(const VkInstance                     instance,
+               std::shared_ptr<DebugReportCallback> callback,
+               const VulkanFunctions *              functions = nullptr);
 
 private:
     class Impl_;

@@ -2,30 +2,32 @@
 #define VKWP_DEVICE_MEMORY_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
-#include <string_view>
+#include <string>
 
 namespace vkwp {
 
 ///
 /// @brief VkDeviceMemory wrapper.
 ///
-class DeviceMemory final : public Resource<VkDeviceMemory, VkDevice>
+class DeviceMemory final : public Resource<VkDeviceMemory, PFN_vkFreeMemory, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkDeviceMemory, PFN_vkFreeMemory, VkDevice>::Resource;
 
     struct OptionalAllocateArgs
     {
         const void *               p_next      = nullptr;
         const DebugUtilsResource * debug_utils = nullptr;  ///< Pointer to a debug utils resource instance.
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     [[nodiscard]]
     static DeviceMemory
-    allocate(const std::string_view       label,
+    allocate(std::string                  label,
              const Device &               device,
              const PhysicalDevice &       physical_device,
              const VkMemoryRequirements & memory_requirements,
@@ -33,7 +35,7 @@ public:
 
     [[nodiscard]]
     static DeviceMemory
-    allocate(const std::string_view       label,
+    allocate(std::string                  label,
              const Device &               device,
              const PhysicalDevice &       physical_device,
              const VkMemoryRequirements & memory_requirements,
@@ -42,7 +44,7 @@ public:
 
     [[nodiscard]]
     static DeviceMemory
-    importWin32ExternalMemory(const std::string_view                   label,
+    importWin32ExternalMemory(std::string                              label,
                               const Device &                           device,
                               const PhysicalDevice &                   physical_device,
                               const std::size_t                        size,
@@ -54,7 +56,7 @@ public:
 
     [[nodiscard]]
     static DeviceMemory
-    importWin32ExternalMemory(const std::string_view                   label,
+    importWin32ExternalMemory(std::string                              label,
                               const Device &                           device,
                               const PhysicalDevice &                   physical_device,
                               const std::size_t                        size,
@@ -98,7 +100,9 @@ public:
         MappedScope(const VkDevice &       device,
                     const VkDeviceMemory & device_memory,
                     const std::size_t      offset,
-                    const std::size_t      size);
+                    const std::size_t      size,
+                    PFN_vkMapMemory        map_fn,
+                    PFN_vkUnmapMemory      unmap_fn);
 
     public:
         MappedScope() noexcept;  ///< Default (invalid) scope constructor.
@@ -157,15 +161,20 @@ public:
         ptr() const noexcept;
 
     private:
-        VkDevice       device_;
-        VkDeviceMemory memory_;
-        std::size_t    size_;
-        void *         ptr_;
+        VkDevice          device_;
+        VkDeviceMemory    memory_;
+        std::size_t       size_;
+        void *            ptr_;
+        PFN_vkUnmapMemory _vkUnmapMemory = nullptr;
     };
 
     [[nodiscard]]
     MappedScope
     map(const std::size_t size, const std::size_t offset = 0) const;
+
+private:
+    PFN_vkMapMemory   _vkMapMemory   = nullptr;
+    PFN_vkUnmapMemory _vkUnmapMemory = nullptr;
 };
 
 }  // namespace vkwp

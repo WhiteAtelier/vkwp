@@ -2,7 +2,9 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -11,9 +13,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkInstance>(VkInstance i, const std::tuple<> &) noexcept
+vkwp::impl::_delete(VkInstance i, PFN_vkDestroyInstance fn, const std::tuple<> &) noexcept
 {
-    vkDestroyInstance(i, nullptr);
+    fn(i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -23,16 +25,16 @@ vkwp::impl::_delete<VkInstance>(VkInstance i, const std::tuple<> &) noexcept
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Instance
-vkwp::Instance::create(const std::string_view           label,
-                       const std::string_view           application_name,
+vkwp::Instance::create(std::string                      label,
+                       const std::string &              application_name,
                        const std::uint32_t              application_version,
-                       const std::string_view           engine_name,
+                       const std::string &              engine_name,
                        const std::uint32_t              engine_version,
                        const std::uint32_t              api_version,
                        const std::vector<std::string> & enabled_layer_names,
                        const std::vector<std::string> & enabled_extension_names)
 {
-    return Instance::create(label,
+    return Instance::create(std::move(label),
                             application_name,
                             application_version,
                             engine_name,
@@ -45,17 +47,17 @@ vkwp::Instance::create(const std::string_view           label,
 
 /* STATIC */
 vkwp::Instance
-vkwp::Instance::create(const std::string_view           label,
-                       const std::string_view           application_name,
+vkwp::Instance::create(std::string                      label,
+                       const std::string &              application_name,
                        const std::uint32_t              application_version,
-                       const std::string_view           engine_name,
+                       const std::string &              engine_name,
                        const std::uint32_t              engine_version,
                        const std::uint32_t              api_version,
                        const std::vector<std::string> & _enabled_layer_names,
                        const std::vector<std::string> & _enabled_extension_names,
                        const OptionalCreateArgs &       opt_args)
 {
-    Instance                  ret{ label };
+    Instance                  ret{ std::move(label) };
     std::vector<const char *> enabled_layer_names;
     std::vector<const char *> enabled_extension_names;
     enabled_layer_names.reserve(_enabled_layer_names.size());
@@ -69,16 +71,12 @@ vkwp::Instance::create(const std::string_view           label,
         enabled_extension_names.emplace_back(name.c_str());
     }
 
-    // guarantee null-terminated string
-    std::string application_name_str{ application_name };
-    std::string engine_name_str{ engine_name };
-
     const VkApplicationInfo ai{
         .sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pNext              = nullptr,
-        .pApplicationName   = application_name_str.c_str(),
+        .pApplicationName   = application_name.c_str(),
         .applicationVersion = application_version,
-        .pEngineName        = engine_name_str.c_str(),
+        .pEngineName        = engine_name.c_str(),
         .engineVersion      = engine_version,
         .apiVersion         = api_version,
     };
@@ -93,23 +91,31 @@ vkwp::Instance::create(const std::string_view           label,
         .ppEnabledExtensionNames = enabled_extension_names.data(),
     };
 
-    VulkanError::check(  //
-        vkCreateInstance(&ci, nullptr, ret._reset()),
-        "Failed to vkCreateInstance().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateInstance != nullptr)
+                                ? opt_args.functions->vkCreateInstance
+                                : vkCreateInstance;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyInstance != nullptr)
+                                ? opt_args.functions->vkDestroyInstance
+                                : vkDestroyInstance;
+
+    VulkanError::check(create_fn(&ci, nullptr, ret._reset(destroy_fn)),  //
+                       "Failed to vkCreateInstance().");
 
     return ret;
 }
 
 std::vector<VkExtensionProperties>
-vkwp::Instance::enumerateInstanceExtensionProperties()
+vkwp::Instance::enumerateInstanceExtensionProperties(const VulkanFunctions * functions)
 {
+    auto * const fn = (functions != nullptr && functions->vkEnumerateInstanceExtensionProperties != nullptr)
+                        ? functions->vkEnumerateInstanceExtensionProperties
+                        : vkEnumerateInstanceExtensionProperties;
+
     std::uint32_t count = 0;
-    VulkanError::check(  //
-        vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr),
-        "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
+    VulkanError::check(fn(nullptr, &count, nullptr),
+                       "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
     std::vector<VkExtensionProperties> ret(count);
-    VulkanError::check(  //
-        vkEnumerateInstanceExtensionProperties(nullptr, &count, ret.data()),
-        "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
+    VulkanError::check(fn(nullptr, &count, ret.data()),
+                       "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
     return ret;
 }

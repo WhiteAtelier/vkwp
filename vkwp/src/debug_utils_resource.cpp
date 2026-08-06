@@ -1,7 +1,9 @@
 #include "vkwp/debug_utils_resource.hpp"
 
 #include "impl/assert.hpp"
+
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -14,7 +16,7 @@ namespace vkwp {
 class DebugUtilsResource::Impl_ final
 {
 public:
-    Impl_(const VkInstance & instance);
+    Impl_(const VkInstance & instance, const VulkanFunctions * functions);
     ~Impl_() noexcept;
 
     void
@@ -27,13 +29,13 @@ public:
                                const std::string_view name) const;
 
 private:
-    const VkInstance                   instance_                           = nullptr;
-    PFN_vkSetDebugUtilsObjectNameEXT   pfn_vkSetDebugUtilsObjectNameEXT_   = nullptr;
-    PFN_vkQueueBeginDebugUtilsLabelEXT pfn_vkQueueBeginDebugUtilsLabelEXT_ = nullptr;
-    PFN_vkQueueEndDebugUtilsLabelEXT   pfn_vkQueueEndDebugUtilsLabelEXT_   = nullptr;
-    PFN_vkCmdBeginDebugUtilsLabelEXT   pfn_vkCmdBeginDebugUtilsLabelEXT_   = nullptr;
-    PFN_vkCmdEndDebugUtilsLabelEXT     pfn_vkCmdEndDebugUtilsLabelEXT_     = nullptr;
-    PFN_vkCmdInsertDebugUtilsLabelEXT  pfn_vkCmdInsertDebugUtilsLabelEXT_  = nullptr;
+    const VkInstance                   instance_                       = nullptr;
+    PFN_vkSetDebugUtilsObjectNameEXT   _vkSetDebugUtilsObjectNameEXT   = nullptr;
+    PFN_vkQueueBeginDebugUtilsLabelEXT _vkQueueBeginDebugUtilsLabelEXT = nullptr;
+    PFN_vkQueueEndDebugUtilsLabelEXT   _vkQueueEndDebugUtilsLabelEXT   = nullptr;
+    PFN_vkCmdBeginDebugUtilsLabelEXT   _vkCmdBeginDebugUtilsLabelEXT   = nullptr;
+    PFN_vkCmdEndDebugUtilsLabelEXT     _vkCmdEndDebugUtilsLabelEXT     = nullptr;
+    PFN_vkCmdInsertDebugUtilsLabelEXT  _vkCmdInsertDebugUtilsLabelEXT  = nullptr;
 };
 
 }  // namespace vkwp
@@ -41,22 +43,38 @@ private:
 // ============================================================================================= //
 // Constructor
 // ============================================================================================= //
-#define GET_INSTANCE_PROC_ADDR(FuncName)                                                    \
-    pfn_##FuncName##_                                                                       \
-    {                                                                                       \
-        reinterpret_cast<PFN_##FuncName>(vkGetInstanceProcAddr(this->instance_, #FuncName)) \
+vkwp::DebugUtilsResource::Impl_::Impl_(const VkInstance & instance, const VulkanFunctions * functions)
+    : instance_{ instance }
+{
+    if (functions != nullptr)
+    {
+        this->_vkSetDebugUtilsObjectNameEXT   = functions->vkSetDebugUtilsObjectNameEXT;
+        this->_vkQueueBeginDebugUtilsLabelEXT = functions->vkQueueBeginDebugUtilsLabelEXT;
+        this->_vkQueueEndDebugUtilsLabelEXT   = functions->vkQueueEndDebugUtilsLabelEXT;
+        this->_vkCmdBeginDebugUtilsLabelEXT   = functions->vkCmdBeginDebugUtilsLabelEXT;
+        this->_vkCmdEndDebugUtilsLabelEXT     = functions->vkCmdEndDebugUtilsLabelEXT;
+        this->_vkCmdInsertDebugUtilsLabelEXT  = functions->vkCmdInsertDebugUtilsLabelEXT;
     }
 
-vkwp::DebugUtilsResource::Impl_::Impl_(const VkInstance & instance)
-    : instance_{ instance }
-    , GET_INSTANCE_PROC_ADDR(vkSetDebugUtilsObjectNameEXT)
-    , GET_INSTANCE_PROC_ADDR(vkQueueBeginDebugUtilsLabelEXT)
-    , GET_INSTANCE_PROC_ADDR(vkQueueEndDebugUtilsLabelEXT)
-    , GET_INSTANCE_PROC_ADDR(vkCmdBeginDebugUtilsLabelEXT)
-    , GET_INSTANCE_PROC_ADDR(vkCmdEndDebugUtilsLabelEXT)
-    , GET_INSTANCE_PROC_ADDR(vkCmdInsertDebugUtilsLabelEXT)
-{}
+    auto * const get_instance_proc_addr_fn = (functions != nullptr && functions->vkGetInstanceProcAddr != nullptr)
+                                               ? functions->vkGetInstanceProcAddr
+                                               : vkGetInstanceProcAddr;
+
+#define GET_INSTANCE_PROC_ADDR(FuncName)                                                                             \
+    if (this->_##FuncName == nullptr)                                                                                \
+    {                                                                                                                \
+        this->_##FuncName = reinterpret_cast<PFN_##FuncName>(get_instance_proc_addr_fn(this->instance_, #FuncName)); \
+    }
+
+    GET_INSTANCE_PROC_ADDR(vkSetDebugUtilsObjectNameEXT);
+    GET_INSTANCE_PROC_ADDR(vkQueueBeginDebugUtilsLabelEXT);
+    GET_INSTANCE_PROC_ADDR(vkQueueEndDebugUtilsLabelEXT);
+    GET_INSTANCE_PROC_ADDR(vkCmdBeginDebugUtilsLabelEXT);
+    GET_INSTANCE_PROC_ADDR(vkCmdEndDebugUtilsLabelEXT);
+    GET_INSTANCE_PROC_ADDR(vkCmdInsertDebugUtilsLabelEXT);
+
 #undef GET_INSTANCE_PROC_ADDR
+}
 
 // impl_ instance is not created at DebugUtilsResource constructor.
 vkwp::DebugUtilsResource::DebugUtilsResource() = default;
@@ -86,9 +104,9 @@ vkwp::DebugUtilsResource::operator=(DebugUtilsResource &&) & noexcept
 // initialize()
 // ============================================================================================= //
 void
-vkwp::DebugUtilsResource::initialize(const VkInstance instance)
+vkwp::DebugUtilsResource::initialize(const VkInstance instance, const VulkanFunctions * functions)
 {
-    this->impl_ = std::make_shared<Impl_>(instance);
+    this->impl_ = std::make_shared<Impl_>(instance, functions);
 }
 
 // ============================================================================================= //
@@ -100,6 +118,8 @@ vkwp::DebugUtilsResource::Impl_::registDebugUtilsObjectName(const VkDevice      
                                                             const void * const     ptr,
                                                             const std::string_view name) const
 {
+    VKWP_VALIDATE_ARG(this->_vkSetDebugUtilsObjectNameEXT);
+
     std::string                         name_str{ name };  // guarantee null terminated
     const VkDebugUtilsObjectNameInfoEXT object_name_info_ext{
         .sType        = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT,
@@ -109,7 +129,7 @@ vkwp::DebugUtilsResource::Impl_::registDebugUtilsObjectName(const VkDevice      
         .pObjectName  = name_str.c_str(),
     };
     VulkanError::check(  //
-        this->pfn_vkSetDebugUtilsObjectNameEXT_(device, &object_name_info_ext),
+        this->_vkSetDebugUtilsObjectNameEXT(device, &object_name_info_ext),
         "Failed to (pfn)vkSetDebugUtilsObjectNameEXT()");
 }
 

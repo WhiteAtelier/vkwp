@@ -2,11 +2,12 @@
 #define VKWP_DESCRIPTOR_POOL_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
 #include <cstdint>
-#include <string_view>
+#include <string>
 #include <vector>
 
 namespace vkwp {
@@ -14,28 +15,29 @@ namespace vkwp {
 ///
 /// @brief VkDescriptorPool wrapper.
 ///
-class DescriptorPool final : public Resource<VkDescriptorPool, VkDevice>
+class DescriptorPool final : public Resource<VkDescriptorPool, PFN_vkDestroyDescriptorPool, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkDescriptorPool, PFN_vkDestroyDescriptorPool, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *                p_next      = nullptr;
         VkDescriptorPoolCreateFlags flags       = 0;  // または VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
         const DebugUtilsResource *  debug_utils = nullptr;
+        const VulkanFunctions *     functions   = nullptr;
     };
 
     [[nodiscard]]
     static DescriptorPool
-    create(const std::string_view                    label,
+    create(std::string                               label,
            const Device &                            device,
            const std::uint32_t                       max_sets,
            const std::vector<VkDescriptorPoolSize> & pool_sizes);
 
     [[nodiscard]]
     static DescriptorPool
-    create(const std::string_view                    label,
+    create(std::string                               label,
            const Device &                            device,
            const std::uint32_t                       max_sets,
            const std::vector<VkDescriptorPoolSize> & pool_sizes,

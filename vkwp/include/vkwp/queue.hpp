@@ -2,26 +2,27 @@
 #define VKWP_QUEUE_HPP
 
 #include "fwd.hpp"
+
 #include "mutex.hpp"
 #include "resource.hpp"
 #include "vulkan.hpp"
 
 #include <cstdint>
 #include <memory>
-#include <string_view>
+#include <string>
 
 namespace vkwp {
 
 ///
 /// @brief VkQueue wrapper.
 ///
-class Queue final : public Resource<VkQueue>
+class Queue final : public Resource<VkQueue, std::nullptr_t>
 {
 public:
     explicit Queue();
 
     [[nodiscard]]
-    explicit Queue(const std::string_view    label,
+    explicit Queue(std::string &&            label,
                    const VkQueue             external_queue,
                    const std::uint32_t       family_index,
                    std::unique_ptr<Mutex> && mutex);
@@ -48,7 +49,7 @@ public:
     unlock() const;
 
 private:
-    explicit Queue(const std::string_view label);
+    explicit Queue(std::string && label);
 
     friend Device;
     std::uint32_t          queue_family_index_;

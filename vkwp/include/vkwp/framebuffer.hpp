@@ -2,10 +2,12 @@
 #define VKWP_FRAMEBUFFER_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
 #include <cstdint>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -14,20 +16,21 @@ namespace vkwp {
 ///
 /// @brief VkFramebuffer wrapper.
 ///
-class Framebuffer final : public Resource<VkFramebuffer, VkDevice>
+class Framebuffer final : public Resource<VkFramebuffer, PFN_vkDestroyFramebuffer, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkFramebuffer, PFN_vkDestroyFramebuffer, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;
         VkFramebufferCreateFlags   flags       = 0;
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     static Framebuffer
-    create(const std::string_view                                     label,
+    create(std::string                                                label,
            const Device &                                             device,
            const RenderPass &                                         render_pass,
            const std::vector<std::reference_wrapper<const ImageView>> attachments,
@@ -36,7 +39,7 @@ public:
            const std::uint32_t                                        layers);
 
     static Framebuffer
-    create(const std::string_view                                     label,
+    create(std::string                                                label,
            const Device &                                             device,
            const RenderPass &                                         render_pass,
            const std::vector<std::reference_wrapper<const ImageView>> attachments,

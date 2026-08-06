@@ -2,10 +2,12 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/image.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -14,9 +16,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkImageView, VkDevice>(VkImageView i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkImageView i, PFN_vkDestroyImageView fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroyImageView(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -26,14 +28,14 @@ vkwp::impl::_delete<VkImageView, VkDevice>(VkImageView i, const std::tuple<VkDev
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::ImageView
-vkwp::ImageView::create(const std::string_view          label,
+vkwp::ImageView::create(std::string                     label,
                         const Device &                  device,
                         const Image &                   image,
                         const VkImageViewType           view_type,
                         const VkFormat                  format,
                         const VkImageSubresourceRange & subresource_range)
 {
-    return ImageView::create(label,  //
+    return ImageView::create(std::move(label),  //
                              device,
                              image,
                              view_type,
@@ -44,7 +46,7 @@ vkwp::ImageView::create(const std::string_view          label,
 
 /* STATIC */
 vkwp::ImageView
-vkwp::ImageView::create(const std::string_view          label,
+vkwp::ImageView::create(std::string                     label,
                         const Device &                  device,
                         const Image &                   image,
                         const VkImageViewType           view_type,
@@ -55,7 +57,7 @@ vkwp::ImageView::create(const std::string_view          label,
     VKWP_VALIDATE_ARG(device);
     VKWP_VALIDATE_ARG(image);
 
-    ImageView                   ret{ label };
+    ImageView                   ret{ std::move(label) };
     const VkImageViewCreateInfo ci{
         .sType            = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         .pNext            = opt_args.p_next,
@@ -66,15 +68,21 @@ vkwp::ImageView::create(const std::string_view          label,
         .components       = opt_args.components,
         .subresourceRange = subresource_range,
     };
-    VulkanError::check(  //
-        vkCreateImageView(device, &ci, nullptr, ret._reset(device)),
-        "Failed to vkCreateImageView().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateImageView != nullptr)
+                                ? opt_args.functions->vkCreateImageView
+                                : vkCreateImageView;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyImageView != nullptr)
+                                ? opt_args.functions->vkDestroyImageView
+                                : vkDestroyImageView;
+
+    VulkanError::check(create_fn(device, &ci, nullptr, ret._reset(destroy_fn, device)),  //
+                       "Failed to vkCreateImageView().");
     if (opt_args.debug_utils != nullptr)
     {
         opt_args.debug_utils->registDebugUtilsObjectName(device,
                                                          VK_OBJECT_TYPE_IMAGE_VIEW,
                                                          static_cast<VkImageView>(ret),
-                                                         label);
+                                                         ret.getLabel());
     }
     return ret;
 }

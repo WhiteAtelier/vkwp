@@ -3,11 +3,12 @@
 #define VKWP_DEVICE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
 #include <memory>
-#include <string_view>
+#include <string>
 #include <vector>
 
 namespace vkwp {
@@ -15,19 +16,20 @@ namespace vkwp {
 ///
 /// @brief VkDevice wrapper.
 ///
-class Device final : public Resource<VkDevice>
+class Device final : public Resource<VkDevice, PFN_vkDestroyDevice>
 {
 public:
-    using Resource<VkDevice>::Resource;
+    using Resource<VkDevice, PFN_vkDestroyDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     static Device
-    create(const std::string_view                       label,
+    create(std::string                                  label,
            const VkPhysicalDevice                       physical_device,
            const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
            const std::vector<std::string> &             enabled_layer_names,
@@ -35,7 +37,7 @@ public:
            const VkPhysicalDeviceFeatures * const       enabled_features);
 
     static Device
-    create(const std::string_view                       label,
+    create(std::string                                  label,
            const VkPhysicalDevice                       physical_device,
            const std::vector<VkDeviceQueueCreateInfo> & queue_create_infos,
            const std::vector<std::string> &             enabled_layer_names,
@@ -68,6 +70,10 @@ public:
                    const std::uint32_t        queue_index,
                    std::unique_ptr<Mutex> &&  mutex,
                    const DeviceQueueGetArgs & opt_args) const;
+
+private:
+    PFN_vkDeviceWaitIdle _vkDeviceWaitIdle = nullptr;
+    PFN_vkGetDeviceQueue _vkGetDeviceQueue = nullptr;
 };
 
 }  // namespace vkwp

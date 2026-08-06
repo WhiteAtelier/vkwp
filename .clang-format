@@ -10,9 +10,9 @@ AlignConsecutiveMacros: AcrossComments
 AlignEscapedNewlines: Left
 AlignOperands: AlignAfterOperator
 AlignTrailingComments:
-  Kind: Always
-  OverEmptyLines: 0
-AllowAllArgumentsOnNextLine: false  # 関数の引数が並ぶ
+    Kind: Always
+    OverEmptyLines: 0
+AllowAllArgumentsOnNextLine: false # 関数の引数が並ぶ
 
 ExperimentalAutoDetectBinPacking: false
 
@@ -36,23 +36,23 @@ BracedInitializerIndentWidth: 4
 BreakAfterAttributes: Always
 BreakBeforeBraces: Custom
 BraceWrapping:
-  AfterCaseLabel: true
-  AfterClass: true
-  AfterControlStatement: Always
-  AfterEnum: true
-  AfterFunction: true
-  AfterNamespace: false
-  AfterStruct: true
-  AfterUnion: true
-  AfterExternBlock: true
-  BeforeCatch: true
-  BeforeElse: true
-  BeforeLambdaBody: false
-  BeforeWhile: true
-  IndentBraces: false
-  SplitEmptyFunction: false
-  SplitEmptyRecord: false
-  SplitEmptyNamespace: false
+    AfterCaseLabel: true
+    AfterClass: true
+    AfterControlStatement: Always
+    AfterEnum: true
+    AfterFunction: true
+    AfterNamespace: false
+    AfterStruct: true
+    AfterUnion: true
+    AfterExternBlock: true
+    BeforeCatch: true
+    BeforeElse: true
+    BeforeLambdaBody: false
+    BeforeWhile: true
+    IndentBraces: false
+    SplitEmptyFunction: false
+    SplitEmptyRecord: false
+    SplitEmptyNamespace: false
 
 BreakBeforeBinaryOperators: All
 BreakBeforeConceptDeclarations: Always
@@ -64,7 +64,7 @@ BreakStringLiterals: false
 ColumnLimit: 120
 # CommentPragmas: ""  # do not formating pragma
 CompactNamespaces: false
-ConstructorInitializerIndentWidth: 4  # ?
+ConstructorInitializerIndentWidth: 4 # ?
 ContinuationIndentWidth: 4
 Cpp11BracedListStyle: false
 
@@ -85,20 +85,22 @@ IndentRequires: false
 IndentWidth: 4
 IndentWrappedFunctionNames: false
 IncludeCategories:
-  - Regex:           '^<Q[^/^\.]+>'
-    Priority:        3
-  - Regex:           '^<[^/^\.]*>'
-    Priority:        6
-  - Regex:           '^<[^/]*>'
-    Priority:        5
-  - Regex:           '^<adhoc/'
-    Priority:        4
-  - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
-    Priority:        2
-  - Regex:           '^(<|"(gtest|gmock|isl|json)/)'
-    Priority:        3
-  - Regex:           '.*'
-    Priority:        1
+    - Regex: '^<.*fwd[^.]*\.h(pp)?>$'
+      Priority: 10
+    - Regex: '^<[^/^\.]*>'
+      Priority: 13
+    - Regex: "^<[^/]*>"
+      Priority: 12
+    - Regex: "^<.*>"
+      Priority: 11
+    - Regex: '^".*fwd[^.]*\.hpp"$'
+      Priority: 1
+    - Regex: '^"[^/]+"'
+      Priority: 2
+    - Regex: '^".*impl.*/.*"'
+      Priority: 3
+    - Regex: ".*"
+      Priority: 4
 
 KeepEmptyLinesAtTheStartOfBlocks: false
 
@@ -110,12 +112,12 @@ MaxEmptyLinesToKeep: 1
 NamespaceIndentation: None
 
 PackConstructorInitializers: Never
-ConstructorInitializerAllOnOneLineOrOnePerLine: false  # DEPRECATED
+ConstructorInitializerAllOnOneLineOrOnePerLine: false # DEPRECATED
 
 PointerAlignment: Middle
 
 QualifierAlignment: Custom
-QualifierOrder: ['constexpr', 'friend', 'inline', 'static', 'const', 'volatile', 'type']
+QualifierOrder: ["constexpr", "friend", "inline", "static", "const", "volatile", "type"]
 
 ReferenceAlignment: Middle
 ReflowComments: true
@@ -153,5 +155,4 @@ TabWidth: 4
 
 UseCRLF: true
 UseTab: Never
-
 ...

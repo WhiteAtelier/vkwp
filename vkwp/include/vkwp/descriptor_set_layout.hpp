@@ -2,10 +2,11 @@
 #define VKWP_DESCRIPTOR_SET_LAYOUT_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
-#include <string_view>
+#include <string>
 #include <vector>
 
 namespace vkwp {
@@ -13,25 +14,24 @@ namespace vkwp {
 ///
 /// @brief VkDescriptorSetLayout wrapper.
 ///
-class DescriptorSetLayout final : public Resource<VkDescriptorSetLayout, VkDevice>
+class DescriptorSetLayout final : public Resource<VkDescriptorSetLayout, PFN_vkDestroyDescriptorSetLayout, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkDescriptorSetLayout, PFN_vkDestroyDescriptorSetLayout, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *                     p_next      = nullptr;
         VkDescriptorSetLayoutCreateFlags flags       = 0;
         const DebugUtilsResource *       debug_utils = nullptr;
+        const VulkanFunctions *          functions   = nullptr;
     };
 
     static DescriptorSetLayout
-    create(const std::string_view                            label,
-           const Device &                                    device,
-           const std::vector<VkDescriptorSetLayoutBinding> & bindings);
+    create(std::string label, const Device & device, const std::vector<VkDescriptorSetLayoutBinding> & bindings);
 
     static DescriptorSetLayout
-    create(const std::string_view                            label,
+    create(std::string                                       label,
            const Device &                                    device,
            const std::vector<VkDescriptorSetLayoutBinding> & bindings,
            const OptionalCreateArgs &                        opt_args);

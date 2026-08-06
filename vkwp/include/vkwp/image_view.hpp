@@ -3,20 +3,21 @@
 #define VKWP_IMAGE_VIEW_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
-#include <string_view>
+#include <string>
 
 namespace vkwp {
 
 ///
 /// @brief VkImageView wrapper.
 ///
-class ImageView final : public Resource<VkImageView, VkDevice>
+class ImageView final : public Resource<VkImageView, PFN_vkDestroyImageView, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkImageView, PFN_vkDestroyImageView, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
@@ -27,11 +28,12 @@ public:
                                                    .b = VK_COMPONENT_SWIZZLE_IDENTITY,
                                                    .a = VK_COMPONENT_SWIZZLE_IDENTITY };
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     [[nodiscard]]
     static ImageView
-    create(const std::string_view          label,
+    create(std::string                     label,
            const Device &                  device,
            const Image &                   image,
            const VkImageViewType           view_type,
@@ -40,7 +42,7 @@ public:
 
     [[nodiscard]]
     static ImageView
-    create(const std::string_view          label,
+    create(std::string                     label,
            const Device &                  device,
            const Image &                   image,
            const VkImageViewType           view_type,

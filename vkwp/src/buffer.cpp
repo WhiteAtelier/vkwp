@@ -3,11 +3,12 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/device_memory.hpp"
-#include "vkwp/device_memory_node.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -16,9 +17,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkBuffer>(VkBuffer i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkBuffer i, PFN_vkDestroyBuffer fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroyBuffer(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,16 +28,13 @@ vkwp::impl::_delete<VkBuffer>(VkBuffer i, const std::tuple<VkDevice> & args) noe
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 vkwp::Buffer
-vkwp::Buffer::create(const std::string_view   label,
-                     const Device &           device,
-                     const VkDeviceSize       size,
-                     const VkBufferUsageFlags usage)
+vkwp::Buffer::create(std::string label, const Device & device, const VkDeviceSize size, const VkBufferUsageFlags usage)
 {
-    return create(label, device, size, usage, {});
+    return create(std::move(label), device, size, usage, {});
 }
 
 vkwp::Buffer
-vkwp::Buffer::create(const std::string_view     label,
+vkwp::Buffer::create(std::string                label,
                      const Device &             device,
                      const VkDeviceSize         size,
                      const VkBufferUsageFlags   usage,
@@ -44,7 +42,7 @@ vkwp::Buffer::create(const std::string_view     label,
 {
     VKWP_VALIDATE_ARG(device);
 
-    Buffer                   ret{ label };
+    Buffer                   ret{ std::move(label) };
     const VkBufferCreateInfo buffer_create_info{
         .sType                 = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .pNext                 = opt_args.p_next,
@@ -55,13 +53,33 @@ vkwp::Buffer::create(const std::string_view     label,
         .queueFamilyIndexCount = 0,
         .pQueueFamilyIndices   = nullptr,
     };
-    VulkanError::check(  //
-        vkCreateBuffer(device, &buffer_create_info, nullptr, ret._reset(device)),
-        "Failed to vkCreateBuffer().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateBuffer != nullptr)
+                                ? opt_args.functions->vkCreateBuffer
+                                : vkCreateBuffer;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyBuffer != nullptr)
+                                ? opt_args.functions->vkDestroyBuffer
+                                : vkDestroyBuffer;
+
+    VulkanError::check(create_fn(device, &buffer_create_info, nullptr, ret._reset(destroy_fn, device)),  //
+                       "Failed to vkCreateBuffer().");
     if (opt_args.debug_utils != nullptr)
     {
-        opt_args.debug_utils->registDebugUtilsObjectName(device, VK_OBJECT_TYPE_BUFFER, ret, label);
+        opt_args.debug_utils->registDebugUtilsObjectName(device, VK_OBJECT_TYPE_BUFFER, ret, ret.getLabel());
     }
+
+    if (opt_args.functions != nullptr)
+    {
+        ret._vkGetBufferMemoryRequirements = (opt_args.functions->vkGetBufferMemoryRequirements != nullptr)
+                                               ? opt_args.functions->vkGetBufferMemoryRequirements
+                                               : vkGetBufferMemoryRequirements;
+        ret._vkBindBufferMemory            = (opt_args.functions->vkBindBufferMemory != nullptr)
+                                               ? opt_args.functions->vkBindBufferMemory
+                                               : vkBindBufferMemory;
+        ret._vkGetBufferDeviceAddress      = (opt_args.functions->vkGetBufferDeviceAddress != nullptr)
+                                               ? opt_args.functions->vkGetBufferDeviceAddress
+                                               : vkGetBufferDeviceAddress;
+    }
+
     return ret;
 }
 
@@ -70,7 +88,7 @@ vkwp::Buffer::getMemoryRequirements() const
 {
     VKWP_VALIDATE_THIS;
     VkMemoryRequirements ret;
-    vkGetBufferMemoryRequirements(std::get<0>(this->parents_), *this, &ret);
+    this->_vkGetBufferMemoryRequirements(std::get<0>(this->parents_), *this, &ret);
     return ret;
 }
 
@@ -79,22 +97,8 @@ vkwp::Buffer::bindMemory(const DeviceMemory & device_memory, const VkDeviceSize 
 {
     VKWP_VALIDATE_THIS;
     VKWP_VALIDATE_ARG(device_memory);
-    VulkanError::check(  //
-        vkBindBufferMemory(std::get<0>(this->parents_), *this, device_memory, offset),
-        "Failed to vkBindImageMemory().");
-}
-
-void
-vkwp::Buffer::bindMemory(const DeviceMemoryNode & device_memory_node, const VkDeviceSize offset) const
-{
-    VKWP_VALIDATE_THIS;
-    VKWP_VALIDATE_ARG(device_memory_node);
-    VulkanError::check(  //
-        vkBindBufferMemory(std::get<0>(this->parents_),
-                           *this,
-                           device_memory_node._getDeviceMemory(),
-                           device_memory_node._getOffset() + offset),
-        "Failed to vkBindImageMemory().");
+    VulkanError::check(this->_vkBindBufferMemory(std::get<0>(this->parents_), *this, device_memory, offset),
+                       "Failed to vkBindBufferMemory().");
 }
 
 VkDeviceAddress
@@ -106,5 +110,5 @@ vkwp::Buffer::getBufferDeviceAddress() const
         .pNext  = nullptr,
         .buffer = *this,
     };
-    return vkGetBufferDeviceAddress(std::get<0>(this->parents_), &buffer_device_address_info);
+    return this->_vkGetBufferDeviceAddress(std::get<0>(this->parents_), &buffer_device_address_info);
 }

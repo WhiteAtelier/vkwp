@@ -2,20 +2,21 @@
 #define VKWP_SAMPLER_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
-#include <string_view>
+#include <string>
 
 namespace vkwp {
 
 ///
 /// @brief VkSampler wrapper.
 ///
-class Sampler final : public Resource<VkSampler, VkDevice>
+class Sampler final : public Resource<VkSampler, PFN_vkDestroySampler, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkSampler, PFN_vkDestroySampler, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
@@ -31,10 +32,11 @@ public:
         float                      max_lod                  = VK_LOD_CLAMP_NONE;
         bool                       unnormalized_coordinates = false;
         const DebugUtilsResource * debug_utils              = nullptr;
+        const VulkanFunctions *    functions                = nullptr;
     };
 
     static Sampler
-    create(const std::string_view     label,
+    create(std::string                label,
            const Device &             device,
            const VkFilter             mag_filter,
            const VkFilter             min_filter,
@@ -44,7 +46,7 @@ public:
            const VkSamplerAddressMode address_mode_w);
 
     static Sampler
-    create(const std::string_view     label,
+    create(std::string                label,
            const Device &             device,
            const VkFilter             mag_filter,
            const VkFilter             min_filter,

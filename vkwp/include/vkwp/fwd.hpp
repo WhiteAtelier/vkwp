@@ -6,7 +6,6 @@
 ///
 namespace vkwp {
 
-struct AccelerationStructureKHR_ExtFunctions;
 class AccelerationStructureKHR;
 class Buffer;
 class CommandBuffer;
@@ -39,6 +38,8 @@ class ShaderModule;
 class SurfaceKHR;
 class SwapchainKHR;
 class VulkanError;
+
+struct VulkanFunctions;
 
 }  // namespace vkwp
 

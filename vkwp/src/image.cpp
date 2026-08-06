@@ -2,11 +2,12 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/device_memory.hpp"
-#include "vkwp/device_memory_node.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -15,9 +16,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkImage, VkDevice>(VkImage i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkImage i, PFN_vkDestroyImage fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroyImage(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,19 +28,19 @@ vkwp::impl::_delete<VkImage, VkDevice>(VkImage i, const std::tuple<VkDevice> & a
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 /* STATIC */
 vkwp::Image
-vkwp::Image::create(const std::string_view  label,
+vkwp::Image::create(std::string             label,
                     const Device &          device,
                     const VkImageType       image_type,
                     const VkFormat          format,
                     const VkExtent3D        extent,
                     const VkImageUsageFlags usage)
 {
-    return Image::create(label, device, image_type, format, extent, usage, {});
+    return Image::create(std::move(label), device, image_type, format, extent, usage, {});
 }
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create(const std::string_view     label,
+vkwp::Image::create(std::string                label,
                     const Device &             device,
                     const VkImageType          image_type,
                     const VkFormat             format,
@@ -51,7 +52,7 @@ vkwp::Image::create(const std::string_view     label,
     VKWP_ASSERTION(extent.width >= 1);
     VKWP_ASSERTION(extent.height >= 1);
     VKWP_ASSERTION(extent.depth >= 1);
-    Image                   ret{ label };
+    Image                   ret{ std::move(label) };
     const VkImageCreateInfo ci{
         .sType                 = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
         .pNext                 = opt_args.p_next,
@@ -69,28 +70,46 @@ vkwp::Image::create(const std::string_view     label,
         .pQueueFamilyIndices   = nullptr,
         .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED,
     };
-    VulkanError::check(  //
-        vkCreateImage(device, &ci, nullptr, ret._reset(device)),
-        "Failed to vkCreateImage().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateImage != nullptr)
+                                ? opt_args.functions->vkCreateImage
+                                : vkCreateImage;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyImage != nullptr)
+                                ? opt_args.functions->vkDestroyImage
+                                : vkDestroyImage;
+
+    VulkanError::check(create_fn(device, &ci, nullptr, ret._reset(destroy_fn, device)),  //
+                       "Failed to vkCreateImage().");
     if (opt_args.debug_utils != nullptr)
     {
         opt_args.debug_utils->registDebugUtilsObjectName(device,
                                                          VK_OBJECT_TYPE_IMAGE,
                                                          static_cast<VkImage>(ret),
-                                                         label);
+                                                         ret.getLabel());
+    }
+    if (opt_args.functions != nullptr)
+    {
+        ret._vkGetImageMemoryRequirements  = (opt_args.functions->vkGetImageMemoryRequirements != nullptr)
+                                               ? opt_args.functions->vkGetImageMemoryRequirements
+                                               : vkGetImageMemoryRequirements;
+        ret._vkGetImageMemoryRequirements2 = (opt_args.functions->vkGetImageMemoryRequirements2 != nullptr)
+                                               ? opt_args.functions->vkGetImageMemoryRequirements2
+                                               : vkGetImageMemoryRequirements2;
+        ret._vkBindImageMemory             = (opt_args.functions->vkBindImageMemory != nullptr)
+                                               ? opt_args.functions->vkBindImageMemory
+                                               : vkBindImageMemory;
     }
     return ret;
 }
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create1D(const std::string_view  label,
+vkwp::Image::create1D(std::string             label,
                       const Device &          device,
                       const VkFormat          format,
                       const std::uint32_t     width,
                       const VkImageUsageFlags usage)
 {
-    return Image::create1D(label,  //
+    return Image::create1D(std::move(label),  //
                            device,
                            format,
                            width,
@@ -100,14 +119,14 @@ vkwp::Image::create1D(const std::string_view  label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create1D(const std::string_view     label,
+vkwp::Image::create1D(std::string                label,
                       const Device &             device,
                       const VkFormat             format,
                       const std::uint32_t        width,
                       const VkImageUsageFlags    usage,
                       const OptionalCreateArgs & opt_args)
 {
-    return Image::create(label,
+    return Image::create(std::move(label),
                          device,
                          VK_IMAGE_TYPE_1D,
                          format,
@@ -118,14 +137,14 @@ vkwp::Image::create1D(const std::string_view     label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create2D(const std::string_view  label,
+vkwp::Image::create2D(std::string             label,
                       const Device &          device,
                       const VkFormat          format,
                       const std::uint32_t     width,
                       const std::uint32_t     height,
                       const VkImageUsageFlags usage)
 {
-    return Image::create2D(label,  //
+    return Image::create2D(std::move(label),  //
                            device,
                            format,
                            width,
@@ -136,7 +155,7 @@ vkwp::Image::create2D(const std::string_view  label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create2D(const std::string_view     label,
+vkwp::Image::create2D(std::string                label,
                       const Device &             device,
                       const VkFormat             format,
                       const std::uint32_t        width,
@@ -144,7 +163,7 @@ vkwp::Image::create2D(const std::string_view     label,
                       const VkImageUsageFlags    usage,
                       const OptionalCreateArgs & opt_args)
 {
-    return Image::create(label,
+    return Image::create(std::move(label),
                          device,
                          VK_IMAGE_TYPE_2D,
                          format,
@@ -155,7 +174,7 @@ vkwp::Image::create2D(const std::string_view     label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create3D(const std::string_view  label,
+vkwp::Image::create3D(std::string             label,
                       const Device &          device,
                       const VkFormat          format,
                       const std::uint32_t     width,
@@ -163,7 +182,7 @@ vkwp::Image::create3D(const std::string_view  label,
                       const std::uint32_t     depth,
                       const VkImageUsageFlags usage)
 {
-    return Image::create(label,
+    return Image::create(std::move(label),
                          device,
                          VK_IMAGE_TYPE_3D,
                          format,
@@ -174,7 +193,7 @@ vkwp::Image::create3D(const std::string_view  label,
 
 /* STATIC */
 vkwp::Image
-vkwp::Image::create3D(const std::string_view     label,
+vkwp::Image::create3D(std::string                label,
                       const Device &             device,
                       const VkFormat             format,
                       const std::uint32_t        width,
@@ -183,7 +202,7 @@ vkwp::Image::create3D(const std::string_view     label,
                       const VkImageUsageFlags    usage,
                       const OptionalCreateArgs & opt_args)
 {
-    return Image::create(label,
+    return Image::create(std::move(label),
                          device,
                          VK_IMAGE_TYPE_3D,
                          format,
@@ -197,7 +216,7 @@ vkwp::Image::getMemoryRequirements() const
 {
     VKWP_VALIDATE_THIS;
     VkMemoryRequirements ret;
-    vkGetImageMemoryRequirements(std::get<0>(this->parents_), *this, &ret);
+    this->_vkGetImageMemoryRequirements(std::get<0>(this->parents_), *this, &ret);
     return ret;
 }
 
@@ -211,7 +230,7 @@ vkwp::Image::getMemoryRequirements2(const void * const p_next) const
         .image = *this,
     };
     VkMemoryRequirements2 ret;
-    vkGetImageMemoryRequirements2(std::get<0>(this->parents_), &image_memory_requirements_info2, &ret);
+    this->_vkGetImageMemoryRequirements2(std::get<0>(this->parents_), &image_memory_requirements_info2, &ret);
     return ret;
 }
 
@@ -221,19 +240,6 @@ vkwp::Image::bindMemory(const DeviceMemory & device_memory, const VkDeviceSize o
     VKWP_VALIDATE_THIS;
     VKWP_VALIDATE_ARG(device_memory);
     VulkanError::check(  //
-        vkBindImageMemory(std::get<0>(this->parents_), *this, device_memory, offset),
-        "Failed to vkBindImageMemory().");
-}
-
-void
-vkwp::Image::bindMemory(const DeviceMemoryNode & device_memory_node, const VkDeviceSize offset) const
-{
-    VKWP_VALIDATE_THIS;
-    VKWP_VALIDATE_ARG(device_memory_node);
-    VulkanError::check(  //
-        vkBindImageMemory(std::get<0>(this->parents_),
-                          *this,
-                          device_memory_node._getDeviceMemory(),
-                          device_memory_node._getOffset() + offset),
+        this->_vkBindImageMemory(std::get<0>(this->parents_), *this, device_memory, offset),
         "Failed to vkBindImageMemory().");
 }

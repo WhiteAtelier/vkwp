@@ -2,12 +2,12 @@
 #define VKWP_INSTANCE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
 #include <cstdint>
 #include <string>
-#include <string_view>
 #include <vector>
 
 namespace vkwp {
@@ -15,22 +15,23 @@ namespace vkwp {
 ///
 /// @brief VkInstance wrapper.
 ///
-class Instance final : public Resource<VkInstance>
+class Instance final : public Resource<VkInstance, PFN_vkDestroyInstance>
 {
 public:
-    using Resource<VkInstance>::Resource;
+    using Resource<VkInstance, PFN_vkDestroyInstance>::Resource;
 
     struct OptionalCreateArgs
     {
-        const void * p_next = nullptr;
+        const void *            p_next    = nullptr;
+        const VulkanFunctions * functions = nullptr;
     };
 
     [[nodiscard]]
     static Instance
-    create(const std::string_view           label,
-           const std::string_view           application_name,
+    create(std::string                      label,
+           const std::string &              application_name,
            const std::uint32_t              application_version,
-           const std::string_view           engine_name,
+           const std::string &              engine_name,
            const std::uint32_t              engine_version,
            const std::uint32_t              api_version,
            const std::vector<std::string> & enabled_layer_names,
@@ -38,10 +39,10 @@ public:
 
     [[nodiscard]]
     static Instance
-    create(const std::string_view           label,
-           const std::string_view           application_name,
+    create(std::string                      label,
+           const std::string &              application_name,
            const std::uint32_t              application_version,
-           const std::string_view           engine_name,
+           const std::string &              engine_name,
            const std::uint32_t              engine_version,
            const std::uint32_t              api_version,
            const std::vector<std::string> & enabled_layer_names,
@@ -50,7 +51,7 @@ public:
 
     [[nodiscard]]
     static std::vector<VkExtensionProperties>
-    enumerateInstanceExtensionProperties();
+    enumerateInstanceExtensionProperties(const VulkanFunctions * functions = nullptr);
 };
 
 }  // namespace vkwp
