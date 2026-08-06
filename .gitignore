@@ -5,3 +5,4 @@ out/
 *.sh
 CMakeUserPresets.json
 deps.full.toml
+__pycache__/
