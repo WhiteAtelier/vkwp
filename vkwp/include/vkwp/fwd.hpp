@@ -6,7 +6,6 @@
 ///
 namespace vkwp {
 
-struct AccelerationStructureKHR_ExtFunctions;
 class AccelerationStructureKHR;
 class Buffer;
 class CommandBuffer;

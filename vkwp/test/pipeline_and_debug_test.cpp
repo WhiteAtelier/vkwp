@@ -578,6 +578,37 @@ TEST(VulkanFunctionsAccelerationStructureTest, MissingFunctionsResolveThroughDev
     EXPECT_EQ(acceleration_state.destroy_calls, 1);
 }
 
+TEST(VulkanFunctionsAccelerationStructureTest, ProvidedFunctionsAreUsedWithoutDeviceProcAddr)
+{
+    acceleration_state = {};
+    vkwp::VulkanFunctions functions;
+    functions.vkCreateAccelerationStructureKHR  = &createAccelerationStructure;
+    functions.vkDestroyAccelerationStructureKHR = &destroyAccelerationStructure;
+    const vkwp::Device device{ "device", acceleration_state.device };
+    const vkwp::Buffer buffer{ "buffer", acceleration_state.buffer };
+    {
+        const vkwp::AccelerationStructureKHR::OptionalCreateArgs optional_args{
+            .p_next         = const_cast<void *>(fakePointer(0x3304)),
+            .create_flags   = 0,
+            .device_address = 0x9876,
+            .debug_utils    = nullptr,
+            .functions      = &functions,
+        };
+        const auto acceleration_structure
+            = vkwp::AccelerationStructureKHR::create("acceleration",
+                                                     device,
+                                                     buffer,
+                                                     256,
+                                                     4096,
+                                                     VK_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL_KHR,
+                                                     optional_args);
+        EXPECT_EQ(static_cast<VkAccelerationStructureKHR>(acceleration_structure), acceleration_state.acceleration);
+    }
+    EXPECT_EQ(acceleration_state.get_proc_calls, 0);
+    EXPECT_EQ(acceleration_state.create_calls, 1);
+    EXPECT_EQ(acceleration_state.destroy_calls, 1);
+}
+
 TEST(VulkanFunctionsDebugTest, DebugReportUsesProvidedFunctionsAndResolvesOnlyMissingOnes)
 {
     debug_state = {};

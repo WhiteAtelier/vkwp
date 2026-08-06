@@ -7,18 +7,8 @@
 #include "vulkan.hpp"
 
 #include <string>
-#include <string_view>
 
 namespace vkwp {
-
-struct AccelerationStructureKHR_ExtFunctions
-{
-    static AccelerationStructureKHR_ExtFunctions
-    create(const VkDevice device, const VulkanFunctions * functions = nullptr);
-
-    PFN_vkCreateAccelerationStructureKHR  vkCreateAccelerationStructureKHR  = nullptr;
-    PFN_vkDestroyAccelerationStructureKHR vkDestroyAccelerationStructureKHR = nullptr;
-};
 
 ///
 /// @brief VkAccelerationStructureKHR wrapper.
@@ -57,24 +47,6 @@ public:
            const VkAccelerationStructureTypeKHR type,
            const OptionalCreateArgs &           opt_args);
 
-    static AccelerationStructureKHR
-    createEXT(std::string                                   label,
-              const Device &                                device,
-              const Buffer &                                buffer,
-              const VkDeviceSize                            offset,
-              const VkDeviceSize                            size,
-              const VkAccelerationStructureTypeKHR          type,
-              const AccelerationStructureKHR_ExtFunctions & ext_functions);
-
-    static AccelerationStructureKHR
-    createEXT(std::string                                   label,
-              const Device &                                device,
-              const Buffer &                                buffer,
-              const VkDeviceSize                            offset,
-              const VkDeviceSize                            size,
-              const VkAccelerationStructureTypeKHR          type,
-              const AccelerationStructureKHR_ExtFunctions & ext_functions,
-              const OptionalCreateArgs &                    opt_args);
 };
 
 }  // namespace vkwp

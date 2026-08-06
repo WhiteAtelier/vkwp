@@ -9,46 +9,6 @@
 #include "vkwp/vulkan_error.hpp"
 #include "vkwp/vulkan_functions.hpp"
 
-namespace {
-
-vkwp::AccelerationStructureKHR_ExtFunctions
-resolveFunctions(const VkDevice                                      device,
-                 const vkwp::AccelerationStructureKHR_ExtFunctions & ext_functions,
-                 const vkwp::VulkanFunctions * const                 functions)
-{
-    auto ret = ext_functions;
-
-    if (functions != nullptr)
-    {
-        if (functions->vkCreateAccelerationStructureKHR != nullptr)
-        {
-            ret.vkCreateAccelerationStructureKHR = functions->vkCreateAccelerationStructureKHR;
-        }
-        if (functions->vkDestroyAccelerationStructureKHR != nullptr)
-        {
-            ret.vkDestroyAccelerationStructureKHR = functions->vkDestroyAccelerationStructureKHR;
-        }
-    }
-
-    auto * const get_device_proc_addr_fn = (functions != nullptr && functions->vkGetDeviceProcAddr != nullptr)
-                                             ? functions->vkGetDeviceProcAddr
-                                             : vkGetDeviceProcAddr;
-    if (ret.vkCreateAccelerationStructureKHR == nullptr)
-    {
-        ret.vkCreateAccelerationStructureKHR = reinterpret_cast<PFN_vkCreateAccelerationStructureKHR>(
-            get_device_proc_addr_fn(device, "vkCreateAccelerationStructureKHR"));
-    }
-    if (ret.vkDestroyAccelerationStructureKHR == nullptr)
-    {
-        ret.vkDestroyAccelerationStructureKHR = reinterpret_cast<PFN_vkDestroyAccelerationStructureKHR>(
-            get_device_proc_addr_fn(device, "vkDestroyAccelerationStructureKHR"));
-    }
-
-    return ret;
-}
-
-}  // namespace
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
 // _delete() overload
@@ -61,17 +21,6 @@ vkwp::impl::_delete(VkAccelerationStructureKHR            i,
                     const std::tuple<VkDevice> &          args) noexcept
 {
     fn(std::get<0>(args), i, nullptr);
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// AccelerationStructureKHR_ExtFunctions class
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////
-vkwp::AccelerationStructureKHR_ExtFunctions
-vkwp::AccelerationStructureKHR_ExtFunctions::create(const VkDevice device, const VulkanFunctions * functions)
-{
-    return resolveFunctions(device, {}, functions);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,52 +48,34 @@ vkwp::AccelerationStructureKHR::create(std::string                          labe
                                        const VkAccelerationStructureTypeKHR type,
                                        const OptionalCreateArgs &           opt_args)
 {
-    return AccelerationStructureKHR::createEXT(std::move(label),
-                                               device,
-                                               buffer,
-                                               offset,
-                                               size,
-                                               type,
-                                               AccelerationStructureKHR_ExtFunctions{},
-                                               opt_args);
-}
-
-/* STATIC */
-vkwp::AccelerationStructureKHR
-vkwp::AccelerationStructureKHR::createEXT(std::string                                   label,
-                                          const Device &                                device,
-                                          const Buffer &                                buffer,
-                                          const VkDeviceSize                            offset,
-                                          const VkDeviceSize                            size,
-                                          const VkAccelerationStructureTypeKHR          type,
-                                          const AccelerationStructureKHR_ExtFunctions & ext_functions)
-{
-    return AccelerationStructureKHR::createEXT(std::move(label),  //
-                                               device,
-                                               buffer,
-                                               offset,
-                                               size,
-                                               type,
-                                               ext_functions,
-                                               {});
-}
-
-/* STATIC */
-vkwp::AccelerationStructureKHR
-vkwp::AccelerationStructureKHR::createEXT(std::string                                   label,
-                                          const Device &                                device,
-                                          const Buffer &                                buffer,
-                                          const VkDeviceSize                            offset,
-                                          const VkDeviceSize                            size,
-                                          const VkAccelerationStructureTypeKHR          type,
-                                          const AccelerationStructureKHR_ExtFunctions & ext_functions,
-                                          const OptionalCreateArgs &                    opt_args)
-{
     VKWP_VALIDATE_ARG(device);
     VKWP_VALIDATE_ARG(buffer);
-    const auto resolved_functions = resolveFunctions(device, ext_functions, opt_args.functions);
-    VKWP_VALIDATE_ARG(resolved_functions.vkCreateAccelerationStructureKHR);
-    VKWP_VALIDATE_ARG(resolved_functions.vkDestroyAccelerationStructureKHR);
+
+    PFN_vkCreateAccelerationStructureKHR  create_fn               = nullptr;
+    PFN_vkDestroyAccelerationStructureKHR destroy_fn              = nullptr;
+    PFN_vkGetDeviceProcAddr               get_device_proc_addr_fn = vkGetDeviceProcAddr;
+    if (opt_args.functions != nullptr)
+    {
+        create_fn  = opt_args.functions->vkCreateAccelerationStructureKHR;
+        destroy_fn = opt_args.functions->vkDestroyAccelerationStructureKHR;
+        if (opt_args.functions->vkGetDeviceProcAddr != nullptr)
+        {
+            get_device_proc_addr_fn = opt_args.functions->vkGetDeviceProcAddr;
+        }
+    }
+    if (create_fn == nullptr)
+    {
+        create_fn = reinterpret_cast<PFN_vkCreateAccelerationStructureKHR>(
+            get_device_proc_addr_fn(device, "vkCreateAccelerationStructureKHR"));
+    }
+    if (destroy_fn == nullptr)
+    {
+        destroy_fn = reinterpret_cast<PFN_vkDestroyAccelerationStructureKHR>(
+            get_device_proc_addr_fn(device, "vkDestroyAccelerationStructureKHR"));
+    }
+    VKWP_VALIDATE_ARG(create_fn);
+    VKWP_VALIDATE_ARG(destroy_fn);
+
     AccelerationStructureKHR                   ret{ std::move(label) };
     const VkAccelerationStructureCreateInfoKHR acceleration_structure_create_info_khr{
         .sType         = VK_STRUCTURE_TYPE_ACCELERATION_STRUCTURE_CREATE_INFO_KHR,
@@ -157,11 +88,10 @@ vkwp::AccelerationStructureKHR::createEXT(std::string                           
         .deviceAddress = opt_args.device_address,
     };
     VulkanError::check(  //
-        resolved_functions.vkCreateAccelerationStructureKHR(
-            device,
-            &acceleration_structure_create_info_khr,
-            nullptr,
-            ret._reset(resolved_functions.vkDestroyAccelerationStructureKHR, device)),
+        create_fn(device,
+                  &acceleration_structure_create_info_khr,
+                  nullptr,
+                  ret._reset(destroy_fn, device)),
         "Failed to vkCreateAccelerationStructureKHR().");
     if (opt_args.debug_utils != nullptr)
     {
