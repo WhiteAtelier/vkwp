@@ -2,9 +2,11 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/command_pool.hpp"
 #include "vkwp/mutex.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -13,13 +15,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkCommandBuffer, VkDevice, VkCommandPool>(VkCommandBuffer                             i,
-                                                              const std::tuple<VkDevice, VkCommandPool> & args) noexcept
+vkwp::impl::_delete(VkCommandBuffer                             i,
+                    PFN_vkFreeCommandBuffers                    fn,
+                    const std::tuple<VkDevice, VkCommandPool> & args) noexcept
 {
     if (std::get<1>(args) != nullptr)
     {
         // VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT がセットされた CommandPool の場合だけ呼び出す必要がある.
-        vkFreeCommandBuffers(std::get<0>(args), std::get<1>(args), 1, &i);
+        fn(std::get<0>(args), std::get<1>(args), 1, &i);
     }
 }
 
@@ -67,6 +70,13 @@ vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              com
 
     const auto device          = std::get<0>(command_pool.parents_);
     const auto require_to_free = (command_pool.getCreateFlags() & VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) != 0;
+    auto * const allocate_fn
+        = (opt_args.functions != nullptr && opt_args.functions->vkAllocateCommandBuffers != nullptr)
+            ? opt_args.functions->vkAllocateCommandBuffers
+            : vkAllocateCommandBuffers;
+    auto * const free_fn = (opt_args.functions != nullptr && opt_args.functions->vkFreeCommandBuffers != nullptr)
+                             ? opt_args.functions->vkFreeCommandBuffers
+                             : vkFreeCommandBuffers;
 
     {
         // lock は destructor が noexcept 保証できないので,
@@ -74,12 +84,13 @@ vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              com
         LockGuardOpt lock{ command_pool.mutex_.get() };
 
         VulkanError::check(  //
-            vkAllocateCommandBuffers(device, &ai, cmdbufs.data()),
+            allocate_fn(device, &ai, cmdbufs.data()),
             "Failed to vkAllocateCommandBuffers().");
 
         for (std::size_t i = 0; i < cmdbufs.size(); ++i)
         {
-            *ret[i]._reset(device,
+            *ret[i]._reset(free_fn,
+                           device,
                            // vkFreeCommandBuffers を呼ばなくて良い場合は cmdpool に null を渡す
                            require_to_free  //
                                ? static_cast<VkCommandPool>(command_pool)
@@ -98,6 +109,18 @@ vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &              com
                                                              VK_OBJECT_TYPE_COMMAND_BUFFER,
                                                              static_cast<VkCommandBuffer>(cmdbuf),
                                                              cmdbuf.getLabel());
+        }
+    }
+    if (opt_args.functions != nullptr)
+    {
+        for (auto & cmdbuf : ret)
+        {
+            cmdbuf._vkBeginCommandBuffer = (opt_args.functions->vkBeginCommandBuffer != nullptr)
+                                             ? opt_args.functions->vkBeginCommandBuffer
+                                             : vkBeginCommandBuffer;
+            cmdbuf._vkEndCommandBuffer   = (opt_args.functions->vkEndCommandBuffer != nullptr)
+                                             ? opt_args.functions->vkEndCommandBuffer
+                                             : vkEndCommandBuffer;
         }
     }
 
@@ -138,12 +161,20 @@ vkwp::CommandBuffer::allocateCommandBuffer(const std::string &          label,
 
     auto       device          = std::get<0>(command_pool.parents_);
     const auto require_to_free = (command_pool.getCreateFlags() & VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT) != 0;
+    auto * const allocate_fn
+        = (opt_args.functions != nullptr && opt_args.functions->vkAllocateCommandBuffers != nullptr)
+            ? opt_args.functions->vkAllocateCommandBuffers
+            : vkAllocateCommandBuffers;
+    auto * const free_fn = (opt_args.functions != nullptr && opt_args.functions->vkFreeCommandBuffers != nullptr)
+                             ? opt_args.functions->vkFreeCommandBuffers
+                             : vkFreeCommandBuffers;
 
-    VulkanError::check(            //
-        vkAllocateCommandBuffers(  //
+    VulkanError::check(  //
+        allocate_fn(     //
             device,
             &ai,
-            ret._reset(device,
+            ret._reset(free_fn,
+                       device,
                        // vkFreeCommandBuffers を呼ばなくて良い場合は cmdpool に null を渡す
                        require_to_free  //
                            ? static_cast<VkCommandPool>(command_pool)
@@ -158,6 +189,15 @@ vkwp::CommandBuffer::allocateCommandBuffer(const std::string &          label,
                                                          VK_OBJECT_TYPE_COMMAND_BUFFER,
                                                          static_cast<VkCommandBuffer>(ret),
                                                          ret.getLabel());
+    }
+    if (opt_args.functions != nullptr)
+    {
+        ret._vkBeginCommandBuffer = (opt_args.functions->vkBeginCommandBuffer != nullptr)
+                                      ? opt_args.functions->vkBeginCommandBuffer
+                                      : vkBeginCommandBuffer;
+        ret._vkEndCommandBuffer   = (opt_args.functions->vkEndCommandBuffer != nullptr)
+                                      ? opt_args.functions->vkEndCommandBuffer
+                                      : vkEndCommandBuffer;
     }
     return ret;
 }
@@ -191,10 +231,14 @@ vkwp::CommandBuffer::CommandBuffer(const std::string_view label)
 vkwp::CommandBuffer::CommandBuffer(CommandBuffer && m) noexcept
     : Resource{ std::move(m) }
     , mutex_{ m.mutex_ }
+    , _vkBeginCommandBuffer{ m._vkBeginCommandBuffer }
+    , _vkEndCommandBuffer{ m._vkEndCommandBuffer }
 {
     if (this != &m)
     {
-        m.mutex_ = nullptr;
+        m.mutex_                = nullptr;
+        m._vkBeginCommandBuffer = nullptr;
+        m._vkEndCommandBuffer   = nullptr;
     }
 }
 
@@ -214,7 +258,11 @@ vkwp::CommandBuffer::operator=(CommandBuffer && rhs) & noexcept
     {
         *static_cast<Resource *>(this) = std::move(rhs);
         this->mutex_                   = rhs.mutex_;
+        this->_vkBeginCommandBuffer    = rhs._vkBeginCommandBuffer;
+        this->_vkEndCommandBuffer      = rhs._vkEndCommandBuffer;
         rhs.mutex_                     = nullptr;
+        rhs._vkBeginCommandBuffer      = nullptr;
+        rhs._vkEndCommandBuffer        = nullptr;
     }
     return *this;
 }
@@ -244,17 +292,13 @@ vkwp::CommandBuffer::_beginCommandBuffer(const VkCommandBufferInheritanceInfo * 
         .flags            = flags,
         .pInheritanceInfo = inheritance_info,
     };
-    VulkanError::check(  //
-        vkBeginCommandBuffer(*this, &bi),
-        "Failed to vkBeginCommandBuffer().");
+    VulkanError::check(this->_vkBeginCommandBuffer(*this, &bi), "Failed to vkBeginCommandBuffer().");
 }
 
 void
 vkwp::CommandBuffer::endCommandBuffer() const
 {
-    VulkanError::check(  //
-        vkEndCommandBuffer(*this),
-        "Failed to vkEndCommandBuffer().");
+    VulkanError::check(this->_vkEndCommandBuffer(*this), "Failed to vkEndCommandBuffer().");
 }
 
 void

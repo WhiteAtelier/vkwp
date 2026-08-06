@@ -2,11 +2,12 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/device_memory.hpp"
-#include "vkwp/device_memory_node.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -15,9 +16,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkImage, VkDevice>(VkImage i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkImage i, PFN_vkDestroyImage fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroyImage(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,15 +70,33 @@ vkwp::Image::create(const std::string_view     label,
         .pQueueFamilyIndices   = nullptr,
         .initialLayout         = VK_IMAGE_LAYOUT_UNDEFINED,
     };
-    VulkanError::check(  //
-        vkCreateImage(device, &ci, nullptr, ret._reset(device)),
-        "Failed to vkCreateImage().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateImage != nullptr)
+                                ? opt_args.functions->vkCreateImage
+                                : vkCreateImage;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyImage != nullptr)
+                                ? opt_args.functions->vkDestroyImage
+                                : vkDestroyImage;
+
+    VulkanError::check(create_fn(device, &ci, nullptr, ret._reset(destroy_fn, device)),  //
+                       "Failed to vkCreateImage().");
     if (opt_args.debug_utils != nullptr)
     {
         opt_args.debug_utils->registDebugUtilsObjectName(device,
                                                          VK_OBJECT_TYPE_IMAGE,
                                                          static_cast<VkImage>(ret),
                                                          label);
+    }
+    if (opt_args.functions != nullptr)
+    {
+        ret._vkGetImageMemoryRequirements  = (opt_args.functions->vkGetImageMemoryRequirements != nullptr)
+                                               ? opt_args.functions->vkGetImageMemoryRequirements
+                                               : vkGetImageMemoryRequirements;
+        ret._vkGetImageMemoryRequirements2 = (opt_args.functions->vkGetImageMemoryRequirements2 != nullptr)
+                                               ? opt_args.functions->vkGetImageMemoryRequirements2
+                                               : vkGetImageMemoryRequirements2;
+        ret._vkBindImageMemory             = (opt_args.functions->vkBindImageMemory != nullptr)
+                                               ? opt_args.functions->vkBindImageMemory
+                                               : vkBindImageMemory;
     }
     return ret;
 }
@@ -197,7 +216,7 @@ vkwp::Image::getMemoryRequirements() const
 {
     VKWP_VALIDATE_THIS;
     VkMemoryRequirements ret;
-    vkGetImageMemoryRequirements(std::get<0>(this->parents_), *this, &ret);
+    this->_vkGetImageMemoryRequirements(std::get<0>(this->parents_), *this, &ret);
     return ret;
 }
 
@@ -211,7 +230,7 @@ vkwp::Image::getMemoryRequirements2(const void * const p_next) const
         .image = *this,
     };
     VkMemoryRequirements2 ret;
-    vkGetImageMemoryRequirements2(std::get<0>(this->parents_), &image_memory_requirements_info2, &ret);
+    this->_vkGetImageMemoryRequirements2(std::get<0>(this->parents_), &image_memory_requirements_info2, &ret);
     return ret;
 }
 
@@ -221,19 +240,6 @@ vkwp::Image::bindMemory(const DeviceMemory & device_memory, const VkDeviceSize o
     VKWP_VALIDATE_THIS;
     VKWP_VALIDATE_ARG(device_memory);
     VulkanError::check(  //
-        vkBindImageMemory(std::get<0>(this->parents_), *this, device_memory, offset),
-        "Failed to vkBindImageMemory().");
-}
-
-void
-vkwp::Image::bindMemory(const DeviceMemoryNode & device_memory_node, const VkDeviceSize offset) const
-{
-    VKWP_VALIDATE_THIS;
-    VKWP_VALIDATE_ARG(device_memory_node);
-    VulkanError::check(  //
-        vkBindImageMemory(std::get<0>(this->parents_),
-                          *this,
-                          device_memory_node._getDeviceMemory(),
-                          device_memory_node._getOffset() + offset),
+        this->_vkBindImageMemory(std::get<0>(this->parents_), *this, device_memory, offset),
         "Failed to vkBindImageMemory().");
 }

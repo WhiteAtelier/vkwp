@@ -2,10 +2,12 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/physical_device.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -18,9 +20,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkDeviceMemory, VkDevice>(VkDeviceMemory i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkDeviceMemory i, PFN_vkFreeMemory fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkFreeMemory(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,15 +79,27 @@ vkwp::DeviceMemory::allocate(const std::string_view       label,
                  label,
                  memory_requirements.size,
                  static_cast<double>(memory_requirements.size) / 1024.0 / 1024.0);
-    VulkanError::check(  //
-        vkAllocateMemory(device, &ai, nullptr, ret._reset(device)),
-        "Failed to vkAllocateMemory().");
+    auto * const allocate_fn = (opt_args.functions != nullptr && opt_args.functions->vkAllocateMemory != nullptr)
+                                 ? opt_args.functions->vkAllocateMemory
+                                 : vkAllocateMemory;
+    auto * const free_fn     = (opt_args.functions != nullptr && opt_args.functions->vkFreeMemory != nullptr)
+                                 ? opt_args.functions->vkFreeMemory
+                                 : vkFreeMemory;
+
+    VulkanError::check(allocate_fn(device, &ai, nullptr, ret._reset(free_fn, device)),  //
+                       "Failed to vkAllocateMemory().");
     if (opt_args.debug_utils != nullptr)
     {
         opt_args.debug_utils->registDebugUtilsObjectName(device,
                                                          VK_OBJECT_TYPE_DEVICE_MEMORY,
                                                          static_cast<VkDeviceMemory>(ret),
                                                          label);
+    }
+    if (opt_args.functions != nullptr)
+    {
+        ret._vkMapMemory = (opt_args.functions->vkMapMemory != nullptr) ? opt_args.functions->vkMapMemory : vkMapMemory;
+        ret._vkUnmapMemory
+            = (opt_args.functions->vkUnmapMemory != nullptr) ? opt_args.functions->vkUnmapMemory : vkUnmapMemory;
     }
     return ret;
 }
@@ -136,16 +150,27 @@ vkwp::DeviceMemory::importWin32ExternalMemory(const std::string_view            
         .pNext          = nullptr,
         .memoryTypeBits = 0,
     };
-    const auto vkGetMemoryWin32HandlePropertiesKHR = reinterpret_cast<PFN_vkGetMemoryWin32HandlePropertiesKHR>(
-        vkGetDeviceProcAddr(device, "vkGetMemoryWin32HandlePropertiesKHR"));
-    if (vkGetMemoryWin32HandlePropertiesKHR == nullptr)
+    auto * get_memory_win32_handle_properties_fn
+        = (opt_args.functions != nullptr && opt_args.functions->vkGetMemoryWin32HandlePropertiesKHR != nullptr)
+            ? opt_args.functions->vkGetMemoryWin32HandlePropertiesKHR
+            : nullptr;
+    if (get_memory_win32_handle_properties_fn == nullptr)
+    {
+        auto * const get_device_proc_addr_fn
+            = (opt_args.functions != nullptr && opt_args.functions->vkGetDeviceProcAddr != nullptr)
+                ? opt_args.functions->vkGetDeviceProcAddr
+                : vkGetDeviceProcAddr;
+        get_memory_win32_handle_properties_fn = reinterpret_cast<PFN_vkGetMemoryWin32HandlePropertiesKHR>(
+            get_device_proc_addr_fn(device, "vkGetMemoryWin32HandlePropertiesKHR"));
+    }
+    if (get_memory_win32_handle_properties_fn == nullptr)
     {
         SPDLOG_CRITICAL(
             "Failed to get vkGetMemoryWin32HandlePropertiesKHR function. Missing VK_KHR_external_memory_win32 extension?");
         throw std::runtime_error{ "Failed to get vkGetMemoryWin32HandlePropertiesKHR function." };
     }
     VulkanError::check(  //
-        vkGetMemoryWin32HandlePropertiesKHR(device, handle_type, handle, &memprops),
+        get_memory_win32_handle_properties_fn(device, handle_type, handle, &memprops),
         "Failed to vkGetMemoryWin32HandlePropertiesKHR()");
 
     const VkMemoryDedicatedAllocateInfo memory_dedicated_ai{
@@ -174,6 +199,7 @@ vkwp::DeviceMemory::importWin32ExternalMemory(const std::string_view            
                                   {
                                       .p_next      = &import_memory_win32_handle_info_khr,
                                       .debug_utils = opt_args.debug_utils,
+                                      .functions   = opt_args.functions,
                                   });
 }
 #endif
@@ -196,7 +222,7 @@ vkwp::DeviceMemory::MappedScope
 vkwp::DeviceMemory::map(const std::size_t size, const std::size_t offset) const
 {
     VKWP_VALIDATE_THIS;
-    return MappedScope{ std::get<0>(this->parents_), *this, offset, size };
+    return MappedScope{ std::get<0>(this->parents_), *this, offset, size, this->_vkMapMemory, this->_vkUnmapMemory };
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,14 +234,17 @@ vkwp::DeviceMemory::map(const std::size_t size, const std::size_t offset) const
 vkwp::DeviceMemory::MappedScope::MappedScope(const VkDevice &       device,
                                              const VkDeviceMemory & device_memory,
                                              const std::size_t      offset,
-                                             const std::size_t      size)
+                                             const std::size_t      size,
+                                             PFN_vkMapMemory        map_fn,
+                                             PFN_vkUnmapMemory      unmap_fn)
     : device_{ device }
     , memory_{ device_memory }
     , size_{ size }
     , ptr_{ nullptr }
+    , _vkUnmapMemory{ unmap_fn }
 {
     vkwp::VulkanError::check(  //
-        vkMapMemory(device, device_memory, offset, size, 0, &this->ptr_),
+        map_fn(device, device_memory, offset, size, 0, &this->ptr_),
         "Failed to vkMapMemory().");
 }
 
@@ -224,6 +253,7 @@ vkwp::DeviceMemory::MappedScope::MappedScope() noexcept
     , memory_{ nullptr }
     , size_{ 0 }
     , ptr_{ nullptr }
+    , _vkUnmapMemory{ nullptr }
 {}
 
 vkwp::DeviceMemory::MappedScope::MappedScope(MappedScope && m) noexcept
@@ -231,11 +261,13 @@ vkwp::DeviceMemory::MappedScope::MappedScope(MappedScope && m) noexcept
     , memory_{ m.memory_ }
     , size_{ m.size_ }
     , ptr_{ m.ptr_ }
+    , _vkUnmapMemory{ m._vkUnmapMemory }
 {
-    m.device_ = nullptr;
-    m.memory_ = nullptr;
-    m.size_   = 0;
-    m.ptr_    = nullptr;
+    m.device_        = nullptr;
+    m.memory_        = nullptr;
+    m.size_          = 0;
+    m.ptr_           = nullptr;
+    m._vkUnmapMemory = nullptr;
 }
 
 vkwp::DeviceMemory::MappedScope::~MappedScope() noexcept
@@ -249,14 +281,16 @@ vkwp::DeviceMemory::MappedScope::operator=(MappedScope && rhs) noexcept
     if (this != &rhs)
     {
         this->unmap();
-        this->device_ = rhs.device_;
-        this->memory_ = rhs.memory_;
-        this->size_   = rhs.size_;
-        this->ptr_    = rhs.ptr_;
-        rhs.device_   = nullptr;
-        rhs.memory_   = nullptr;
-        rhs.size_     = 0;
-        rhs.ptr_      = nullptr;
+        this->device_        = rhs.device_;
+        this->memory_        = rhs.memory_;
+        this->size_          = rhs.size_;
+        this->ptr_           = rhs.ptr_;
+        this->_vkUnmapMemory = rhs._vkUnmapMemory;
+        rhs.device_          = nullptr;
+        rhs.memory_          = nullptr;
+        rhs.size_            = 0;
+        rhs.ptr_             = nullptr;
+        rhs._vkUnmapMemory   = nullptr;
     }
     return *this;
 }
@@ -283,11 +317,12 @@ vkwp::DeviceMemory::MappedScope::unmap() noexcept
 {
     if (this->ptr_ != nullptr)
     {
-        vkUnmapMemory(this->device_, this->memory_);
-        this->device_ = nullptr;
-        this->memory_ = nullptr;
-        this->size_   = 0;
-        this->ptr_    = nullptr;
+        this->_vkUnmapMemory(this->device_, this->memory_);
+        this->device_        = nullptr;
+        this->memory_        = nullptr;
+        this->size_          = 0;
+        this->ptr_           = nullptr;
+        this->_vkUnmapMemory = nullptr;
     }
 }
 

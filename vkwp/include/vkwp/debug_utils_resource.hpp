@@ -2,6 +2,7 @@
 #define VKWP_DEBUG_UTILS_RESOURCE_HPP
 
 #include "fwd.hpp"
+
 #include "vulkan.hpp"
 
 #include <memory>
@@ -35,7 +36,7 @@ public:
     ///     初期化済み Vulkan Instance.
     ///
     void
-    initialize(const VkInstance instance);
+    initialize(const VkInstance instance, const VulkanFunctions * functions = nullptr);
 
     void
     registDebugUtilsObjectName(const VkDevice &       device,

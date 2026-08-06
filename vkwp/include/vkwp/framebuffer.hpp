@@ -2,6 +2,7 @@
 #define VKWP_FRAMEBUFFER_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -14,16 +15,17 @@ namespace vkwp {
 ///
 /// @brief VkFramebuffer wrapper.
 ///
-class Framebuffer final : public Resource<VkFramebuffer, VkDevice>
+class Framebuffer final : public Resource<VkFramebuffer, PFN_vkDestroyFramebuffer, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkFramebuffer, PFN_vkDestroyFramebuffer, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;
         VkFramebufferCreateFlags   flags       = 0;
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     static Framebuffer

@@ -2,11 +2,13 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/image_view.hpp"
 #include "vkwp/render_pass.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -15,9 +17,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkFramebuffer, VkDevice>(VkFramebuffer i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkFramebuffer i, PFN_vkDestroyFramebuffer fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroyFramebuffer(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +72,7 @@ vkwp::Framebuffer::create(const std::string_view                                
     const VkFramebufferCreateInfo ci{
         .sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
         .pNext           = opt_args.p_next,
-        .flags           = 0,
+        .flags           = opt_args.flags,
         .renderPass      = render_pass,
         .attachmentCount = static_cast<std::uint32_t>(attachments.size()),
         .pAttachments    = attachments.data(),
@@ -78,9 +80,15 @@ vkwp::Framebuffer::create(const std::string_view                                
         .height          = height,
         .layers          = layers,
     };
-    VulkanError::check(  //
-        vkCreateFramebuffer(device, &ci, nullptr, ret._reset(device)),
-        "Failed to vkCreateFramebuffer().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateFramebuffer != nullptr)
+                                ? opt_args.functions->vkCreateFramebuffer
+                                : vkCreateFramebuffer;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyFramebuffer != nullptr)
+                                ? opt_args.functions->vkDestroyFramebuffer
+                                : vkDestroyFramebuffer;
+
+    VulkanError::check(create_fn(device, &ci, nullptr, ret._reset(destroy_fn, device)),  //
+                       "Failed to vkCreateFramebuffer().");
     if (opt_args.debug_utils != nullptr)
     {
         opt_args.debug_utils->registDebugUtilsObjectName(device,

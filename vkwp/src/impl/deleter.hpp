@@ -5,9 +5,9 @@
 
 namespace vkwp::impl {
 
-template <typename T, typename... ParentTs>
+template <typename T, typename DFn, typename... ParentTs>
 extern void
-_delete(T, const std::tuple<ParentTs...> &) noexcept;
+_delete(T, DFn, const std::tuple<ParentTs...> &) noexcept;
 
 }  // namespace vkwp::impl
 

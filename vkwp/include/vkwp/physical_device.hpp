@@ -2,6 +2,7 @@
 #define VKWP_PHYSICAL_DEVICE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -16,13 +17,21 @@ namespace vkwp {
 ///
 /// @brief VkPhysicalDevice wrapper.
 ///
-class PhysicalDevice final : public Resource<VkPhysicalDevice>
+class PhysicalDevice final : public Resource<VkPhysicalDevice, std::nullptr_t>
 {
 public:
-    using Resource<VkPhysicalDevice>::Resource;
+    using Resource<VkPhysicalDevice, std::nullptr_t>::Resource;
+
+    struct OptionalEnumerateArgs
+    {
+        const VulkanFunctions * functions = nullptr;
+    };
 
     static std::vector<PhysicalDevice>
     enumeratePhysicalDevices(const Instance & instance);
+
+    static std::vector<PhysicalDevice>
+    enumeratePhysicalDevices(const Instance & instance, const OptionalEnumerateArgs & opt_args);
 
     [[nodiscard]]
     const std::vector<VkQueueFamilyProperties> &
@@ -76,6 +85,13 @@ private:
     VkPhysicalDeviceProperties                                  properties_{};
     mutable std::optional<std::vector<VkQueueFamilyProperties>> queue_family_properties_cache_;
     mutable std::optional<VkPhysicalDeviceMemoryProperties>     memory_properties_;
+    PFN_vkGetPhysicalDeviceQueueFamilyProperties                _vkGetPhysicalDeviceQueueFamilyProperties  = nullptr;
+    PFN_vkGetPhysicalDeviceMemoryProperties                     _vkGetPhysicalDeviceMemoryProperties       = nullptr;
+    PFN_vkEnumerateDeviceExtensionProperties                    _vkEnumerateDeviceExtensionProperties      = nullptr;
+    PFN_vkGetPhysicalDeviceFormatProperties                     _vkGetPhysicalDeviceFormatProperties       = nullptr;
+    PFN_vkGetPhysicalDeviceSurfaceFormatsKHR                    _vkGetPhysicalDeviceSurfaceFormatsKHR      = nullptr;
+    PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR               _vkGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
+    PFN_vkGetPhysicalDeviceSurfaceSupportKHR                    _vkGetPhysicalDeviceSurfaceSupportKHR      = nullptr;
 };
 
 }  // namespace vkwp

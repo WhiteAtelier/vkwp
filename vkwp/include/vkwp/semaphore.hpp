@@ -2,6 +2,7 @@
 #define VKWP_SEMAPHORE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -12,16 +13,17 @@ namespace vkwp {
 ///
 /// @brief VkSemaphore wrapper.
 ///
-class Semaphore final : public Resource<VkSemaphore, VkDevice>
+class Semaphore final : public Resource<VkSemaphore, PFN_vkDestroySemaphore, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkSemaphore, PFN_vkDestroySemaphore, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;
         VkSemaphoreCreateFlags     flags       = 0;
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     static Semaphore

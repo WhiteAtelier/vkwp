@@ -2,6 +2,7 @@
 #define VKWP_RENDER_PASS_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -13,16 +14,17 @@ namespace vkwp {
 ///
 /// @brief VkRenderPass wrapper.
 ///
-class RenderPass final : public Resource<VkRenderPass, VkDevice>
+class RenderPass final : public Resource<VkRenderPass, PFN_vkDestroyRenderPass, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkRenderPass, PFN_vkDestroyRenderPass, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;
         VkRenderPassCreateFlags    flags       = 0;
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     static RenderPass

@@ -2,6 +2,7 @@
 #define VKWP_DESCRIPTOR_POOL_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -14,16 +15,17 @@ namespace vkwp {
 ///
 /// @brief VkDescriptorPool wrapper.
 ///
-class DescriptorPool final : public Resource<VkDescriptorPool, VkDevice>
+class DescriptorPool final : public Resource<VkDescriptorPool, PFN_vkDestroyDescriptorPool, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkDescriptorPool, PFN_vkDestroyDescriptorPool, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *                p_next      = nullptr;
         VkDescriptorPoolCreateFlags flags       = 0;  // または VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
         const DebugUtilsResource *  debug_utils = nullptr;
+        const VulkanFunctions *     functions   = nullptr;
     };
 
     [[nodiscard]]

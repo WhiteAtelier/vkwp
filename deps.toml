@@ -1,0 +1,5 @@
+cxx_standard = "20"
+
+[google.googletest]
+
+[gabime.spdlog]

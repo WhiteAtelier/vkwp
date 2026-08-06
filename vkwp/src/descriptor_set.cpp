@@ -2,11 +2,13 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/descriptor_pool.hpp"
 #include "vkwp/descriptor_set_layout.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -15,14 +17,14 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkDescriptorSet, VkDevice, VkDescriptorPool>(
-    VkDescriptorSet                                i,
-    const std::tuple<VkDevice, VkDescriptorPool> & args) noexcept
+vkwp::impl::_delete(VkDescriptorSet                                i,
+                    PFN_vkFreeDescriptorSets                       fn,
+                    const std::tuple<VkDevice, VkDescriptorPool> & args) noexcept
 {
     // VkDescriptorPool を保持している時のみ解放する.
     if (std::get<1>(args) != nullptr)
     {
-        vkFreeDescriptorSets(std::get<0>(args), std::get<1>(args), 1, &i);
+        static_cast<void>(fn(std::get<0>(args), std::get<1>(args), 1, &i));
     }
 }
 
@@ -31,6 +33,14 @@ vkwp::impl::_delete<VkDescriptorSet, VkDevice, VkDescriptorPool>(
 // DescriptorSet class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+/* STATIC */
+std::vector<vkwp::DescriptorSet>
+vkwp::DescriptorSet::allocate(const DescriptorPool &                         descriptor_pool,
+                              const std::vector<DescriptorSetAllocateInfo> & allocate_info_list)
+{
+    return DescriptorSet::allocate(descriptor_pool, allocate_info_list, {});
+}
+
 /* STATIC */
 std::vector<vkwp::DescriptorSet>
 vkwp::DescriptorSet::allocate(const DescriptorPool &                         descriptor_pool,
@@ -57,18 +67,27 @@ vkwp::DescriptorSet::allocate(const DescriptorPool &                         des
 
     const VkDescriptorSetAllocateInfo descriptor_set_allocate_info{
         .sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
-        .pNext              = nullptr,
+        .pNext              = opt_args.p_next,
         .descriptorPool     = descriptor_pool,
         .descriptorSetCount = static_cast<std::uint32_t>(allocate_info_list.size()),
         .pSetLayouts        = dset_layouts.data(),
     };
+    auto * const allocate_fn
+        = (opt_args.functions != nullptr && opt_args.functions->vkAllocateDescriptorSets != nullptr)
+            ? opt_args.functions->vkAllocateDescriptorSets
+            : vkAllocateDescriptorSets;
+    auto * const free_fn = (opt_args.functions != nullptr && opt_args.functions->vkFreeDescriptorSets != nullptr)
+                             ? opt_args.functions->vkFreeDescriptorSets
+                             : vkFreeDescriptorSets;
+
     VulkanError::check(  //
-        vkAllocateDescriptorSets(device, &descriptor_set_allocate_info, vk_descriptor_sets.data()),
+        allocate_fn(device, &descriptor_set_allocate_info, vk_descriptor_sets.data()),
         "Failed to vkAllocateDescriptorSets().");
 
     for (std::size_t i = 0; i < allocate_info_list.size(); ++i)
     {
-        *ret[i]._reset(device,
+        *ret[i]._reset(free_fn,
+                       device,
                        require_to_free  //
                            ? static_cast<VkDescriptorPool>(descriptor_pool)
                            : nullptr)

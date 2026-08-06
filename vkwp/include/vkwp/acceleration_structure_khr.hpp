@@ -2,6 +2,7 @@
 #define VKWP_ACCELERATION_STRUCTURE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -12,7 +13,7 @@ namespace vkwp {
 struct AccelerationStructureKHR_ExtFunctions
 {
     static AccelerationStructureKHR_ExtFunctions
-    create(const VkInstance instance);
+    create(const VkDevice device, const VulkanFunctions * functions = nullptr);
 
     PFN_vkCreateAccelerationStructureKHR  vkCreateAccelerationStructureKHR  = nullptr;
     PFN_vkDestroyAccelerationStructureKHR vkDestroyAccelerationStructureKHR = nullptr;
@@ -24,10 +25,10 @@ struct AccelerationStructureKHR_ExtFunctions
 /// https://registry.khronos.org/vulkan/specs/latest/man/html/VkAccelerationStructureKHR.html
 ///
 class AccelerationStructureKHR final
-    : public Resource<VkAccelerationStructureKHR, VkDevice, AccelerationStructureKHR_ExtFunctions>
+    : public Resource<VkAccelerationStructureKHR, PFN_vkDestroyAccelerationStructureKHR, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkAccelerationStructureKHR, PFN_vkDestroyAccelerationStructureKHR, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
@@ -35,6 +36,7 @@ public:
         VkAccelerationStructureCreateFlagsKHR create_flags   = 0;
         VkDeviceAddress                       device_address = 0;
         const DebugUtilsResource * const      debug_utils    = nullptr;
+        const VulkanFunctions * const         functions      = nullptr;
     };
 
     static AccelerationStructureKHR

@@ -40,6 +40,8 @@ class SurfaceKHR;
 class SwapchainKHR;
 class VulkanError;
 
+struct VulkanFunctions;
+
 }  // namespace vkwp
 
 #endif

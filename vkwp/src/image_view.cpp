@@ -2,10 +2,12 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/image.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -14,9 +16,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkImageView, VkDevice>(VkImageView i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkImageView i, PFN_vkDestroyImageView fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroyImageView(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,9 +68,15 @@ vkwp::ImageView::create(const std::string_view          label,
         .components       = opt_args.components,
         .subresourceRange = subresource_range,
     };
-    VulkanError::check(  //
-        vkCreateImageView(device, &ci, nullptr, ret._reset(device)),
-        "Failed to vkCreateImageView().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateImageView != nullptr)
+                                ? opt_args.functions->vkCreateImageView
+                                : vkCreateImageView;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyImageView != nullptr)
+                                ? opt_args.functions->vkDestroyImageView
+                                : vkDestroyImageView;
+
+    VulkanError::check(create_fn(device, &ci, nullptr, ret._reset(destroy_fn, device)),  //
+                       "Failed to vkCreateImageView().");
     if (opt_args.debug_utils != nullptr)
     {
         opt_args.debug_utils->registDebugUtilsObjectName(device,

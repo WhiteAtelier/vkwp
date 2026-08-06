@@ -2,10 +2,12 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/command_buffer.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/mutex.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 #include <optional>
 
@@ -16,9 +18,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkCommandPool, VkDevice>(VkCommandPool i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkCommandPool i, PFN_vkDestroyCommandPool fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroyCommandPool(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,9 +63,15 @@ vkwp::CommandPool::create(const std::string_view     label,
         .flags            = opt_args.flags,
         .queueFamilyIndex = queue_family_index,
     };
-    VulkanError::check(  //
-        vkCreateCommandPool(device, &ci, nullptr, ret._reset(device)),
-        "Failed to vkCreateCommandPool().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateCommandPool != nullptr)
+                                ? opt_args.functions->vkCreateCommandPool
+                                : vkCreateCommandPool;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyCommandPool != nullptr)
+                                ? opt_args.functions->vkDestroyCommandPool
+                                : vkDestroyCommandPool;
+
+    VulkanError::check(create_fn(device, &ci, nullptr, ret._reset(destroy_fn, device)),  //
+                       "Failed to vkCreateCommandPool().");
 
     ret.create_flags_ = opt_args.flags;
     ret.mutex_        = std::move(mutex);
@@ -74,6 +82,12 @@ vkwp::CommandPool::create(const std::string_view     label,
                                                          VK_OBJECT_TYPE_COMMAND_POOL,
                                                          static_cast<VkCommandPool>(ret),
                                                          ret.getLabel());
+    }
+    if (opt_args.functions != nullptr)
+    {
+        ret._vkResetCommandPool = (opt_args.functions->vkResetCommandPool != nullptr)
+                                    ? opt_args.functions->vkResetCommandPool
+                                    : vkResetCommandPool;
     }
     return ret;
 }
@@ -87,7 +101,6 @@ vkwp::CommandPool::getCreateFlags() const noexcept
 void
 vkwp::CommandPool::resetCommandPool(const VkCommandPoolResetFlags flags) const
 {
-    VulkanError::check(  //
-        vkResetCommandPool(std::get<0>(this->parents_), *this, flags),
-        "Failed to vkResetCommandPool()");
+    VulkanError::check(this->_vkResetCommandPool(std::get<0>(this->parents_), *this, flags),
+                       "Failed to vkResetCommandPool()");
 }

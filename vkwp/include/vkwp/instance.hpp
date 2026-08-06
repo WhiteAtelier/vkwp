@@ -2,6 +2,7 @@
 #define VKWP_INSTANCE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -15,14 +16,15 @@ namespace vkwp {
 ///
 /// @brief VkInstance wrapper.
 ///
-class Instance final : public Resource<VkInstance>
+class Instance final : public Resource<VkInstance, PFN_vkDestroyInstance>
 {
 public:
-    using Resource<VkInstance>::Resource;
+    using Resource<VkInstance, PFN_vkDestroyInstance>::Resource;
 
     struct OptionalCreateArgs
     {
-        const void * p_next = nullptr;
+        const void *            p_next    = nullptr;
+        const VulkanFunctions * functions = nullptr;
     };
 
     [[nodiscard]]
@@ -50,7 +52,7 @@ public:
 
     [[nodiscard]]
     static std::vector<VkExtensionProperties>
-    enumerateInstanceExtensionProperties();
+    enumerateInstanceExtensionProperties(const VulkanFunctions * functions = nullptr);
 };
 
 }  // namespace vkwp

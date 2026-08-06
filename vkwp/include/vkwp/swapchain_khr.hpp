@@ -2,6 +2,7 @@
 #define VKWP_SWAPCHAIN_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -14,10 +15,10 @@ namespace vkwp {
 ///
 /// @brief VkSwapchainKHR wrapper.
 ///
-class SwapchainKHR final : public Resource<VkSwapchainKHR, VkDevice>
+class SwapchainKHR final : public Resource<VkSwapchainKHR, PFN_vkDestroySwapchainKHR, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkSwapchainKHR, PFN_vkDestroySwapchainKHR, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
@@ -31,6 +32,7 @@ public:
         bool                        clipped                  = true;
         const SwapchainKHR *        old_swapchain            = nullptr;
         const DebugUtilsResource *  debug_utils              = nullptr;
+        const VulkanFunctions *     functions                = nullptr;
     };
 
     [[nodiscard]]
@@ -67,6 +69,10 @@ public:
     [[nodiscard]]
     std::vector<VkImage>
     getSwapchainImages() const;
+
+private:
+    PFN_vkSetHdrMetadataEXT     _vkSetHdrMetadataEXT     = nullptr;
+    PFN_vkGetSwapchainImagesKHR _vkGetSwapchainImagesKHR = nullptr;
 };
 
 }  // namespace vkwp

@@ -1,6 +1,8 @@
 #ifndef VKWP_DEBUG_REPORT_CALLBACK_RESOURCE_HPP
 #define VKWP_DEBUG_REPORT_CALLBACK_RESOURCE_HPP
 
+#include "fwd.hpp"
+
 #include "vulkan.hpp"
 
 #include <memory>
@@ -25,7 +27,7 @@ public:
     ///     初期化済み Vulkan Instance.
     ///
     void
-    initialize(const VkInstance instance);
+    initialize(const VkInstance instance, const VulkanFunctions * functions = nullptr);
 
 private:
     class Impl_;

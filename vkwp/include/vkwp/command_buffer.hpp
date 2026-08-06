@@ -2,6 +2,7 @@
 #define VKWP_COMMAND_BUFFER_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -15,7 +16,7 @@ namespace vkwp {
 ///
 /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkCommandBuffer.html
 ///
-class CommandBuffer final : public Resource<VkCommandBuffer, VkDevice, VkCommandPool>
+class CommandBuffer final : public Resource<VkCommandBuffer, PFN_vkFreeCommandBuffers, VkDevice, VkCommandPool>
 {
 public:
     /// @brief Default Constructor
@@ -38,6 +39,7 @@ public:
     {
         const void *               p_next      = nullptr;
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     [[nodiscard]]
@@ -113,7 +115,9 @@ private:
     [[nodiscard]]
     explicit CommandBuffer(const std::string_view label);
 
-    Mutex * mutex_;
+    Mutex *                  mutex_;
+    PFN_vkBeginCommandBuffer _vkBeginCommandBuffer = nullptr;
+    PFN_vkEndCommandBuffer   _vkEndCommandBuffer   = nullptr;
 };
 
 }  // namespace vkwp

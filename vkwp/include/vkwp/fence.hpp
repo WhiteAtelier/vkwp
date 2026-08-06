@@ -2,6 +2,7 @@
 #define VKWP_FENCE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -14,16 +15,17 @@ namespace vkwp {
 ///
 /// @brief VkFence wrapper.
 ///
-class Fence final : public Resource<VkFence, VkDevice>
+class Fence final : public Resource<VkFence, PFN_vkDestroyFence, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkFence, PFN_vkDestroyFence, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;
         VkFenceCreateFlags         flags       = VK_FENCE_CREATE_SIGNALED_BIT;
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     static Fence
@@ -37,6 +39,10 @@ public:
 
     void
     resetSignal() const;
+
+private:
+    PFN_vkWaitForFences _vkWaitForFences = nullptr;
+    PFN_vkResetFences   _vkResetFences   = nullptr;
 };
 
 }  // namespace vkwp

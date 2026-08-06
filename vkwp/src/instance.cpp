@@ -2,7 +2,9 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -11,9 +13,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkInstance>(VkInstance i, const std::tuple<> &) noexcept
+vkwp::impl::_delete(VkInstance i, PFN_vkDestroyInstance fn, const std::tuple<> &) noexcept
 {
-    vkDestroyInstance(i, nullptr);
+    fn(i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,23 +95,31 @@ vkwp::Instance::create(const std::string_view           label,
         .ppEnabledExtensionNames = enabled_extension_names.data(),
     };
 
-    VulkanError::check(  //
-        vkCreateInstance(&ci, nullptr, ret._reset()),
-        "Failed to vkCreateInstance().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateInstance != nullptr)
+                                ? opt_args.functions->vkCreateInstance
+                                : vkCreateInstance;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyInstance != nullptr)
+                                ? opt_args.functions->vkDestroyInstance
+                                : vkDestroyInstance;
+
+    VulkanError::check(create_fn(&ci, nullptr, ret._reset(destroy_fn)),  //
+                       "Failed to vkCreateInstance().");
 
     return ret;
 }
 
 std::vector<VkExtensionProperties>
-vkwp::Instance::enumerateInstanceExtensionProperties()
+vkwp::Instance::enumerateInstanceExtensionProperties(const VulkanFunctions * functions)
 {
+    auto * const fn = (functions != nullptr && functions->vkEnumerateInstanceExtensionProperties != nullptr)
+                        ? functions->vkEnumerateInstanceExtensionProperties
+                        : vkEnumerateInstanceExtensionProperties;
+
     std::uint32_t count = 0;
-    VulkanError::check(  //
-        vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr),
-        "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
+    VulkanError::check(fn(nullptr, &count, nullptr),
+                       "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
     std::vector<VkExtensionProperties> ret(count);
-    VulkanError::check(  //
-        vkEnumerateInstanceExtensionProperties(nullptr, &count, ret.data()),
-        "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
+    VulkanError::check(fn(nullptr, &count, ret.data()),
+                       "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
     return ret;
 }

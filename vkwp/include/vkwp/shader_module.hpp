@@ -2,6 +2,7 @@
 #define VKWP_SHADER_MODULE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -14,16 +15,17 @@ namespace vkwp {
 ///
 /// @brief VkShaderModule wrapper.
 ///
-class ShaderModule final : public Resource<VkShaderModule, VkDevice>
+class ShaderModule final : public Resource<VkShaderModule, PFN_vkDestroyShaderModule, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkShaderModule, PFN_vkDestroyShaderModule, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;
         VkShaderModuleCreateFlags  flags       = 0;
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     [[nodiscard]]

@@ -2,10 +2,12 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/render_pass.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -14,9 +16,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkRenderPass, VkDevice>(VkRenderPass i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkRenderPass i, PFN_vkDestroyRenderPass fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroyRenderPass(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,8 +60,15 @@ vkwp::RenderPass::create(const std::string_view                       label,
         .dependencyCount = static_cast<std::uint32_t>(dependencies.size()),
         .pDependencies   = dependencies.data(),
     };
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateRenderPass != nullptr)
+                                ? opt_args.functions->vkCreateRenderPass
+                                : vkCreateRenderPass;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyRenderPass != nullptr)
+                                ? opt_args.functions->vkDestroyRenderPass
+                                : vkDestroyRenderPass;
+
     VulkanError::check(  //
-        vkCreateRenderPass(device, &ci, nullptr, ret._reset(device)),
+        create_fn(device, &ci, nullptr, ret._reset(destroy_fn, device)),
         "Failed to vkCreateRenderPass()");
     if (opt_args.debug_utils != nullptr)
     {

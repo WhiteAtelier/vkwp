@@ -2,6 +2,7 @@
 #define VKWP_BUFFER_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -14,16 +15,17 @@ namespace vkwp {
 ///
 /// https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkBuffer.html
 ///
-class Buffer final : public Resource<VkBuffer, VkDevice>
+class Buffer final : public Resource<VkBuffer, PFN_vkDestroyBuffer, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkBuffer, PFN_vkDestroyBuffer, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;  ///< Pointer to a structure extending this structure.
         VkBufferCreateFlags        flags       = 0;        ///< Specifying additional parameters of the buffer.
         const DebugUtilsResource * debug_utils = nullptr;  ///< Pointer to a debug utils resource instance.
+        const VulkanFunctions *    functions   = nullptr;  ///< Pointer to Vulkan functions.
     };
 
     ///
@@ -101,14 +103,16 @@ public:
     void
     bindMemory(const DeviceMemory & device_memory, const VkDeviceSize offset) const;
 
-    void
-    bindMemory(const DeviceMemoryNode & device_memory_node, const VkDeviceSize offset) const;
-
     /// @brief このバッファのデバイスアドレスを取得する.
     ///
     /// BufferDeviceAddressFeature を有効にしている必要があります.
     VkDeviceAddress
     getBufferDeviceAddress() const;
+
+private:
+    PFN_vkGetBufferMemoryRequirements _vkGetBufferMemoryRequirements = nullptr;
+    PFN_vkBindBufferMemory            _vkBindBufferMemory            = nullptr;
+    PFN_vkGetBufferDeviceAddress      _vkGetBufferDeviceAddress      = nullptr;
 };
 
 }  // namespace vkwp

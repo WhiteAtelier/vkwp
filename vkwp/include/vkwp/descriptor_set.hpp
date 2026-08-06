@@ -2,6 +2,7 @@
 #define VKWP_DESCRIPTOR_SET_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -18,15 +19,16 @@ struct DescriptorSetAllocateInfo
 ///
 /// @brief VkDescriptorSet wrapper.
 ///
-class DescriptorSet final : public Resource<VkDescriptorSet, VkDevice, VkDescriptorPool>
+class DescriptorSet final : public Resource<VkDescriptorSet, PFN_vkFreeDescriptorSets, VkDevice, VkDescriptorPool>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkDescriptorSet, PFN_vkFreeDescriptorSets, VkDevice, VkDescriptorPool>::Resource;
 
     struct OptionalAllocateArgs
     {
         const void *               p_next      = nullptr;
         const DebugUtilsResource * debug_utils = nullptr;
+        const VulkanFunctions *    functions   = nullptr;
     };
 
     static std::vector<DescriptorSet>

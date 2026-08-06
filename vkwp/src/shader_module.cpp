@@ -2,9 +2,11 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -13,9 +15,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkShaderModule, VkDevice>(VkShaderModule i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkShaderModule i, PFN_vkDestroyShaderModule fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroyShaderModule(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,8 +71,15 @@ vkwp::ShaderModule::create(const std::string_view      label,
         .codeSize = data_length * sizeof(std::uint32_t),
         .pCode    = data,
     };
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateShaderModule != nullptr)
+                                ? opt_args.functions->vkCreateShaderModule
+                                : vkCreateShaderModule;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyShaderModule != nullptr)
+                                ? opt_args.functions->vkDestroyShaderModule
+                                : vkDestroyShaderModule;
+
     VulkanError::check(  //
-        vkCreateShaderModule(device, &ci, nullptr, ret._reset(device)),
+        create_fn(device, &ci, nullptr, ret._reset(destroy_fn, device)),
         "Failed to vkCreateShaderModule().");
     if (opt_args.debug_utils != nullptr)
     {

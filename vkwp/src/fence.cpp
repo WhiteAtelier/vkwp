@@ -2,9 +2,11 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/device.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 #include <string_view>
 
@@ -15,9 +17,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkFence, VkDevice>(VkFence i, const std::tuple<VkDevice> & args) noexcept
+vkwp::impl::_delete(VkFence i, PFN_vkDestroyFence fn, const std::tuple<VkDevice> & args) noexcept
 {
-    vkDestroyFence(std::get<0>(args), i, nullptr);
+    fn(std::get<0>(args), i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,15 +45,28 @@ vkwp::Fence::create(const std::string_view label, const Device & device, const O
         .pNext = opt_args.p_next,
         .flags = opt_args.flags,
     };
-    VulkanError::check(  //
-        vkCreateFence(device, &ci, nullptr, ret._reset(device)),
-        "Failed to vkCreateFence().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateFence != nullptr)
+                                ? opt_args.functions->vkCreateFence
+                                : vkCreateFence;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyFence != nullptr)
+                                ? opt_args.functions->vkDestroyFence
+                                : vkDestroyFence;
+
+    VulkanError::check(create_fn(device, &ci, nullptr, ret._reset(destroy_fn, device)),  //
+                       "Failed to vkCreateFence().");
     if (opt_args.debug_utils != nullptr)
     {
         opt_args.debug_utils->registDebugUtilsObjectName(device,
                                                          VK_OBJECT_TYPE_FENCE,
                                                          static_cast<VkFence>(ret),
                                                          ret.getLabel());
+    }
+    if (opt_args.functions != nullptr)
+    {
+        ret._vkWaitForFences
+            = (opt_args.functions->vkWaitForFences != nullptr) ? opt_args.functions->vkWaitForFences : vkWaitForFences;
+        ret._vkResetFences
+            = (opt_args.functions->vkResetFences != nullptr) ? opt_args.functions->vkResetFences : vkResetFences;
     }
     return ret;
 }
@@ -60,7 +75,7 @@ bool
 vkwp::Fence::wait(const std::uint64_t timeout) const
 {
     VKWP_VALIDATE_THIS;
-    const auto result = vkWaitForFences(std::get<0>(this->parents_), 1, this->ptr(), VK_TRUE, timeout);
+    const auto result = this->_vkWaitForFences(std::get<0>(this->parents_), 1, this->ptr(), VK_TRUE, timeout);
     if (result == VK_TIMEOUT)
     {
         return false;
@@ -74,6 +89,6 @@ vkwp::Fence::resetSignal() const
 {
     VKWP_VALIDATE_THIS;
     VulkanError::check(  //
-        vkResetFences(std::get<0>(this->parents_), 1, this->ptr()),
+        this->_vkResetFences(std::get<0>(this->parents_), 1, this->ptr()),
         "Failed to vkResetFences().");
 }

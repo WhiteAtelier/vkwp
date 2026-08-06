@@ -2,6 +2,7 @@
 #define VKWP_QUEUE_HPP
 
 #include "fwd.hpp"
+
 #include "mutex.hpp"
 #include "resource.hpp"
 #include "vulkan.hpp"
@@ -15,7 +16,7 @@ namespace vkwp {
 ///
 /// @brief VkQueue wrapper.
 ///
-class Queue final : public Resource<VkQueue>
+class Queue final : public Resource<VkQueue, std::nullptr_t>
 {
 public:
     explicit Queue();

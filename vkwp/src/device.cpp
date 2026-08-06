@@ -2,10 +2,12 @@
 
 #include "impl/assert.hpp"
 #include "impl/deleter.hpp"
+
 #include "vkwp/debug_utils_resource.hpp"
 #include "vkwp/mutex.hpp"
 #include "vkwp/queue.hpp"
 #include "vkwp/vulkan_error.hpp"
+#include "vkwp/vulkan_functions.hpp"
 
 #include <spdlog/spdlog.h>
 
@@ -16,9 +18,9 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 template <>
 void
-vkwp::impl::_delete<VkDevice>(VkDevice i, const std::tuple<> &) noexcept
+vkwp::impl::_delete(VkDevice i, PFN_vkDestroyDevice fn, const std::tuple<> &) noexcept
 {
-    vkDestroyDevice(i, nullptr);
+    fn(i, nullptr);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -86,15 +88,28 @@ vkwp::Device::create(const std::string_view                       label,
         .ppEnabledExtensionNames = enabled_extension_names.data(),
         .pEnabledFeatures        = enabled_features,
     };
-    VulkanError::check(  //
-        vkCreateDevice(physical_device, &ci, nullptr, ret._reset()),
-        "Failed to vkCreateDevice().");
+    auto * const create_fn  = (opt_args.functions != nullptr && opt_args.functions->vkCreateDevice != nullptr)
+                                ? opt_args.functions->vkCreateDevice
+                                : vkCreateDevice;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroyDevice != nullptr)
+                                ? opt_args.functions->vkDestroyDevice
+                                : vkDestroyDevice;
+
+    VulkanError::check(create_fn(physical_device, &ci, nullptr, ret._reset(destroy_fn)),  //
+                       "Failed to vkCreateDevice().");
     if (opt_args.debug_utils != nullptr)
     {
         opt_args.debug_utils->registDebugUtilsObjectName(ret,
                                                          VK_OBJECT_TYPE_DEVICE,
                                                          static_cast<VkDevice>(ret),
                                                          ret.getLabel());
+    }
+    if (opt_args.functions != nullptr)
+    {
+        ret._vkDeviceWaitIdle = (opt_args.functions->vkDeviceWaitIdle != nullptr) ? opt_args.functions->vkDeviceWaitIdle
+                                                                                  : vkDeviceWaitIdle;
+        ret._vkGetDeviceQueue = (opt_args.functions->vkGetDeviceQueue != nullptr) ? opt_args.functions->vkGetDeviceQueue
+                                                                                  : vkGetDeviceQueue;
     }
     return ret;
 }
@@ -103,7 +118,7 @@ void
 vkwp::Device::waitIdle() const
 {
     VKWP_VALIDATE_THIS;
-    VulkanError::check(vkDeviceWaitIdle(*this), "Failed to vkDeviceWaitIdle().");
+    VulkanError::check(this->_vkDeviceWaitIdle(*this), "Failed to vkDeviceWaitIdle().");
 }
 
 vkwp::Queue
@@ -133,7 +148,7 @@ vkwp::Device::getDeviceQueue(const std::uint32_t        queue_family_index,
     Queue ret{ this->getLabel() + "/Queue"                        //
                + "/Family[" + std::to_string(queue_family_index)  //
                + "]/Index[" + std::to_string(queue_index) + "]" };
-    vkGetDeviceQueue(*this, queue_family_index, queue_index, ret._reset());
+    this->_vkGetDeviceQueue(*this, queue_family_index, queue_index, ret._reset(nullptr));
     ret.queue_family_index_ = queue_family_index;
     ret.mutex_              = std::move(mutex);
     if (opt_args.debug_utils != nullptr)

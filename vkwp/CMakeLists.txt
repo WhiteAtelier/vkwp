@@ -21,8 +21,6 @@ vkwp_add_library(vkwp
         descriptor_pool.cpp
         descriptor_set_layout.cpp
         descriptor_set.cpp
-        device_memory_node.cpp
-        device_memory_pool.cpp
         device_memory.cpp
         device.cpp
         fence.cpp
@@ -48,10 +46,6 @@ vkwp_add_library(vkwp
         impl/assert.cpp
         impl/assert.hpp
         impl/deleter.hpp
-        impl/device_memory_block_node.cpp
-        impl/device_memory_block_node.hpp
-        impl/device_memory_block.cpp
-        impl/device_memory_block.hpp
 
     HEADERS
         vkwp/acceleration_structure_khr.hpp
@@ -63,8 +57,6 @@ vkwp_add_library(vkwp
         vkwp/descriptor_pool.hpp
         vkwp/descriptor_set_layout.hpp
         vkwp/descriptor_set.hpp
-        vkwp/device_memory_node.hpp
-        vkwp/device_memory_pool.hpp
         vkwp/device_memory.hpp
         vkwp/device.hpp
         vkwp/fence.hpp
@@ -90,6 +82,7 @@ vkwp_add_library(vkwp
         vkwp/utils.hpp
         vkwp/vk_structures.hpp
         vkwp/vulkan_error.hpp
+        vkwp/vulkan_functions.hpp
         vkwp/vulkan.hpp
 
     MSVC_HEADERS_FILTER_ROOT
@@ -97,6 +90,12 @@ vkwp_add_library(vkwp
 
     TESTS
         main.cpp
+        core_test.cpp
+        resource_lifecycle_test.cpp
+        command_and_memory_test.cpp
+        pipeline_and_debug_test.cpp
+        vulkan_error_test.cpp
+        test_utils.hpp
 )
 
 if (${VKWP_SUPPORT_GLFW_SURFACE})

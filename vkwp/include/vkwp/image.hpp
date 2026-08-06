@@ -2,6 +2,7 @@
 #define VKWP_IMAGE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -13,10 +14,10 @@ namespace vkwp {
 ///
 /// @brief VkImage wrapper.
 ///
-class Image final : public Resource<VkImage, VkDevice>
+class Image final : public Resource<VkImage, PFN_vkDestroyImage, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkImage, PFN_vkDestroyImage, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
@@ -27,6 +28,7 @@ public:
         VkSampleCountFlagBits      samples      = VK_SAMPLE_COUNT_1_BIT;
         VkImageTiling              tiling       = VK_IMAGE_TILING_OPTIMAL;
         const DebugUtilsResource * debug_utils  = nullptr;
+        const VulkanFunctions *    functions    = nullptr;
     };
 
     [[nodiscard]]
@@ -116,8 +118,10 @@ public:
     void
     bindMemory(const DeviceMemory & device_memory, const VkDeviceSize offset) const;
 
-    void
-    bindMemory(const DeviceMemoryNode & device_memory_node, const VkDeviceSize offset) const;
+private:
+    PFN_vkGetImageMemoryRequirements  _vkGetImageMemoryRequirements  = nullptr;
+    PFN_vkGetImageMemoryRequirements2 _vkGetImageMemoryRequirements2 = nullptr;
+    PFN_vkBindImageMemory             _vkBindImageMemory             = nullptr;
 };
 
 }  // namespace vkwp

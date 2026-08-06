@@ -2,6 +2,7 @@
 #define VKWP_PIPELINE_LAYOUT_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -14,16 +15,17 @@ namespace vkwp {
 ///
 /// @brief VkPipelineLayout wrapper.
 ///
-class PipelineLayout final : public Resource<VkPipelineLayout, VkDevice>
+class PipelineLayout final : public Resource<VkPipelineLayout, PFN_vkDestroyPipelineLayout, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkPipelineLayout, PFN_vkDestroyPipelineLayout, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
         const void *                p_next      = nullptr;
         VkPipelineLayoutCreateFlags flags       = 0;
         const DebugUtilsResource *  debug_utils = nullptr;
+        const VulkanFunctions *     functions   = nullptr;
     };
 
     static PipelineLayout

@@ -2,6 +2,7 @@
 #define VKWP_SURFACE_KHR_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -18,22 +19,26 @@ namespace vkwp {
 ///
 /// @brief VkSurfaceKHR wrapper.
 ///
-class SurfaceKHR final : public Resource<VkSurfaceKHR, VkInstance>
+class SurfaceKHR final : public Resource<VkSurfaceKHR, PFN_vkDestroySurfaceKHR, VkInstance>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkSurfaceKHR, PFN_vkDestroySurfaceKHR, VkInstance>::Resource;
 
 #if defined(VKWP_USE_GLFW_SURFACE)
     [[nodiscard]]
     static SurfaceKHR
-    createGLFWSurfaceKHR(const std::string & label, const Instance & instance, GLFWwindow * const window);
+    createGLFWSurfaceKHR(const std::string &     label,
+                         const Instance &        instance,
+                         GLFWwindow * const      window,
+                         const VulkanFunctions * functions = nullptr);
 #endif
 
 #if defined(_WIN32) && defined(VKWP_USE_WIN32_SURFACE)
     struct OptionalCreateArgsWin32
     {
-        const void *                 p_next = nullptr;
-        VkWin32SurfaceCreateFlagsKHR flags  = 0;
+        const void *                 p_next    = nullptr;
+        VkWin32SurfaceCreateFlagsKHR flags     = 0;
+        const VulkanFunctions *      functions = nullptr;
     };
 
     [[nodiscard]]

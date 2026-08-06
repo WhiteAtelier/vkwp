@@ -2,6 +2,7 @@
 #define VKWP_PIPELINE_CACHE_HPP
 
 #include "fwd.hpp"
+
 #include "resource.hpp"
 #include "vulkan.hpp"
 
@@ -12,10 +13,10 @@ namespace vkwp {
 ///
 /// @brief VkPipeline wrapper.
 ///
-class PipelineCache final : public Resource<VkPipelineCache, VkDevice>
+class PipelineCache final : public Resource<VkPipelineCache, PFN_vkDestroyPipelineCache, VkDevice>
 {
 public:
-    using Resource::Resource;
+    using Resource<VkPipelineCache, PFN_vkDestroyPipelineCache, VkDevice>::Resource;
 
     struct OptionalCreateArgs
     {
@@ -24,6 +25,7 @@ public:
         std::size_t                initial_data_size = 0;
         const void *               initial_data      = nullptr;
         const DebugUtilsResource * debug_utils       = nullptr;
+        const VulkanFunctions *    functions         = nullptr;
     };
 
     static PipelineCache

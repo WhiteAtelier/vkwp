@@ -1,6 +1,7 @@
 #ifndef VKWP_VKM_RESOURCE_HPP
 #define VKWP_VKM_RESOURCE_HPP
 
+#include <cstddef>
 #include <string>
 #include <string_view>
 #include <tuple>
@@ -15,7 +16,7 @@ static_assert(std::is_nothrow_move_assignable_v<std::string>, "std::string must 
 template <typename T>
 concept vulkan_raw_resource = std::is_pointer_v<T>;
 
-template <::vkwp::vulkan_raw_resource T, typename... ParentTs>
+template <::vkwp::vulkan_raw_resource T, typename DestroyFn, typename... ParentTs>
 class Resource
 {
 public:
@@ -74,16 +75,17 @@ public:
     // clang-format on
 
 protected:
-    using BaseType = Resource<T, ParentTs...>;
+    using BaseType = Resource<T, DestroyFn, ParentTs...>;
 
     Resource(const std::string_view label);
 
     T *
-    _reset(ParentTs... parents) & noexcept;
+    _reset(DestroyFn fn, ParentTs... parents) & noexcept;
 
 private:
     std::string label_;
     T           instance_;
+    DestroyFn   destroy_fn_;
     bool        external_;
 
 protected:
