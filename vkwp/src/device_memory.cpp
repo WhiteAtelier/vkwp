@@ -101,6 +101,11 @@ vkwp::DeviceMemory::allocate(std::string                  label,
         ret._vkUnmapMemory
             = (opt_args.functions->vkUnmapMemory != nullptr) ? opt_args.functions->vkUnmapMemory : vkUnmapMemory;
     }
+    else
+    {
+        ret._vkMapMemory   = vkMapMemory;
+        ret._vkUnmapMemory = vkUnmapMemory;
+    }
     return ret;
 }
 

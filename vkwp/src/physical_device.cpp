@@ -104,6 +104,16 @@ vkwp::PhysicalDevice::enumeratePhysicalDevices(const Instance & instance, const 
                     ? opt_args.functions->vkGetPhysicalDeviceSurfaceSupportKHR
                     : vkGetPhysicalDeviceSurfaceSupportKHR;
         }
+        else
+        {
+            pdev._vkGetPhysicalDeviceQueueFamilyProperties  = vkGetPhysicalDeviceQueueFamilyProperties;
+            pdev._vkGetPhysicalDeviceMemoryProperties       = vkGetPhysicalDeviceMemoryProperties;
+            pdev._vkEnumerateDeviceExtensionProperties      = vkEnumerateDeviceExtensionProperties;
+            pdev._vkGetPhysicalDeviceFormatProperties       = vkGetPhysicalDeviceFormatProperties;
+            pdev._vkGetPhysicalDeviceSurfaceFormatsKHR      = vkGetPhysicalDeviceSurfaceFormatsKHR;
+            pdev._vkGetPhysicalDeviceSurfaceCapabilitiesKHR = vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+            pdev._vkGetPhysicalDeviceSurfaceSupportKHR      = vkGetPhysicalDeviceSurfaceSupportKHR;
+        }
     }
     return ret;
 }

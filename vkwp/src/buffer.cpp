@@ -79,6 +79,12 @@ vkwp::Buffer::create(std::string                label,
                                                ? opt_args.functions->vkGetBufferDeviceAddress
                                                : vkGetBufferDeviceAddress;
     }
+    else
+    {
+        ret._vkGetBufferMemoryRequirements = vkGetBufferMemoryRequirements;
+        ret._vkBindBufferMemory            = vkBindBufferMemory;
+        ret._vkGetBufferDeviceAddress      = vkGetBufferDeviceAddress;
+    }
 
     return ret;
 }

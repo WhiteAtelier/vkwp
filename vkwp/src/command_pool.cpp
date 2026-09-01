@@ -89,6 +89,10 @@ vkwp::CommandPool::create(std::string                label,
                                     ? opt_args.functions->vkResetCommandPool
                                     : vkResetCommandPool;
     }
+    else
+    {
+        ret._vkResetCommandPool = vkResetCommandPool;
+    }
     return ret;
 }
 

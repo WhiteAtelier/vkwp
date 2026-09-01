@@ -98,6 +98,12 @@ vkwp::Image::create(std::string                label,
                                                ? opt_args.functions->vkBindImageMemory
                                                : vkBindImageMemory;
     }
+    else
+    {
+        ret._vkGetImageMemoryRequirements  = vkGetImageMemoryRequirements;
+        ret._vkGetImageMemoryRequirements2 = vkGetImageMemoryRequirements2;
+        ret._vkBindImageMemory             = vkBindImageMemory;
+    }
     return ret;
 }
 

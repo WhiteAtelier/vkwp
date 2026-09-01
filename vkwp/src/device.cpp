@@ -111,6 +111,11 @@ vkwp::Device::create(std::string                                  label,
         ret._vkGetDeviceQueue = (opt_args.functions->vkGetDeviceQueue != nullptr) ? opt_args.functions->vkGetDeviceQueue
                                                                                   : vkGetDeviceQueue;
     }
+    else
+    {
+        ret._vkDeviceWaitIdle = vkDeviceWaitIdle;
+        ret._vkGetDeviceQueue = vkGetDeviceQueue;
+    }
     return ret;
 }
 

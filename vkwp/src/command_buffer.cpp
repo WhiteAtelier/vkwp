@@ -123,6 +123,14 @@ vkwp::CommandBuffer::allocateCommandBuffers(const CommandPool &          command
                                              : vkEndCommandBuffer;
         }
     }
+    else
+    {
+        for (auto & cmdbuf : ret)
+        {
+            cmdbuf._vkBeginCommandBuffer = vkBeginCommandBuffer;
+            cmdbuf._vkEndCommandBuffer   = vkEndCommandBuffer;
+        }
+    }
 
     return ret;
 }
@@ -198,6 +206,11 @@ vkwp::CommandBuffer::allocateCommandBuffer(std::string                  label,
         ret._vkEndCommandBuffer   = (opt_args.functions->vkEndCommandBuffer != nullptr)
                                       ? opt_args.functions->vkEndCommandBuffer
                                       : vkEndCommandBuffer;
+    }
+    else
+    {
+        ret._vkBeginCommandBuffer = vkBeginCommandBuffer;
+        ret._vkEndCommandBuffer   = vkEndCommandBuffer;
     }
     return ret;
 }

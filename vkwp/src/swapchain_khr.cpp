@@ -128,6 +128,12 @@ vkwp::SwapchainKHR::create(std::string                         label,
                                          ? opt_args.functions->vkGetSwapchainImagesKHR
                                          : vkGetSwapchainImagesKHR;
     }
+    else
+    {
+        ret._vkSetHdrMetadataEXT
+            = reinterpret_cast<PFN_vkSetHdrMetadataEXT>(vkGetDeviceProcAddr(device, "vkSetHdrMetadataEXT"));
+        ret._vkGetSwapchainImagesKHR = vkGetSwapchainImagesKHR;
+    }
 
     return ret;
 }

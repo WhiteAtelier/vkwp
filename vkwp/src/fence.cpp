@@ -66,6 +66,11 @@ vkwp::Fence::create(std::string label, const Device & device, const OptionalCrea
         ret._vkResetFences
             = (opt_args.functions->vkResetFences != nullptr) ? opt_args.functions->vkResetFences : vkResetFences;
     }
+    else
+    {
+        ret._vkWaitForFences = vkWaitForFences;
+        ret._vkResetFences   = vkResetFences;
+    }
     return ret;
 }
 
