@@ -164,6 +164,7 @@ vkwp::SwapchainKHR::importExternal(std::string                   label,
 void
 vkwp::SwapchainKHR::setHdrMetadata(const VkHdrMetadataEXT & metadata)
 {
+    VKWP_VALIDATE_THIS;
     if (this->_vkSetHdrMetadataEXT == nullptr)
     {
         SPDLOG_CRITICAL("vkSetHdrMetadataEXT is not supported.");
@@ -175,14 +176,24 @@ vkwp::SwapchainKHR::setHdrMetadata(const VkHdrMetadataEXT & metadata)
 std::vector<VkImage>
 vkwp::SwapchainKHR::getSwapchainImages() const
 {
-    std::vector<VkImage> ret;
-    std::uint32_t        count = 0;
-    VulkanError::check(  //
-        this->_vkGetSwapchainImagesKHR(std::get<0>(this->parents_), *this, &count, nullptr),
-        "Failed to vkGetSwapchainImagesKHR(). (array count)");
-    ret.resize(count);
-    VulkanError::check(  //
-        this->_vkGetSwapchainImagesKHR(std::get<0>(this->parents_), *this, &count, ret.data()),
-        "Failed to vkGetSwapchainImagesKHR(). (array data)");
-    return ret;
+    VKWP_VALIDATE_THIS;
+    std::vector<VkImage>    ret;
+    constexpr std::uint32_t max_attempt_count = 10;
+    for (std::uint32_t attempt_count = 0; attempt_count < max_attempt_count; ++attempt_count)
+    {
+        std::uint32_t count = 0;
+        VulkanError::check(  //
+            this->_vkGetSwapchainImagesKHR(std::get<0>(this->parents_), *this, &count, nullptr),
+            "Failed to vkGetSwapchainImagesKHR(). (array count)");
+        ret.resize(count);
+        const VkResult result = this->_vkGetSwapchainImagesKHR(std::get<0>(this->parents_), *this, &count, ret.data());
+        if (result == VK_INCOMPLETE && attempt_count + 1 < max_attempt_count)
+        {
+            continue;
+        }
+        VulkanError::check(result, "Failed to vkGetSwapchainImagesKHR(). (array data)");
+        ret.resize(count);
+        return ret;
+    }
+    throw VulkanError{ VK_INCOMPLETE, "Failed to vkGetSwapchainImagesKHR() after maximum attempts." };
 }

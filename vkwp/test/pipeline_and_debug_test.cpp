@@ -13,6 +13,7 @@
 #include <vkwp/pipeline_layout.hpp>
 #include <vkwp/surface_khr.hpp>
 #include <vkwp/swapchain_khr.hpp>
+#include <vkwp/vulkan_error.hpp>
 #include <vkwp/vulkan_functions.hpp>
 
 #include <array>
@@ -139,6 +140,20 @@ createComputePipelines(const VkDevice                      device,
     EXPECT_EQ(create_infos[0].layout, pipeline_state.pipeline_layout);
     pipelines[0] = pipeline_state.pipelines[static_cast<std::size_t>(pipeline_state.next_pipeline++)];
     return VK_SUCCESS;
+}
+
+VkResult VKAPI_CALL
+createGraphicsPipelinesPartially(const VkDevice,
+                                 const VkPipelineCache,
+                                 const std::uint32_t count,
+                                 const VkGraphicsPipelineCreateInfo *,
+                                 const VkAllocationCallbacks *,
+                                 VkPipeline * pipelines)
+{
+    EXPECT_EQ(count, 2u);
+    pipelines[0] = pipeline_state.pipelines[0];
+    pipelines[1] = nullptr;
+    return VK_ERROR_OUT_OF_DEVICE_MEMORY;
 }
 
 VkResult VKAPI_CALL
@@ -589,6 +604,24 @@ TEST(VulkanFunctionsSwapchainTest, CreateOperationsAndDestroyForwardAllArguments
     EXPECT_EQ(swapchain_state.destroy_calls, 1);
 }
 
+TEST(VulkanFunctionsPipelineTest, PartiallyCreatedPipelinesAreDestroyedOnFailure)
+{
+    pipeline_state = {};
+    vkwp::VulkanFunctions functions;
+    functions.vkCreateGraphicsPipelines = &createGraphicsPipelinesPartially;
+    functions.vkDestroyPipeline         = &destroyPipeline;
+    const auto device                   = vkwp::Device::importExternal("device", pipeline_state.device, &functions);
+
+    vkwp::GraphicsPipelineCreateInfo         first{ .label = "first" };
+    vkwp::GraphicsPipelineCreateInfo         second{ .label = "second" };
+    const vkwp::Pipeline::OptionalCreateArgs optional_args{
+        .functions = &functions,
+    };
+    EXPECT_THROW(static_cast<void>(vkwp::Pipeline::create(device, { first, second }, optional_args)),
+                 vkwp::VulkanError);
+    EXPECT_EQ(pipeline_state.destroy_pipeline_calls, 1);
+}
+
 TEST(VulkanFunctionsAccelerationStructureTest, MissingFunctionsResolveThroughDeviceProcAddrAndDestroy)
 {
     acceleration_state = {};
@@ -617,6 +650,16 @@ TEST(VulkanFunctionsAccelerationStructureTest, MissingFunctionsResolveThroughDev
     EXPECT_EQ(acceleration_state.get_proc_calls, 2);
     EXPECT_EQ(acceleration_state.create_calls, 1);
     EXPECT_EQ(acceleration_state.destroy_calls, 1);
+}
+
+TEST(VulkanFunctionsSwapchainTest, InvalidObjectRejectsFunctionPointerOperations)
+{
+    vkwp::SwapchainKHR     swapchain;
+    const VkHdrMetadataEXT metadata{
+        .sType = VK_STRUCTURE_TYPE_HDR_METADATA_EXT,
+    };
+    EXPECT_THROW(swapchain.setHdrMetadata(metadata), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(swapchain.getSwapchainImages()), std::runtime_error);
 }
 
 TEST(VulkanFunctionsAccelerationStructureTest, ProvidedFunctionsAreUsedWithoutDeviceProcAddr)

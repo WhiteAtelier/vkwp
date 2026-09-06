@@ -22,7 +22,10 @@ public:
 
     [[nodiscard]]
     static DescriptorPool
-    importExternal(std::string label, const Device & device, const VkDescriptorPool external);
+    importExternal(std::string                       label,
+                   const Device &                    device,
+                   const VkDescriptorPool            external,
+                   const VkDescriptorPoolCreateFlags create_flags);
 
     struct OptionalCreateArgs
     {

@@ -32,7 +32,7 @@ public:
     ///     何をしようとしてエラーになったかなど, 詳細を表す文字列.
     ///
     [[nodiscard]]
-    explicit VulkanError(const VkResult result, const std::string_view message) noexcept;
+    explicit VulkanError(const VkResult result, const std::string_view message);
 
     ///
     /// @brief デストラクタ.
@@ -81,7 +81,7 @@ private:
     /// @brief VkResult, message を統合してエラーメッセージを作成します.
     ///
     static std::string
-    _toMessage(const VkResult result, const std::string_view message) noexcept;
+    _toMessage(const VkResult result, const std::string_view message);
 
     int result_;
 };

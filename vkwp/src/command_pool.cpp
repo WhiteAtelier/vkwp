@@ -125,6 +125,7 @@ vkwp::CommandPool::getCreateFlags() const noexcept
 void
 vkwp::CommandPool::resetCommandPool(const VkCommandPoolResetFlags flags) const
 {
+    VKWP_VALIDATE_THIS;
     VulkanError::check(this->_vkResetCommandPool(std::get<0>(this->parents_), *this, flags),
                        "Failed to vkResetCommandPool()");
 }

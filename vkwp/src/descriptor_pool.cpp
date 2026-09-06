@@ -26,11 +26,16 @@ vkwp::impl::_delete(VkDescriptorPool i, PFN_vkDestroyDescriptorPool fn, const st
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 vkwp::DescriptorPool
-vkwp::DescriptorPool::importExternal(std::string label, const Device & device, const VkDescriptorPool external)
+vkwp::DescriptorPool::importExternal(std::string                       label,
+                                     const Device &                    device,
+                                     const VkDescriptorPool            external,
+                                     const VkDescriptorPoolCreateFlags create_flags)
 {
     VKWP_VALIDATE_ARG(device);
     VKWP_VALIDATE_ARG(external);
-    return DescriptorPool{ std::move(label), external, static_cast<VkDevice>(device) };
+    DescriptorPool ret{ std::move(label), external, static_cast<VkDevice>(device) };
+    ret.create_flags_ = create_flags;
+    return ret;
 }
 
 /* STATIC */

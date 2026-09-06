@@ -442,6 +442,29 @@ TEST(VulkanFunctionsDescriptorTest, DescriptorSetsForwardLayoutsAndFreeBeforePoo
     EXPECT_EQ(descriptor_state.destroy_layout_calls, 2);
 }
 
+TEST(VulkanFunctionsDescriptorTest, ImportedDescriptorPoolRetainsCreateFlags)
+{
+    descriptor_state  = {};
+    const auto device = vkwp::Device::importExternal("device", descriptor_state.device);
+    const auto pool   = vkwp::DescriptorPool::importExternal("pool",
+                                                           device,
+                                                           descriptor_state.pool,
+                                                           VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
+
+    EXPECT_TRUE(pool.isExternal());
+    EXPECT_EQ(pool.getCreateFlags(), VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
+}
+
+TEST(VulkanFunctionsCommandTest, InvalidObjectsRejectFunctionPointerOperations)
+{
+    vkwp::CommandPool command_pool;
+    EXPECT_THROW(command_pool.resetCommandPool(), std::runtime_error);
+
+    const vkwp::CommandBuffer command_buffer;
+    EXPECT_THROW(command_buffer.beginCommandBuffer(), std::runtime_error);
+    EXPECT_THROW(command_buffer.endCommandBuffer(), std::runtime_error);
+}
+
 TEST(VulkanFunctionsMemoryTest, AllocateMapReadWriteUnmapAndFreeUseInjectedFunctions)
 {
     memory_state = {};

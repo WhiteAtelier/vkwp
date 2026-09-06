@@ -328,6 +328,7 @@ vkwp::CommandBuffer::_beginCommandBuffer(const VkCommandBufferInheritanceInfo * 
                                          const VkCommandBufferUsageFlags        flags,
                                          const void * const                     p_next) const
 {
+    VKWP_VALIDATE_THIS;
     const VkCommandBufferBeginInfo bi{
         .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .pNext            = p_next,
@@ -340,6 +341,7 @@ vkwp::CommandBuffer::_beginCommandBuffer(const VkCommandBufferInheritanceInfo * 
 void
 vkwp::CommandBuffer::endCommandBuffer() const
 {
+    VKWP_VALIDATE_THIS;
     VulkanError::check(this->_vkEndCommandBuffer(*this), "Failed to vkEndCommandBuffer().");
 }
 

@@ -88,21 +88,19 @@ vkwp::Pipeline::create(const Device &                          device,
                                 ? opt_args.functions->vkDestroyPipeline
                                 : vkDestroyPipeline;
 
-    VulkanError::check(  //
-        create_fn(device,
-                  opt_args.pipeline_cache != nullptr  //
-                      ? static_cast<VkPipelineCache>(*opt_args.pipeline_cache)
-                      : nullptr,
-                  static_cast<std::uint32_t>(cis.size()),
-                  cis.data(),
-                  nullptr,
-                  vk_pipelines.data()),
-        "Failed to vkCreateGraphicsPipelines().");
-
+    const VkResult result = create_fn(device,
+                                      opt_args.pipeline_cache != nullptr  //
+                                          ? static_cast<VkPipelineCache>(*opt_args.pipeline_cache)
+                                          : nullptr,
+                                      static_cast<std::uint32_t>(cis.size()),
+                                      cis.data(),
+                                      nullptr,
+                                      vk_pipelines.data());
     for (std::size_t i = 0; i < create_info_list.size(); ++i)
     {
         *ret[i]._reset(destroy_fn, device) = vk_pipelines[i];
     }
+    VulkanError::check(result, "Failed to vkCreateGraphicsPipelines().");
     if (opt_args.debug_utils != nullptr)
     {
         for (const auto & pipeline : ret)
@@ -150,21 +148,19 @@ vkwp::Pipeline::create(const Device &                         device,
                                 ? opt_args.functions->vkDestroyPipeline
                                 : vkDestroyPipeline;
 
-    VulkanError::check(  //
-        create_fn(device,
-                  opt_args.pipeline_cache != nullptr  //
-                      ? static_cast<VkPipelineCache>(*opt_args.pipeline_cache)
-                      : nullptr,
-                  static_cast<std::uint32_t>(cis.size()),
-                  cis.data(),
-                  nullptr,
-                  vk_pipelines.data()),
-        "Failed to vkCreateComputePipelines().");
-
+    const VkResult result = create_fn(device,
+                                      opt_args.pipeline_cache != nullptr  //
+                                          ? static_cast<VkPipelineCache>(*opt_args.pipeline_cache)
+                                          : nullptr,
+                                      static_cast<std::uint32_t>(cis.size()),
+                                      cis.data(),
+                                      nullptr,
+                                      vk_pipelines.data());
     for (std::size_t i = 0; i < create_info_list.size(); ++i)
     {
         *ret[i]._reset(destroy_fn, device) = vk_pipelines[i];
     }
+    VulkanError::check(result, "Failed to vkCreateComputePipelines().");
     if (opt_args.debug_utils != nullptr)
     {
         for (const auto & pipeline : ret)
@@ -215,22 +211,20 @@ vkwp::Pipeline::create(const Device &                               device,
                                 ? opt_args.functions->vkDestroyPipeline
                                 : vkDestroyPipeline;
 
-    VulkanError::check(  //
-        create_fn(device,
-                  nullptr,                            // *opt_args.deferred_operation,
-                  opt_args.pipeline_cache != nullptr  //
-                      ? static_cast<VkPipelineCache>(*opt_args.pipeline_cache)
-                      : nullptr,
-                  static_cast<std::uint32_t>(cis.size()),
-                  cis.data(),
-                  nullptr,
-                  vk_pipelines.data()),
-        "Failed to vkCreateRayTracingPipelinesKHR().");
-
+    const VkResult result = create_fn(device,
+                                      nullptr,                            // *opt_args.deferred_operation,
+                                      opt_args.pipeline_cache != nullptr  //
+                                          ? static_cast<VkPipelineCache>(*opt_args.pipeline_cache)
+                                          : nullptr,
+                                      static_cast<std::uint32_t>(cis.size()),
+                                      cis.data(),
+                                      nullptr,
+                                      vk_pipelines.data());
     for (std::size_t i = 0; i < create_info_list.size(); ++i)
     {
         *ret[i]._reset(destroy_fn, device) = vk_pipelines[i];
     }
+    VulkanError::check(result, "Failed to vkCreateRayTracingPipelinesKHR().");
     if (opt_args.debug_utils != nullptr)
     {
         for (const auto & pipeline : ret)
