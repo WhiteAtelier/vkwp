@@ -19,6 +19,10 @@ class DescriptorSetLayout final : public Resource<VkDescriptorSetLayout, PFN_vkD
 public:
     using Resource<VkDescriptorSetLayout, PFN_vkDestroyDescriptorSetLayout, VkDevice>::Resource;
 
+    [[nodiscard]]
+    static DescriptorSetLayout
+    importExternal(std::string label, const Device & device, const VkDescriptorSetLayout external);
+
     struct OptionalCreateArgs
     {
         const void *                     p_next      = nullptr;

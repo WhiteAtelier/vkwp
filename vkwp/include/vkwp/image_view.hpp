@@ -19,6 +19,10 @@ class ImageView final : public Resource<VkImageView, PFN_vkDestroyImageView, VkD
 public:
     using Resource<VkImageView, PFN_vkDestroyImageView, VkDevice>::Resource;
 
+    [[nodiscard]]
+    static ImageView
+    importExternal(std::string label, const Device & device, const VkImageView external);
+
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;

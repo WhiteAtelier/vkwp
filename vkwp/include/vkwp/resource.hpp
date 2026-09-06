@@ -21,9 +21,6 @@ class Resource
 public:
     explicit Resource();
 
-    [[nodiscard]]
-    explicit Resource(std::string && label, const T & external);
-
     Resource(const Resource &) = delete;
 
     [[nodiscard]]
@@ -77,6 +74,9 @@ protected:
     using BaseType = Resource<T, DestroyFn, ParentTs...>;
 
     Resource(std::string && label);
+
+    [[nodiscard]]
+    explicit Resource(std::string && label, const T & external, ParentTs... parents);
 
     T *
     _reset(DestroyFn fn, ParentTs... parents) & noexcept;

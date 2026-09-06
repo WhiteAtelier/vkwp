@@ -52,6 +52,15 @@ public:
            std::unique_ptr<Mutex> &&  mutex,
            const OptionalCreateArgs & opt_args);
 
+    [[nodiscard]]
+    static CommandPool
+    importExternal(std::string                    label,
+                   const Device &                 device,
+                   const VkCommandPool            external,
+                   const VkCommandPoolCreateFlags create_flags,
+                   std::unique_ptr<Mutex> &&      mutex,
+                   const VulkanFunctions * const  functions = nullptr);
+
     VkCommandPoolCreateFlags
     getCreateFlags() const noexcept;
 

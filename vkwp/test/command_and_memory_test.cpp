@@ -338,7 +338,7 @@ TEST(VulkanFunctionsCommandTest, CommandPoolAndBuffersForwardArgumentsAndFree)
     functions.vkFreeCommandBuffers     = &freeCommandBuffers;
     functions.vkBeginCommandBuffer     = &beginCommandBuffer;
     functions.vkEndCommandBuffer       = &endCommandBuffer;
-    const vkwp::Device device{ "device", command_state.device };
+    const auto device                  = vkwp::Device::importExternal("device", command_state.device, &functions);
 
     {
         const vkwp::CommandPool::OptionalCreateArgs pool_args{
@@ -391,7 +391,7 @@ TEST(VulkanFunctionsDescriptorTest, DescriptorSetsForwardLayoutsAndFreeBeforePoo
     functions.vkDestroyDescriptorSetLayout = &destroyDescriptorSetLayout;
     functions.vkAllocateDescriptorSets     = &allocateDescriptorSets;
     functions.vkFreeDescriptorSets         = &freeDescriptorSets;
-    const vkwp::Device device{ "device", descriptor_state.device };
+    const auto device = vkwp::Device::importExternal("device", descriptor_state.device, &functions);
 
     {
         const VkDescriptorSetLayoutBinding binding0{
@@ -442,6 +442,29 @@ TEST(VulkanFunctionsDescriptorTest, DescriptorSetsForwardLayoutsAndFreeBeforePoo
     EXPECT_EQ(descriptor_state.destroy_layout_calls, 2);
 }
 
+TEST(VulkanFunctionsDescriptorTest, ImportedDescriptorPoolRetainsCreateFlags)
+{
+    descriptor_state  = {};
+    const auto device = vkwp::Device::importExternal("device", descriptor_state.device);
+    const auto pool   = vkwp::DescriptorPool::importExternal("pool",
+                                                           device,
+                                                           descriptor_state.pool,
+                                                           VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
+
+    EXPECT_TRUE(pool.isExternal());
+    EXPECT_EQ(pool.getCreateFlags(), VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT);
+}
+
+TEST(VulkanFunctionsCommandTest, InvalidObjectsRejectFunctionPointerOperations)
+{
+    vkwp::CommandPool command_pool;
+    EXPECT_THROW(command_pool.resetCommandPool(), std::runtime_error);
+
+    const vkwp::CommandBuffer command_buffer;
+    EXPECT_THROW(command_buffer.beginCommandBuffer(), std::runtime_error);
+    EXPECT_THROW(command_buffer.endCommandBuffer(), std::runtime_error);
+}
+
 TEST(VulkanFunctionsMemoryTest, AllocateMapReadWriteUnmapAndFreeUseInjectedFunctions)
 {
     memory_state = {};
@@ -454,11 +477,11 @@ TEST(VulkanFunctionsMemoryTest, AllocateMapReadWriteUnmapAndFreeUseInjectedFunct
     functions.vkMapMemory                         = &mapMemory;
     functions.vkUnmapMemory                       = &unmapMemory;
 
-    const vkwp::Instance                              instance{ "instance", memory_state.instance };
+    const auto instance = vkwp::Instance::importExternal("instance", memory_state.instance);
     const vkwp::PhysicalDevice::OptionalEnumerateArgs enumerate_args{ .functions = &functions };
     auto physical_devices = vkwp::PhysicalDevice::enumeratePhysicalDevices(instance, enumerate_args);
     ASSERT_EQ(physical_devices.size(), 1u);
-    const vkwp::Device device{ "device", memory_state.device };
+    const auto device = vkwp::Device::importExternal("device", memory_state.device, &functions);
     {
         const VkMemoryRequirements requirements{
             .size           = 32,

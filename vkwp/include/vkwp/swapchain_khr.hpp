@@ -62,6 +62,13 @@ public:
            const VkSurfaceTransformFlagBitsKHR pre_transform,
            const OptionalCreateArgs &          opt_args);
 
+    [[nodiscard]]
+    static SwapchainKHR
+    importExternal(std::string                   label,
+                   const Device &                device,
+                   const VkSwapchainKHR          external,
+                   const VulkanFunctions * const functions = nullptr);
+
     // VK_EXT_hdr_metadata 拡張が必要.
     void
     setHdrMetadata(const VkHdrMetadataEXT & metadata);

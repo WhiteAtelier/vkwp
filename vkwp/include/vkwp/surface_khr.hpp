@@ -26,6 +26,10 @@ class SurfaceKHR final : public Resource<VkSurfaceKHR, PFN_vkDestroySurfaceKHR, 
 public:
     using Resource<VkSurfaceKHR, PFN_vkDestroySurfaceKHR, VkInstance>::Resource;
 
+    [[nodiscard]]
+    static SurfaceKHR
+    importExternal(std::string label, const Instance & instance, const VkSurfaceKHR external);
+
 #if defined(VKWP_USE_GLFW_SURFACE)
     [[nodiscard]]
     static SurfaceKHR

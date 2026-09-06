@@ -23,6 +23,13 @@ vkwp::impl::_delete(VkInstance i, PFN_vkDestroyInstance fn, const std::tuple<> &
 // Instance class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::Instance
+vkwp::Instance::importExternal(std::string label, const VkInstance external)
+{
+    VKWP_VALIDATE_ARG(external);
+    return Instance{ std::move(label), external };
+}
+
 /* STATIC */
 vkwp::Instance
 vkwp::Instance::create(std::string                      label,
@@ -111,11 +118,22 @@ vkwp::Instance::enumerateInstanceExtensionProperties(const VulkanFunctions * fun
                         ? functions->vkEnumerateInstanceExtensionProperties
                         : vkEnumerateInstanceExtensionProperties;
 
-    std::uint32_t count = 0;
-    VulkanError::check(fn(nullptr, &count, nullptr),
-                       "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
-    std::vector<VkExtensionProperties> ret(count);
-    VulkanError::check(fn(nullptr, &count, ret.data()),
-                       "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
-    return ret;
+    std::vector<VkExtensionProperties> ret;
+    constexpr std::uint32_t            max_attempt_count = 10;
+    for (std::uint32_t attempt_count = 0; attempt_count < max_attempt_count; ++attempt_count)
+    {
+        std::uint32_t count = 0;
+        VulkanError::check(fn(nullptr, &count, nullptr),
+                           "Failed to vkEnumerateInstanceExtensionProperties(). (array size.)");
+        ret.resize(count);
+        const VkResult result = fn(nullptr, &count, ret.data());
+        if (result == VK_INCOMPLETE && attempt_count + 1 < max_attempt_count)
+        {
+            continue;
+        }
+        VulkanError::check(result, "Failed to vkEnumerateInstanceExtensionProperties(). (array data.)");
+        ret.resize(count);
+        return ret;
+    }
+    throw VulkanError{ VK_INCOMPLETE, "Failed to vkEnumerateInstanceExtensionProperties() after maximum attempts." };
 }

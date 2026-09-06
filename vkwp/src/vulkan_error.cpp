@@ -6,7 +6,7 @@
 // ************************************************************************************************
 // Constructor
 // ************************************************************************************************
-vkwp::VulkanError::VulkanError(const VkResult result, const std::string_view message) noexcept
+vkwp::VulkanError::VulkanError(const VkResult result, const std::string_view message)
     : runtime_error{ VulkanError::_toMessage(result, message) }
     , result_{ result }
 {}
@@ -38,7 +38,7 @@ vkwp::VulkanError::check(const VkResult result, const std::string_view message)
 // [PRIVATE / STATIC] _toMessage()
 // ************************************************************************************************
 std::string
-vkwp::VulkanError::_toMessage(const VkResult result, const std::string_view message) noexcept
+vkwp::VulkanError::_toMessage(const VkResult result, const std::string_view message)
 {
     std::string str{ message };
     str += ", Code = ";

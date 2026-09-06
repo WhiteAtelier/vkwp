@@ -77,6 +77,13 @@ public:
                                  const CommandPool &          command_pool,
                                  const OptionalAllocateArgs & opt_args);
 
+    [[nodiscard]]
+    static CommandBuffer
+    importExternal(std::string                   label,
+                   const CommandPool &           command_pool,
+                   const VkCommandBuffer         external,
+                   const VulkanFunctions * const functions = nullptr);
+
     void
     beginCommandBuffer(const VkCommandBufferInheritanceInfo & inheritance_info,
                        const VkCommandBufferUsageFlags        flags  = 0,
@@ -112,6 +119,11 @@ private:
 
     [[nodiscard]]
     explicit CommandBuffer(std::string && label);
+
+    explicit CommandBuffer(std::string &&        label,
+                           const VkCommandBuffer external,
+                           const VkDevice        device,
+                           const VkCommandPool   command_pool);
 
     Mutex *                  mutex_;
     PFN_vkBeginCommandBuffer _vkBeginCommandBuffer = nullptr;

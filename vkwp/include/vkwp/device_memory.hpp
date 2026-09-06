@@ -67,6 +67,13 @@ public:
                               const VkBuffer &                         buffer,
                               const OptionalAllocateArgs &             opt_args);
 
+    [[nodiscard]]
+    static DeviceMemory
+    importExternal(std::string                   label,
+                   const Device &                device,
+                   const VkDeviceMemory          external,
+                   const VulkanFunctions * const functions = nullptr);
+
     /// @brief Write data.
     ///
     /// @param src

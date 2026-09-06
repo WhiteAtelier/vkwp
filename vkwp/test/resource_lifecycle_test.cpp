@@ -400,8 +400,8 @@ TEST(VulkanFunctionsResourceTest, BufferForwardsOperationsAndDestroys)
     functions.vkBindBufferMemory            = &bindBufferMemory;
     functions.vkGetBufferDeviceAddress      = &getBufferDeviceAddress;
 
-    const vkwp::Device       device{ "device", state.device };
-    const vkwp::DeviceMemory memory{ "memory", state.memory };
+    const auto device = vkwp::Device::importExternal("device", state.device, &functions);
+    const auto memory = vkwp::DeviceMemory::importExternal("memory", device, state.memory, &functions);
     {
         const vkwp::Buffer::OptionalCreateArgs optional_args{
             .p_next      = fakePointer(0x1101),
@@ -424,6 +424,29 @@ TEST(VulkanFunctionsResourceTest, BufferForwardsOperationsAndDestroys)
     EXPECT_EQ(state.destroy_calls, 1);
 }
 
+TEST(VulkanFunctionsResourceTest, ImportedBufferForwardsOperationsWithoutDestroying)
+{
+    state = {};
+    vkwp::VulkanFunctions functions;
+    functions.vkDestroyBuffer               = &destroyBuffer;
+    functions.vkGetBufferMemoryRequirements = &getBufferMemoryRequirements;
+    functions.vkBindBufferMemory            = &bindBufferMemory;
+    functions.vkGetBufferDeviceAddress      = &getBufferDeviceAddress;
+
+    const auto device = vkwp::Device::importExternal("device", state.device, &functions);
+    const auto memory = vkwp::DeviceMemory::importExternal("memory", device, state.memory, &functions);
+    {
+        const auto buffer = vkwp::Buffer::importExternal("buffer", device, state.buffer, &functions);
+        EXPECT_TRUE(buffer.isExternal());
+        EXPECT_EQ(buffer.getMemoryRequirements().alignment, 256u);
+        buffer.bindMemory(memory, 512);
+        EXPECT_EQ(buffer.getBufferDeviceAddress(), 0x12345678u);
+        EXPECT_EQ(state.operation_calls, 3);
+    }
+    EXPECT_EQ(state.create_calls, 0);
+    EXPECT_EQ(state.destroy_calls, 0);
+}
+
 TEST(VulkanFunctionsResourceTest, ImageForwardsOperationsAndDestroys)
 {
     state = {};
@@ -434,8 +457,8 @@ TEST(VulkanFunctionsResourceTest, ImageForwardsOperationsAndDestroys)
     functions.vkGetImageMemoryRequirements2 = &getImageMemoryRequirements2;
     functions.vkBindImageMemory             = &bindImageMemory;
 
-    const vkwp::Device       device{ "device", state.device };
-    const vkwp::DeviceMemory memory{ "memory", state.memory };
+    const auto device = vkwp::Device::importExternal("device", state.device, &functions);
+    const auto memory = vkwp::DeviceMemory::importExternal("memory", device, state.memory, &functions);
     {
         const vkwp::Image::OptionalCreateArgs optional_args{
             .p_next       = fakePointer(0x1102),
@@ -467,10 +490,10 @@ TEST(VulkanFunctionsResourceTest, ImageViewForwardsCreateInfoAndDestroys)
 {
     state = {};
     vkwp::VulkanFunctions functions;
-    functions.vkCreateImageView  = &createImageView;
-    functions.vkDestroyImageView = &destroyImageView;
-    const vkwp::Device            device{ "device", state.device };
-    const vkwp::Image             image{ "image", state.image };
+    functions.vkCreateImageView          = &createImageView;
+    functions.vkDestroyImageView         = &destroyImageView;
+    const auto                    device = vkwp::Device::importExternal("device", state.device, &functions);
+    const auto                    image  = vkwp::Image::importExternal("image", device, state.image, &functions);
     const VkImageSubresourceRange range{
         .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
         .baseMipLevel   = 1,
@@ -499,11 +522,11 @@ TEST(VulkanFunctionsResourceTest, RenderPassAndFramebufferForwardCreateInfoAndDe
 {
     state = {};
     vkwp::VulkanFunctions functions;
-    functions.vkCreateRenderPass   = &createRenderPass;
-    functions.vkDestroyRenderPass  = &destroyRenderPass;
-    functions.vkCreateFramebuffer  = &createFramebuffer;
-    functions.vkDestroyFramebuffer = &destroyFramebuffer;
-    const vkwp::Device            device{ "device", state.device };
+    functions.vkCreateRenderPass         = &createRenderPass;
+    functions.vkDestroyRenderPass        = &destroyRenderPass;
+    functions.vkCreateFramebuffer        = &createFramebuffer;
+    functions.vkDestroyFramebuffer       = &destroyFramebuffer;
+    const auto                    device = vkwp::Device::importExternal("device", state.device, &functions);
     const VkAttachmentDescription attachment{ .format = VK_FORMAT_R8G8B8A8_UNORM };
     const VkSubpassDescription    subpass{ .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS };
     const VkSubpassDependency     dependency{ .srcSubpass = VK_SUBPASS_EXTERNAL, .dstSubpass = 0 };
@@ -511,13 +534,13 @@ TEST(VulkanFunctionsResourceTest, RenderPassAndFramebufferForwardCreateInfoAndDe
         const vkwp::RenderPass::OptionalCreateArgs render_pass_args{
             .functions = &functions,
         };
-        auto                                        render_pass = vkwp::RenderPass::create("render-pass",
+        auto       render_pass     = vkwp::RenderPass::create("render-pass",
                                                     device,
-                                                                                           { attachment },
-                                                                                           { subpass },
-                                                                                           { dependency },
+                                                              { attachment },
+                                                              { subpass },
+                                                              { dependency },
                                                     render_pass_args);
-        const vkwp::ImageView                       attachment_view{ "view", state.image_view };
+        const auto attachment_view = vkwp::ImageView::importExternal("view", device, state.image_view);
         const vkwp::Framebuffer::OptionalCreateArgs framebuffer_args{
             .functions = &functions,
         };
@@ -546,7 +569,7 @@ TEST(VulkanFunctionsResourceTest, FenceForwardsOperationsAndDestroys)
     functions.vkDestroyFence  = &destroyFence;
     functions.vkWaitForFences = &waitForFences;
     functions.vkResetFences   = &resetFences;
-    const vkwp::Device device{ "device", state.device };
+    const auto device         = vkwp::Device::importExternal("device", state.device, &functions);
     {
         const vkwp::Fence::OptionalCreateArgs optional_args{
             .p_next      = fakePointer(0x1104),
@@ -573,7 +596,7 @@ TEST(VulkanFunctionsResourceTest, SamplerSemaphoreAndShaderModuleDestroyWithInje
     functions.vkDestroySemaphore    = &destroySemaphore;
     functions.vkCreateShaderModule  = &createShaderModule;
     functions.vkDestroyShaderModule = &destroyShaderModule;
-    const vkwp::Device device{ "device", state.device };
+    const auto device               = vkwp::Device::importExternal("device", state.device, &functions);
     {
         const vkwp::Sampler::OptionalCreateArgs sampler_args{
             .anisotropy_enable = true,

@@ -21,6 +21,10 @@ class Framebuffer final : public Resource<VkFramebuffer, PFN_vkDestroyFramebuffe
 public:
     using Resource<VkFramebuffer, PFN_vkDestroyFramebuffer, VkDevice>::Resource;
 
+    [[nodiscard]]
+    static Framebuffer
+    importExternal(std::string label, const Device & device, const VkFramebuffer external);
+
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;

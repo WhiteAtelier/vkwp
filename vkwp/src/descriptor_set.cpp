@@ -33,6 +33,21 @@ vkwp::impl::_delete(VkDescriptorSet                                i,
 // DescriptorSet class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::DescriptorSet
+vkwp::DescriptorSet::importExternal(std::string            label,
+                                    const Device &         device,
+                                    const DescriptorPool & descriptor_pool,
+                                    const VkDescriptorSet  external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(descriptor_pool);
+    VKWP_VALIDATE_ARG(external);
+    return DescriptorSet{ std::move(label),
+                          external,
+                          static_cast<VkDevice>(device),
+                          static_cast<VkDescriptorPool>(descriptor_pool) };
+}
+
 /* STATIC */
 std::vector<vkwp::DescriptorSet>
 vkwp::DescriptorSet::allocate(const DescriptorPool &                 descriptor_pool,

@@ -7,11 +7,13 @@
 #include <vkwp/debug_utils_resource.hpp>
 #include <vkwp/descriptor_set_layout.hpp>
 #include <vkwp/device.hpp>
+#include <vkwp/instance.hpp>
 #include <vkwp/pipeline.hpp>
 #include <vkwp/pipeline_cache.hpp>
 #include <vkwp/pipeline_layout.hpp>
 #include <vkwp/surface_khr.hpp>
 #include <vkwp/swapchain_khr.hpp>
+#include <vkwp/vulkan_error.hpp>
 #include <vkwp/vulkan_functions.hpp>
 
 #include <array>
@@ -138,6 +140,20 @@ createComputePipelines(const VkDevice                      device,
     EXPECT_EQ(create_infos[0].layout, pipeline_state.pipeline_layout);
     pipelines[0] = pipeline_state.pipelines[static_cast<std::size_t>(pipeline_state.next_pipeline++)];
     return VK_SUCCESS;
+}
+
+VkResult VKAPI_CALL
+createGraphicsPipelinesPartially(const VkDevice,
+                                 const VkPipelineCache,
+                                 const std::uint32_t count,
+                                 const VkGraphicsPipelineCreateInfo *,
+                                 const VkAllocationCallbacks *,
+                                 VkPipeline * pipelines)
+{
+    EXPECT_EQ(count, 2u);
+    pipelines[0] = pipeline_state.pipelines[0];
+    pipelines[1] = nullptr;
+    return VK_ERROR_OUT_OF_DEVICE_MEMORY;
 }
 
 VkResult VKAPI_CALL
@@ -476,9 +492,10 @@ TEST(VulkanFunctionsPipelineTest, PipelineCacheLayoutAndAllPipelineKindsForwardA
     functions.vkCreateComputePipelines       = &createComputePipelines;
     functions.vkCreateRayTracingPipelinesKHR = &createRayTracingPipelines;
     functions.vkDestroyPipeline              = &destroyPipeline;
-    const vkwp::Device              device{ "device", pipeline_state.device };
-    const vkwp::DescriptorSetLayout set_layout{ "set-layout", pipeline_state.descriptor_set_layout };
-    const std::uint32_t             cache_data = 0x12345678u;
+    const auto device = vkwp::Device::importExternal("device", pipeline_state.device, &functions);
+    const auto set_layout
+        = vkwp::DescriptorSetLayout::importExternal("set-layout", device, pipeline_state.descriptor_set_layout);
+    const std::uint32_t cache_data = 0x12345678u;
 
     {
         const vkwp::PipelineCache::OptionalCreateArgs cache_args{
@@ -551,9 +568,10 @@ TEST(VulkanFunctionsSwapchainTest, CreateOperationsAndDestroyForwardAllArguments
     functions.vkDestroySwapchainKHR   = &destroySwapchain;
     functions.vkGetSwapchainImagesKHR = &getSwapchainImages;
     functions.vkSetHdrMetadataEXT     = &setHdrMetadata;
-    const vkwp::Device       device{ "device", swapchain_state.device };
-    const vkwp::SurfaceKHR   surface{ "surface", swapchain_state.surface };
-    const vkwp::SwapchainKHR old_swapchain{ "old", swapchain_state.old_chain };
+    const auto device                 = vkwp::Device::importExternal("device", swapchain_state.device, &functions);
+    const auto instance               = vkwp::Instance::importExternal("instance", fakeHandle<VkInstance>(0x3200));
+    const auto surface                = vkwp::SurfaceKHR::importExternal("surface", instance, swapchain_state.surface);
+    const auto old_swapchain = vkwp::SwapchainKHR::importExternal("old", device, swapchain_state.old_chain, &functions);
 
     {
         const vkwp::SwapchainKHR::OptionalCreateArgs optional_args{
@@ -586,13 +604,31 @@ TEST(VulkanFunctionsSwapchainTest, CreateOperationsAndDestroyForwardAllArguments
     EXPECT_EQ(swapchain_state.destroy_calls, 1);
 }
 
+TEST(VulkanFunctionsPipelineTest, PartiallyCreatedPipelinesAreDestroyedOnFailure)
+{
+    pipeline_state = {};
+    vkwp::VulkanFunctions functions;
+    functions.vkCreateGraphicsPipelines = &createGraphicsPipelinesPartially;
+    functions.vkDestroyPipeline         = &destroyPipeline;
+    const auto device                   = vkwp::Device::importExternal("device", pipeline_state.device, &functions);
+
+    vkwp::GraphicsPipelineCreateInfo         first{ .label = "first" };
+    vkwp::GraphicsPipelineCreateInfo         second{ .label = "second" };
+    const vkwp::Pipeline::OptionalCreateArgs optional_args{
+        .functions = &functions,
+    };
+    EXPECT_THROW(static_cast<void>(vkwp::Pipeline::create(device, { first, second }, optional_args)),
+                 vkwp::VulkanError);
+    EXPECT_EQ(pipeline_state.destroy_pipeline_calls, 1);
+}
+
 TEST(VulkanFunctionsAccelerationStructureTest, MissingFunctionsResolveThroughDeviceProcAddrAndDestroy)
 {
     acceleration_state = {};
     vkwp::VulkanFunctions functions;
     functions.vkGetDeviceProcAddr = &getDeviceProcAddr;
-    const vkwp::Device device{ "device", acceleration_state.device };
-    const vkwp::Buffer buffer{ "buffer", acceleration_state.buffer };
+    const auto device             = vkwp::Device::importExternal("device", acceleration_state.device, &functions);
+    const auto buffer = vkwp::Buffer::importExternal("buffer", device, acceleration_state.buffer, &functions);
     {
         const vkwp::AccelerationStructureKHR::OptionalCreateArgs optional_args{
             .p_next         = const_cast<void *>(fakePointer(0x3304)),
@@ -616,14 +652,24 @@ TEST(VulkanFunctionsAccelerationStructureTest, MissingFunctionsResolveThroughDev
     EXPECT_EQ(acceleration_state.destroy_calls, 1);
 }
 
+TEST(VulkanFunctionsSwapchainTest, InvalidObjectRejectsFunctionPointerOperations)
+{
+    vkwp::SwapchainKHR     swapchain;
+    const VkHdrMetadataEXT metadata{
+        .sType = VK_STRUCTURE_TYPE_HDR_METADATA_EXT,
+    };
+    EXPECT_THROW(swapchain.setHdrMetadata(metadata), std::runtime_error);
+    EXPECT_THROW(static_cast<void>(swapchain.getSwapchainImages()), std::runtime_error);
+}
+
 TEST(VulkanFunctionsAccelerationStructureTest, ProvidedFunctionsAreUsedWithoutDeviceProcAddr)
 {
     acceleration_state = {};
     vkwp::VulkanFunctions functions;
     functions.vkCreateAccelerationStructureKHR  = &createAccelerationStructure;
     functions.vkDestroyAccelerationStructureKHR = &destroyAccelerationStructure;
-    const vkwp::Device device{ "device", acceleration_state.device };
-    const vkwp::Buffer buffer{ "buffer", acceleration_state.buffer };
+    const auto device = vkwp::Device::importExternal("device", acceleration_state.device, &functions);
+    const auto buffer = vkwp::Buffer::importExternal("buffer", device, acceleration_state.buffer, &functions);
     {
         const vkwp::AccelerationStructureKHR::OptionalCreateArgs optional_args{
             .p_next         = const_cast<void *>(fakePointer(0x3304)),

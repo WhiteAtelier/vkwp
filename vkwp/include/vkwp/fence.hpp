@@ -34,6 +34,13 @@ public:
     static Fence
     create(std::string label, const Device & device, const OptionalCreateArgs & opt_args);
 
+    [[nodiscard]]
+    static Fence
+    importExternal(std::string                   label,
+                   const Device &                device,
+                   const VkFence                 external,
+                   const VulkanFunctions * const functions = nullptr);
+
     bool
     wait(const std::uint64_t timeout = (std::numeric_limits<std::uint64_t>::max)()) const;
 

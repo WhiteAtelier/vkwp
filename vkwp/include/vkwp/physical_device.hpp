@@ -35,6 +35,12 @@ public:
     enumeratePhysicalDevices(const Instance & instance, const OptionalEnumerateArgs & opt_args);
 
     [[nodiscard]]
+    static PhysicalDevice
+    importExternal(std::string                   label,
+                   const VkPhysicalDevice        external,
+                   const VulkanFunctions * const functions = nullptr);
+
+    [[nodiscard]]
     const std::vector<VkQueueFamilyProperties> &
     getQueueFamilyProperties() const;
 
@@ -82,6 +88,10 @@ public:
 
 private:
     explicit PhysicalDevice(std::string && label, VkPhysicalDeviceProperties && pd_properties);
+
+    explicit PhysicalDevice(std::string &&                label,
+                            const VkPhysicalDevice        external,
+                            VkPhysicalDeviceProperties && pd_properties);
 
     VkPhysicalDeviceProperties                                  properties_{};
     mutable std::optional<std::vector<VkQueueFamilyProperties>> queue_family_properties_cache_;

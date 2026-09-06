@@ -231,6 +231,27 @@ vkwp::CommandBuffer::allocatePrimaryCommandBuffer(std::string                  l
     return allocateCommandBuffer(std::move(label), command_pool, VK_COMMAND_BUFFER_LEVEL_PRIMARY, opt_args);
 }
 
+vkwp::CommandBuffer
+vkwp::CommandBuffer::importExternal(std::string                   label,
+                                    const CommandPool &           command_pool,
+                                    const VkCommandBuffer         external,
+                                    const VulkanFunctions * const functions)
+{
+    VKWP_VALIDATE_ARG(command_pool);
+    VKWP_VALIDATE_ARG(external);
+
+    const VkDevice device = std::get<0>(command_pool.parents_);
+    CommandBuffer  ret{ std::move(label), external, device, static_cast<VkCommandPool>(command_pool) };
+    ret.mutex_                = command_pool.mutex_.get();
+    ret._vkBeginCommandBuffer = (functions != nullptr && functions->vkBeginCommandBuffer != nullptr)
+                                  ? functions->vkBeginCommandBuffer
+                                  : vkBeginCommandBuffer;
+    ret._vkEndCommandBuffer   = (functions != nullptr && functions->vkEndCommandBuffer != nullptr)
+                                  ? functions->vkEndCommandBuffer
+                                  : vkEndCommandBuffer;
+    return ret;
+}
+
 vkwp::CommandBuffer::CommandBuffer()
     : Resource{}
     , mutex_{ nullptr }
@@ -238,6 +259,14 @@ vkwp::CommandBuffer::CommandBuffer()
 
 vkwp::CommandBuffer::CommandBuffer(std::string && label)
     : Resource{ std::move(label) }
+    , mutex_{ nullptr }
+{}
+
+vkwp::CommandBuffer::CommandBuffer(std::string &&        label,
+                                   const VkCommandBuffer external,
+                                   const VkDevice        device,
+                                   const VkCommandPool   command_pool)
+    : Resource{ std::move(label), external, device, command_pool }
     , mutex_{ nullptr }
 {}
 
@@ -299,6 +328,7 @@ vkwp::CommandBuffer::_beginCommandBuffer(const VkCommandBufferInheritanceInfo * 
                                          const VkCommandBufferUsageFlags        flags,
                                          const void * const                     p_next) const
 {
+    VKWP_VALIDATE_THIS;
     const VkCommandBufferBeginInfo bi{
         .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
         .pNext            = p_next,
@@ -311,6 +341,7 @@ vkwp::CommandBuffer::_beginCommandBuffer(const VkCommandBufferInheritanceInfo * 
 void
 vkwp::CommandBuffer::endCommandBuffer() const
 {
+    VKWP_VALIDATE_THIS;
     VulkanError::check(this->_vkEndCommandBuffer(*this), "Failed to vkEndCommandBuffer().");
 }
 

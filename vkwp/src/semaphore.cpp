@@ -25,6 +25,14 @@ vkwp::impl::_delete(VkSemaphore i, PFN_vkDestroySemaphore fn, const std::tuple<V
 // PipelineCache class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::Semaphore
+vkwp::Semaphore::importExternal(std::string label, const Device & device, const VkSemaphore external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return Semaphore{ std::move(label), external, static_cast<VkDevice>(device) };
+}
+
 /* STATIC */
 vkwp::Semaphore
 vkwp::Semaphore::create(std::string label, const Device & device)

@@ -23,12 +23,12 @@ vkwp::Resource<T, DFn, ParentTs...>::Resource(std::string && label)
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename DFn, typename... ParentTs>
-vkwp::Resource<T, DFn, ParentTs...>::Resource(std::string && label, const T & external)
+vkwp::Resource<T, DFn, ParentTs...>::Resource(std::string && label, const T & external, ParentTs... parents)
     : label_{ std::move(label) }
     , instance_{ external }
     , destroy_fn_{ nullptr }
     , external_{ true }
-    , parents_{}
+    , parents_{ std::make_tuple<ParentTs...>(std::forward<ParentTs>(parents)...) }
 {}
 
 template <::vkwp::vulkan_raw_resource T, typename DFn, typename... ParentTs>

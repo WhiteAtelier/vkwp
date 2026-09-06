@@ -26,6 +26,14 @@ vkwp::impl::_delete(VkPipelineCache i, PFN_vkDestroyPipelineCache fn, const std:
 // PipelineCache class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::PipelineCache
+vkwp::PipelineCache::importExternal(std::string label, const Device & device, const VkPipelineCache external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return PipelineCache{ std::move(label), external, static_cast<VkDevice>(device) };
+}
+
 /* STATIC */
 vkwp::PipelineCache
 vkwp::PipelineCache::create(std::string label, const Device & device)

@@ -25,6 +25,14 @@ vkwp::impl::_delete(VkShaderModule i, PFN_vkDestroyShaderModule fn, const std::t
 // PipelineCache class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::ShaderModule
+vkwp::ShaderModule::importExternal(std::string label, const Device & device, const VkShaderModule external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return ShaderModule{ std::move(label), external, static_cast<VkDevice>(device) };
+}
+
 /* STATIC */
 vkwp::ShaderModule
 vkwp::ShaderModule::create(std::string                        label,  //

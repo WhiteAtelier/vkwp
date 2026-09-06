@@ -19,6 +19,10 @@ class PipelineCache final : public Resource<VkPipelineCache, PFN_vkDestroyPipeli
 public:
     using Resource<VkPipelineCache, PFN_vkDestroyPipelineCache, VkDevice>::Resource;
 
+    [[nodiscard]]
+    static PipelineCache
+    importExternal(std::string label, const Device & device, const VkPipelineCache external);
+
     struct OptionalCreateArgs
     {
         const void *               p_next            = nullptr;

@@ -45,6 +45,10 @@ public:
            const VkPhysicalDeviceFeatures * const       enabled_features,
            const OptionalCreateArgs &                   opt_args);
 
+    [[nodiscard]]
+    static Device
+    importExternal(std::string label, const VkDevice external, const VulkanFunctions * const functions = nullptr);
+
     void
     waitIdle() const;
 

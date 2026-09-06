@@ -32,6 +32,14 @@ vkwp::impl::_delete(VkSurfaceKHR i, PFN_vkDestroySurfaceKHR fn, const std::tuple
 // PipelineCache class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::SurfaceKHR
+vkwp::SurfaceKHR::importExternal(std::string label, const Instance & instance, const VkSurfaceKHR external)
+{
+    VKWP_VALIDATE_ARG(instance);
+    VKWP_VALIDATE_ARG(external);
+    return SurfaceKHR{ std::move(label), external, static_cast<VkInstance>(instance) };
+}
+
 /* STATIC */
 #if VKWP_SUPPORT_GLFW_SURFACE
 vkwp::SurfaceKHR

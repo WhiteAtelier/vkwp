@@ -20,6 +20,13 @@ class DescriptorPool final : public Resource<VkDescriptorPool, PFN_vkDestroyDesc
 public:
     using Resource<VkDescriptorPool, PFN_vkDestroyDescriptorPool, VkDevice>::Resource;
 
+    [[nodiscard]]
+    static DescriptorPool
+    importExternal(std::string                       label,
+                   const Device &                    device,
+                   const VkDescriptorPool            external,
+                   const VkDescriptorPoolCreateFlags create_flags);
+
     struct OptionalCreateArgs
     {
         const void *                p_next      = nullptr;

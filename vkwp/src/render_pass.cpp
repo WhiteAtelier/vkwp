@@ -26,6 +26,14 @@ vkwp::impl::_delete(VkRenderPass i, PFN_vkDestroyRenderPass fn, const std::tuple
 // Image class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::RenderPass
+vkwp::RenderPass::importExternal(std::string label, const Device & device, const VkRenderPass external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return RenderPass{ std::move(label), external, static_cast<VkDevice>(device) };
+}
+
 /* STATIC */
 vkwp::RenderPass
 vkwp::RenderPass::create(std::string                                  label,

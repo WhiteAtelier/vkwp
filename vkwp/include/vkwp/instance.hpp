@@ -20,6 +20,10 @@ class Instance final : public Resource<VkInstance, PFN_vkDestroyInstance>
 public:
     using Resource<VkInstance, PFN_vkDestroyInstance>::Resource;
 
+    [[nodiscard]]
+    static Instance
+    importExternal(std::string label, const VkInstance external);
+
     struct OptionalCreateArgs
     {
         const void *            p_next    = nullptr;

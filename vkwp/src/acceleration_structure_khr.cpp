@@ -99,3 +99,13 @@ vkwp::AccelerationStructureKHR::create(std::string                          labe
     }
     return ret;
 }
+
+vkwp::AccelerationStructureKHR
+vkwp::AccelerationStructureKHR::importExternal(std::string                      label,
+                                               const Device &                   device,
+                                               const VkAccelerationStructureKHR external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return AccelerationStructureKHR{ std::move(label), external, static_cast<VkDevice>(device) };
+}

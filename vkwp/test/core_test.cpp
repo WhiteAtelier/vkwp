@@ -5,6 +5,7 @@
 #include <vkwp/instance.hpp>
 #include <vkwp/physical_device.hpp>
 #include <vkwp/queue.hpp>
+#include <vkwp/vulkan_error.hpp>
 #include <vkwp/vulkan_functions.hpp>
 
 #include <array>
@@ -81,6 +82,38 @@ enumerateInstanceExtensions(const char * layer_name, std::uint32_t * property_co
         properties[0].specVersion = 7;
     }
     return VK_SUCCESS;
+}
+
+int incomplete_instance_extension_calls = 0;
+
+VkResult VKAPI_CALL
+enumerateChangingInstanceExtensions(const char *, std::uint32_t * property_count, VkExtensionProperties * properties)
+{
+    ++incomplete_instance_extension_calls;
+    if (properties == nullptr)
+    {
+        *property_count = incomplete_instance_extension_calls == 1 ? 1u : 2u;
+        return VK_SUCCESS;
+    }
+    if (incomplete_instance_extension_calls == 2)
+    {
+        *property_count = 1;
+        return VK_INCOMPLETE;
+    }
+    std::memcpy(properties[0].extensionName, "VK_TEST_first", sizeof("VK_TEST_first"));
+    std::memcpy(properties[1].extensionName, "VK_TEST_second", sizeof("VK_TEST_second"));
+    *property_count = 2;
+    return VK_SUCCESS;
+}
+
+int incomplete_instance_extension_forever_calls = 0;
+
+VkResult VKAPI_CALL
+enumerateIncompleteInstanceExtensions(const char *, std::uint32_t * property_count, VkExtensionProperties * properties)
+{
+    ++incomplete_instance_extension_forever_calls;
+    *property_count = 1;
+    return properties == nullptr ? VK_SUCCESS : VK_INCOMPLETE;
 }
 
 VkResult VKAPI_CALL
@@ -357,6 +390,37 @@ TEST(VulkanFunctionsCoreTest, DeviceForwardsArgumentsCachesOperationsAndDestroys
     EXPECT_EQ(state.destroy_device_calls, 1);
 }
 
+TEST(VulkanFunctionsCoreTest, EnumerateInstanceExtensionsRetriesIncompleteResult)
+{
+    incomplete_instance_extension_calls = 0;
+    vkwp::VulkanFunctions functions;
+    functions.vkEnumerateInstanceExtensionProperties = &enumerateChangingInstanceExtensions;
+
+    const auto extensions = vkwp::Instance::enumerateInstanceExtensionProperties(&functions);
+    ASSERT_EQ(extensions.size(), 2u);
+    EXPECT_STREQ(extensions[0].extensionName, "VK_TEST_first");
+    EXPECT_STREQ(extensions[1].extensionName, "VK_TEST_second");
+    EXPECT_EQ(incomplete_instance_extension_calls, 4);
+}
+
+TEST(VulkanFunctionsCoreTest, EnumerateInstanceExtensionsThrowsAfterTenIncompleteResults)
+{
+    incomplete_instance_extension_forever_calls = 0;
+    vkwp::VulkanFunctions functions;
+    functions.vkEnumerateInstanceExtensionProperties = &enumerateIncompleteInstanceExtensions;
+
+    try
+    {
+        static_cast<void>(vkwp::Instance::enumerateInstanceExtensionProperties(&functions));
+        FAIL() << "VulkanError was not thrown.";
+    }
+    catch (const vkwp::VulkanError & error)
+    {
+        EXPECT_EQ(error.result(), VK_INCOMPLETE);
+    }
+    EXPECT_EQ(incomplete_instance_extension_forever_calls, 20);
+}
+
 TEST(VulkanFunctionsCoreTest, PhysicalDeviceCachesAndForwardsQueryFunctions)
 {
     state = {};
@@ -371,7 +435,7 @@ TEST(VulkanFunctionsCoreTest, PhysicalDeviceCachesAndForwardsQueryFunctions)
     functions.vkGetPhysicalDeviceSurfaceCapabilitiesKHR = &getSurfaceCapabilities;
     functions.vkGetPhysicalDeviceSurfaceSupportKHR      = &getSurfaceSupport;
 
-    const vkwp::Instance                              instance{ "external-instance", state.instance };
+    const auto instance = vkwp::Instance::importExternal("external-instance", state.instance);
     const vkwp::PhysicalDevice::OptionalEnumerateArgs optional_args{ .functions = &functions };
     auto physical_devices = vkwp::PhysicalDevice::enumeratePhysicalDevices(instance, optional_args);
     ASSERT_EQ(physical_devices.size(), 1u);

@@ -96,6 +96,26 @@ vkwp::CommandPool::create(std::string                label,
     return ret;
 }
 
+vkwp::CommandPool
+vkwp::CommandPool::importExternal(std::string                    label,
+                                  const Device &                 device,
+                                  const VkCommandPool            external,
+                                  const VkCommandPoolCreateFlags create_flags,
+                                  std::unique_ptr<Mutex> &&      mutex,
+                                  const VulkanFunctions * const  functions)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+
+    CommandPool ret{ std::move(label), external, static_cast<VkDevice>(device) };
+    ret.create_flags_       = create_flags;
+    ret.mutex_              = std::move(mutex);
+    ret._vkResetCommandPool = (functions != nullptr && functions->vkResetCommandPool != nullptr)
+                                ? functions->vkResetCommandPool
+                                : vkResetCommandPool;
+    return ret;
+}
+
 VkCommandPoolCreateFlags
 vkwp::CommandPool::getCreateFlags() const noexcept
 {
@@ -105,6 +125,7 @@ vkwp::CommandPool::getCreateFlags() const noexcept
 void
 vkwp::CommandPool::resetCommandPool(const VkCommandPoolResetFlags flags) const
 {
+    VKWP_VALIDATE_THIS;
     VulkanError::check(this->_vkResetCommandPool(std::get<0>(this->parents_), *this, flags),
                        "Failed to vkResetCommandPool()");
 }

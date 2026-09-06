@@ -27,6 +27,14 @@ vkwp::impl::_delete(VkFramebuffer i, PFN_vkDestroyFramebuffer fn, const std::tup
 // Image class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::Framebuffer
+vkwp::Framebuffer::importExternal(std::string label, const Device & device, const VkFramebuffer external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return Framebuffer{ std::move(label), external, static_cast<VkDevice>(device) };
+}
+
 /* STATIC */
 vkwp::Framebuffer
 vkwp::Framebuffer::create(std::string                                                label,

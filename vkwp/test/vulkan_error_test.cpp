@@ -175,7 +175,7 @@ TEST(VulkanErrorIntegrationTest, CreateErrorPropagatesWithoutDestroyingNullHandl
     vkwp::VulkanFunctions functions;
     functions.vkCreateBuffer  = &failCreateBuffer;
     functions.vkDestroyBuffer = &destroyBuffer;
-    const vkwp::Device                     device{ "device", error_state.device };
+    const auto device         = vkwp::Device::importExternal("device", error_state.device, &functions);
     const vkwp::Buffer::OptionalCreateArgs optional_args{
         .functions = &functions,
     };
@@ -203,8 +203,8 @@ TEST(VulkanErrorIntegrationTest, MemberFunctionErrorPropagatesAndResourceStillDe
     functions.vkBindBufferMemory            = &failBindBufferMemory;
     functions.vkGetBufferMemoryRequirements = nullptr;
     functions.vkGetBufferDeviceAddress      = nullptr;
-    const vkwp::Device       device{ "device", error_state.device };
-    const vkwp::DeviceMemory memory{ "memory", error_state.memory };
+    const auto device                       = vkwp::Device::importExternal("device", error_state.device, &functions);
+    const auto memory = vkwp::DeviceMemory::importExternal("memory", device, error_state.memory, &functions);
 
     {
         const vkwp::Buffer::OptionalCreateArgs optional_args{
@@ -234,7 +234,7 @@ TEST(VulkanErrorIntegrationTest, FenceHandlesTimeoutButThrowsOtherFailures)
     functions.vkDestroyFence  = &destroyFence;
     functions.vkWaitForFences = &waitForFenceTimeout;
     functions.vkResetFences   = &resetFences;
-    const vkwp::Device                    device{ "device", error_state.device };
+    const auto device         = vkwp::Device::importExternal("device", error_state.device, &functions);
     const vkwp::Fence::OptionalCreateArgs optional_args{
         .functions = &functions,
     };
