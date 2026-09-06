@@ -338,7 +338,7 @@ TEST(VulkanFunctionsCommandTest, CommandPoolAndBuffersForwardArgumentsAndFree)
     functions.vkFreeCommandBuffers     = &freeCommandBuffers;
     functions.vkBeginCommandBuffer     = &beginCommandBuffer;
     functions.vkEndCommandBuffer       = &endCommandBuffer;
-    const vkwp::Device device{ "device", command_state.device };
+    const auto device                  = vkwp::Device::importExternal("device", command_state.device, &functions);
 
     {
         const vkwp::CommandPool::OptionalCreateArgs pool_args{
@@ -391,7 +391,7 @@ TEST(VulkanFunctionsDescriptorTest, DescriptorSetsForwardLayoutsAndFreeBeforePoo
     functions.vkDestroyDescriptorSetLayout = &destroyDescriptorSetLayout;
     functions.vkAllocateDescriptorSets     = &allocateDescriptorSets;
     functions.vkFreeDescriptorSets         = &freeDescriptorSets;
-    const vkwp::Device device{ "device", descriptor_state.device };
+    const auto device = vkwp::Device::importExternal("device", descriptor_state.device, &functions);
 
     {
         const VkDescriptorSetLayoutBinding binding0{
@@ -454,11 +454,11 @@ TEST(VulkanFunctionsMemoryTest, AllocateMapReadWriteUnmapAndFreeUseInjectedFunct
     functions.vkMapMemory                         = &mapMemory;
     functions.vkUnmapMemory                       = &unmapMemory;
 
-    const vkwp::Instance                              instance{ "instance", memory_state.instance };
+    const auto instance = vkwp::Instance::importExternal("instance", memory_state.instance);
     const vkwp::PhysicalDevice::OptionalEnumerateArgs enumerate_args{ .functions = &functions };
     auto physical_devices = vkwp::PhysicalDevice::enumeratePhysicalDevices(instance, enumerate_args);
     ASSERT_EQ(physical_devices.size(), 1u);
-    const vkwp::Device device{ "device", memory_state.device };
+    const auto device = vkwp::Device::importExternal("device", memory_state.device, &functions);
     {
         const VkMemoryRequirements requirements{
             .size           = 32,

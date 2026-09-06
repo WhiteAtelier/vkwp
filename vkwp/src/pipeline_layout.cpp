@@ -26,6 +26,14 @@ vkwp::impl::_delete(VkPipelineLayout i, PFN_vkDestroyPipelineLayout fn, const st
 // PipelineLayout class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::PipelineLayout
+vkwp::PipelineLayout::importExternal(std::string label, const Device & device, const VkPipelineLayout external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return PipelineLayout{ std::move(label), external, static_cast<VkDevice>(device) };
+}
+
 /* STATIC */
 vkwp::PipelineLayout
 vkwp::PipelineLayout::create(std::string                                                            label,

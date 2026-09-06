@@ -23,6 +23,13 @@ vkwp::impl::_delete(VkInstance i, PFN_vkDestroyInstance fn, const std::tuple<> &
 // Instance class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::Instance
+vkwp::Instance::importExternal(std::string label, const VkInstance external)
+{
+    VKWP_VALIDATE_ARG(external);
+    return Instance{ std::move(label), external };
+}
+
 /* STATIC */
 vkwp::Instance
 vkwp::Instance::create(std::string                      label,

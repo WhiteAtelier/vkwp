@@ -26,6 +26,14 @@ vkwp::impl::_delete(VkImageView i, PFN_vkDestroyImageView fn, const std::tuple<V
 // ImageView class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::ImageView
+vkwp::ImageView::importExternal(std::string label, const Device & device, const VkImageView external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return ImageView{ std::move(label), external, static_cast<VkDevice>(device) };
+}
+
 /* STATIC */
 vkwp::ImageView
 vkwp::ImageView::create(std::string                     label,

@@ -18,6 +18,10 @@ class Sampler final : public Resource<VkSampler, PFN_vkDestroySampler, VkDevice>
 public:
     using Resource<VkSampler, PFN_vkDestroySampler, VkDevice>::Resource;
 
+    [[nodiscard]]
+    static Sampler
+    importExternal(std::string label, const Device & device, const VkSampler external);
+
     struct OptionalCreateArgs
     {
         const void *               p_next                   = nullptr;

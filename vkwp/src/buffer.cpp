@@ -89,6 +89,28 @@ vkwp::Buffer::create(std::string                label,
     return ret;
 }
 
+vkwp::Buffer
+vkwp::Buffer::importExternal(std::string                   label,
+                             const Device &                device,
+                             const VkBuffer                external,
+                             const VulkanFunctions * const functions)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+
+    Buffer ret{ std::move(label), external, static_cast<VkDevice>(device) };
+    ret._vkGetBufferMemoryRequirements = (functions != nullptr && functions->vkGetBufferMemoryRequirements != nullptr)
+                                           ? functions->vkGetBufferMemoryRequirements
+                                           : vkGetBufferMemoryRequirements;
+    ret._vkBindBufferMemory            = (functions != nullptr && functions->vkBindBufferMemory != nullptr)
+                                           ? functions->vkBindBufferMemory
+                                           : vkBindBufferMemory;
+    ret._vkGetBufferDeviceAddress      = (functions != nullptr && functions->vkGetBufferDeviceAddress != nullptr)
+                                           ? functions->vkGetBufferDeviceAddress
+                                           : vkGetBufferDeviceAddress;
+    return ret;
+}
+
 VkMemoryRequirements
 vkwp::Buffer::getMemoryRequirements() const
 {

@@ -119,6 +119,21 @@ vkwp::Device::create(std::string                                  label,
     return ret;
 }
 
+vkwp::Device
+vkwp::Device::importExternal(std::string label, const VkDevice external, const VulkanFunctions * const functions)
+{
+    VKWP_VALIDATE_ARG(external);
+
+    Device ret{ std::move(label), external };
+    ret._vkDeviceWaitIdle = (functions != nullptr && functions->vkDeviceWaitIdle != nullptr)
+                              ? functions->vkDeviceWaitIdle
+                              : vkDeviceWaitIdle;
+    ret._vkGetDeviceQueue = (functions != nullptr && functions->vkGetDeviceQueue != nullptr)
+                              ? functions->vkGetDeviceQueue
+                              : vkGetDeviceQueue;
+    return ret;
+}
+
 void
 vkwp::Device::waitIdle() const
 {

@@ -109,6 +109,23 @@ vkwp::DeviceMemory::allocate(std::string                  label,
     return ret;
 }
 
+vkwp::DeviceMemory
+vkwp::DeviceMemory::importExternal(std::string                   label,
+                                   const Device &                device,
+                                   const VkDeviceMemory          external,
+                                   const VulkanFunctions * const functions)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+
+    DeviceMemory ret{ std::move(label), external, static_cast<VkDevice>(device) };
+    ret._vkMapMemory
+        = (functions != nullptr && functions->vkMapMemory != nullptr) ? functions->vkMapMemory : vkMapMemory;
+    ret._vkUnmapMemory
+        = (functions != nullptr && functions->vkUnmapMemory != nullptr) ? functions->vkUnmapMemory : vkUnmapMemory;
+    return ret;
+}
+
 #if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && _WIN32
 /* STATIC */
 vkwp::DeviceMemory

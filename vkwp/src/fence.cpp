@@ -74,6 +74,23 @@ vkwp::Fence::create(std::string label, const Device & device, const OptionalCrea
     return ret;
 }
 
+vkwp::Fence
+vkwp::Fence::importExternal(std::string                   label,
+                            const Device &                device,
+                            const VkFence                 external,
+                            const VulkanFunctions * const functions)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+
+    Fence ret{ std::move(label), external, static_cast<VkDevice>(device) };
+    ret._vkWaitForFences = (functions != nullptr && functions->vkWaitForFences != nullptr) ? functions->vkWaitForFences
+                                                                                           : vkWaitForFences;
+    ret._vkResetFences
+        = (functions != nullptr && functions->vkResetFences != nullptr) ? functions->vkResetFences : vkResetFences;
+    return ret;
+}
+
 bool
 vkwp::Fence::wait(const std::uint64_t timeout) const
 {

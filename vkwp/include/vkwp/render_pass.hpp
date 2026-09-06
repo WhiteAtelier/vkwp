@@ -19,6 +19,10 @@ class RenderPass final : public Resource<VkRenderPass, PFN_vkDestroyRenderPass, 
 public:
     using Resource<VkRenderPass, PFN_vkDestroyRenderPass, VkDevice>::Resource;
 
+    [[nodiscard]]
+    static RenderPass
+    importExternal(std::string label, const Device & device, const VkRenderPass external);
+
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;

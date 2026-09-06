@@ -46,6 +46,9 @@ public:
            const VkDeviceSize                   size,
            const VkAccelerationStructureTypeKHR type,
            const OptionalCreateArgs &           opt_args);
+
+    static AccelerationStructureKHR
+    importExternal(std::string label, const Device & device, const VkAccelerationStructureKHR external);
 };
 
 }  // namespace vkwp

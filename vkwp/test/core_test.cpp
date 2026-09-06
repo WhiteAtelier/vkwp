@@ -371,7 +371,7 @@ TEST(VulkanFunctionsCoreTest, PhysicalDeviceCachesAndForwardsQueryFunctions)
     functions.vkGetPhysicalDeviceSurfaceCapabilitiesKHR = &getSurfaceCapabilities;
     functions.vkGetPhysicalDeviceSurfaceSupportKHR      = &getSurfaceSupport;
 
-    const vkwp::Instance                              instance{ "external-instance", state.instance };
+    const auto instance = vkwp::Instance::importExternal("external-instance", state.instance);
     const vkwp::PhysicalDevice::OptionalEnumerateArgs optional_args{ .functions = &functions };
     auto physical_devices = vkwp::PhysicalDevice::enumeratePhysicalDevices(instance, optional_args);
     ASSERT_EQ(physical_devices.size(), 1u);

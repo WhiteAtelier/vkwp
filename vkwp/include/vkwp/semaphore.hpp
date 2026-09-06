@@ -18,6 +18,10 @@ class Semaphore final : public Resource<VkSemaphore, PFN_vkDestroySemaphore, VkD
 public:
     using Resource<VkSemaphore, PFN_vkDestroySemaphore, VkDevice>::Resource;
 
+    [[nodiscard]]
+    static Semaphore
+    importExternal(std::string label, const Device & device, const VkSemaphore external);
+
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;

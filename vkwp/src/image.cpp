@@ -107,6 +107,28 @@ vkwp::Image::create(std::string                label,
     return ret;
 }
 
+vkwp::Image
+vkwp::Image::importExternal(std::string                   label,
+                            const Device &                device,
+                            const VkImage                 external,
+                            const VulkanFunctions * const functions)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+
+    Image ret{ std::move(label), external, static_cast<VkDevice>(device) };
+    ret._vkGetImageMemoryRequirements  = (functions != nullptr && functions->vkGetImageMemoryRequirements != nullptr)
+                                           ? functions->vkGetImageMemoryRequirements
+                                           : vkGetImageMemoryRequirements;
+    ret._vkGetImageMemoryRequirements2 = (functions != nullptr && functions->vkGetImageMemoryRequirements2 != nullptr)
+                                           ? functions->vkGetImageMemoryRequirements2
+                                           : vkGetImageMemoryRequirements2;
+    ret._vkBindImageMemory             = (functions != nullptr && functions->vkBindImageMemory != nullptr)
+                                           ? functions->vkBindImageMemory
+                                           : vkBindImageMemory;
+    return ret;
+}
+
 /* STATIC */
 vkwp::Image
 vkwp::Image::create1D(std::string             label,

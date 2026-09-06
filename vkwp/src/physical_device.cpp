@@ -29,6 +29,13 @@ vkwp::PhysicalDevice::PhysicalDevice(std::string && label, VkPhysicalDevicePrope
     , properties_{ std::move(pd_properties) }
 {}
 
+vkwp::PhysicalDevice::PhysicalDevice(std::string &&                label,
+                                     const VkPhysicalDevice        external,
+                                     VkPhysicalDeviceProperties && pd_properties)
+    : Resource{ std::move(label), external }
+    , properties_{ std::move(pd_properties) }
+{}
+
 std::vector<vkwp::PhysicalDevice>
 vkwp::PhysicalDevice::enumeratePhysicalDevices(const Instance & instance)
 {
@@ -115,6 +122,51 @@ vkwp::PhysicalDevice::enumeratePhysicalDevices(const Instance & instance, const 
             pdev._vkGetPhysicalDeviceSurfaceSupportKHR      = vkGetPhysicalDeviceSurfaceSupportKHR;
         }
     }
+    return ret;
+}
+
+vkwp::PhysicalDevice
+vkwp::PhysicalDevice::importExternal(std::string                   label,
+                                     const VkPhysicalDevice        external,
+                                     const VulkanFunctions * const functions)
+{
+    VKWP_VALIDATE_ARG(external);
+
+    auto * const get_properties_fn = (functions != nullptr && functions->vkGetPhysicalDeviceProperties != nullptr)
+                                       ? functions->vkGetPhysicalDeviceProperties
+                                       : vkGetPhysicalDeviceProperties;
+    VkPhysicalDeviceProperties properties;
+    get_properties_fn(external, &properties);
+
+    PhysicalDevice ret{ std::move(label), external, std::move(properties) };
+    ret._vkGetPhysicalDeviceQueueFamilyProperties
+        = (functions != nullptr && functions->vkGetPhysicalDeviceQueueFamilyProperties != nullptr)
+            ? functions->vkGetPhysicalDeviceQueueFamilyProperties
+            : vkGetPhysicalDeviceQueueFamilyProperties;
+    ret._vkGetPhysicalDeviceMemoryProperties
+        = (functions != nullptr && functions->vkGetPhysicalDeviceMemoryProperties != nullptr)
+            ? functions->vkGetPhysicalDeviceMemoryProperties
+            : vkGetPhysicalDeviceMemoryProperties;
+    ret._vkEnumerateDeviceExtensionProperties
+        = (functions != nullptr && functions->vkEnumerateDeviceExtensionProperties != nullptr)
+            ? functions->vkEnumerateDeviceExtensionProperties
+            : vkEnumerateDeviceExtensionProperties;
+    ret._vkGetPhysicalDeviceFormatProperties
+        = (functions != nullptr && functions->vkGetPhysicalDeviceFormatProperties != nullptr)
+            ? functions->vkGetPhysicalDeviceFormatProperties
+            : vkGetPhysicalDeviceFormatProperties;
+    ret._vkGetPhysicalDeviceSurfaceFormatsKHR
+        = (functions != nullptr && functions->vkGetPhysicalDeviceSurfaceFormatsKHR != nullptr)
+            ? functions->vkGetPhysicalDeviceSurfaceFormatsKHR
+            : vkGetPhysicalDeviceSurfaceFormatsKHR;
+    ret._vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+        = (functions != nullptr && functions->vkGetPhysicalDeviceSurfaceCapabilitiesKHR != nullptr)
+            ? functions->vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+            : vkGetPhysicalDeviceSurfaceCapabilitiesKHR;
+    ret._vkGetPhysicalDeviceSurfaceSupportKHR
+        = (functions != nullptr && functions->vkGetPhysicalDeviceSurfaceSupportKHR != nullptr)
+            ? functions->vkGetPhysicalDeviceSurfaceSupportKHR
+            : vkGetPhysicalDeviceSurfaceSupportKHR;
     return ret;
 }
 

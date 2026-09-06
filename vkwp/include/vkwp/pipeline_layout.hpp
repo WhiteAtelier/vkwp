@@ -20,6 +20,10 @@ class PipelineLayout final : public Resource<VkPipelineLayout, PFN_vkDestroyPipe
 public:
     using Resource<VkPipelineLayout, PFN_vkDestroyPipelineLayout, VkDevice>::Resource;
 
+    [[nodiscard]]
+    static PipelineLayout
+    importExternal(std::string label, const Device & device, const VkPipelineLayout external);
+
     struct OptionalCreateArgs
     {
         const void *                p_next      = nullptr;

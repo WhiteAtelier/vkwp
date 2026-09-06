@@ -25,6 +25,14 @@ vkwp::impl::_delete(VkSampler i, PFN_vkDestroySampler fn, const std::tuple<VkDev
 // Sampler class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::Sampler
+vkwp::Sampler::importExternal(std::string label, const Device & device, const VkSampler external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return Sampler{ std::move(label), external, static_cast<VkDevice>(device) };
+}
+
 /* STATIC */
 vkwp::Sampler
 vkwp::Sampler::create(std::string                label,

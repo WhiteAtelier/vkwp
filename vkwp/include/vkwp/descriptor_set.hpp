@@ -24,6 +24,13 @@ class DescriptorSet final : public Resource<VkDescriptorSet, PFN_vkFreeDescripto
 public:
     using Resource<VkDescriptorSet, PFN_vkFreeDescriptorSets, VkDevice, VkDescriptorPool>::Resource;
 
+    [[nodiscard]]
+    static DescriptorSet
+    importExternal(std::string            label,
+                   const Device &         device,
+                   const DescriptorPool & descriptor_pool,
+                   const VkDescriptorSet  external);
+
     struct OptionalAllocateArgs
     {
         const void *               p_next      = nullptr;

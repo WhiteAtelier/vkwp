@@ -27,6 +27,16 @@ vkwp::impl::_delete(VkDescriptorSetLayout            i,
 // DescriptorSetLayout class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::DescriptorSetLayout
+vkwp::DescriptorSetLayout::importExternal(std::string                 label,
+                                          const Device &              device,
+                                          const VkDescriptorSetLayout external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return DescriptorSetLayout{ std::move(label), external, static_cast<VkDevice>(device) };
+}
+
 /* STATIC */
 vkwp::DescriptorSetLayout
 vkwp::DescriptorSetLayout::create(std::string                                       label,

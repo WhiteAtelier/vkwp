@@ -20,6 +20,10 @@ class ShaderModule final : public Resource<VkShaderModule, PFN_vkDestroyShaderMo
 public:
     using Resource<VkShaderModule, PFN_vkDestroyShaderModule, VkDevice>::Resource;
 
+    [[nodiscard]]
+    static ShaderModule
+    importExternal(std::string label, const Device & device, const VkShaderModule external);
+
     struct OptionalCreateArgs
     {
         const void *               p_next      = nullptr;

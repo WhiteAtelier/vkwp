@@ -138,6 +138,29 @@ vkwp::SwapchainKHR::create(std::string                         label,
     return ret;
 }
 
+vkwp::SwapchainKHR
+vkwp::SwapchainKHR::importExternal(std::string                   label,
+                                   const Device &                device,
+                                   const VkSwapchainKHR          external,
+                                   const VulkanFunctions * const functions)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+
+    SwapchainKHR ret{ std::move(label), external, static_cast<VkDevice>(device) };
+    auto * const get_device_proc_addr_fn = (functions != nullptr && functions->vkGetDeviceProcAddr != nullptr)
+                                             ? functions->vkGetDeviceProcAddr
+                                             : vkGetDeviceProcAddr;
+    ret._vkSetHdrMetadataEXT
+        = (functions != nullptr && functions->vkSetHdrMetadataEXT != nullptr)
+            ? functions->vkSetHdrMetadataEXT
+            : reinterpret_cast<PFN_vkSetHdrMetadataEXT>(get_device_proc_addr_fn(device, "vkSetHdrMetadataEXT"));
+    ret._vkGetSwapchainImagesKHR = (functions != nullptr && functions->vkGetSwapchainImagesKHR != nullptr)
+                                     ? functions->vkGetSwapchainImagesKHR
+                                     : vkGetSwapchainImagesKHR;
+    return ret;
+}
+
 void
 vkwp::SwapchainKHR::setHdrMetadata(const VkHdrMetadataEXT & metadata)
 {

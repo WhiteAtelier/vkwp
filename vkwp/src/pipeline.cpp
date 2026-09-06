@@ -47,6 +47,14 @@ vkwp::RayTracingPipelineKHR_ExtFunctions::create(const VkInstance instance, cons
 // Pipeline class
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+vkwp::Pipeline
+vkwp::Pipeline::importExternal(std::string label, const Device & device, const VkPipeline external)
+{
+    VKWP_VALIDATE_ARG(device);
+    VKWP_VALIDATE_ARG(external);
+    return Pipeline{ std::move(label), external, static_cast<VkDevice>(device) };
+}
+
 /* STATIC */
 std::vector<vkwp::Pipeline>
 vkwp::Pipeline::create(const Device &                          device,  //

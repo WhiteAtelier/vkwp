@@ -69,6 +69,13 @@ public:
 
     [[nodiscard]]
     static Image
+    importExternal(std::string                   label,
+                   const Device &                device,
+                   const VkImage                 external,
+                   const VulkanFunctions * const functions = nullptr);
+
+    [[nodiscard]]
+    static Image
     create2D(std::string             label,
              const Device &          device,
              const VkFormat          format,

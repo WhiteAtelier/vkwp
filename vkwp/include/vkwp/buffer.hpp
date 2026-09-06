@@ -80,6 +80,12 @@ public:
            const VkBufferUsageFlags   usage,
            const OptionalCreateArgs & opt_args);
 
+    static Buffer
+    importExternal(std::string                   label,
+                   const Device &                device,
+                   const VkBuffer                external,
+                   const VulkanFunctions * const functions = nullptr);
+
     ///
     /// @brief このバッファが要求するデバイスメモリ要件を取得する.
     ///
