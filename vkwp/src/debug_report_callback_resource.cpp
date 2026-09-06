@@ -160,19 +160,19 @@ vkwp::DebugReportCallbackResource::Impl_::_debugReportCallback(VkDebugReportFlag
     }
     if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
     {
-        SPDLOG_ERROR(message);
+        SPDLOG_ERROR("Vulkan Validation Error: {}", message);
     }
     else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
     {
-        SPDLOG_WARN(message);
+        SPDLOG_WARN("Vulkan Validation Warning: {}", message);
     }
     else if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
     {
-        SPDLOG_INFO(message);
+        SPDLOG_INFO("Vulkan Validation Info: {}", message);
     }
     else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
     {
-        SPDLOG_DEBUG(message);
+        SPDLOG_DEBUG("Vulkan Validation Debug: {}", message);
     }
 
     SPDLOG_DEBUG("-- ObjectTypeEXT = {}", static_cast<int>(object_type));
