@@ -9,7 +9,9 @@ def runCommand(String command) {
 }
 
 pipeline {
-    agent any
+    agent {
+        label 'vulkan && cpp'
+    }
 
     options {
         disableConcurrentBuilds()
