@@ -1,3 +1,8 @@
+// Copyright 2026 Shirao Shotaro, WhiteAtelier
+// SPDX-License-Identifier: MIT
+//
+// See the LICENSE file in the project root for the full license text.
+
 #ifndef VKWP_DEBUG_REPORT_CALLBACK_RESOURCE_HPP
 #define VKWP_DEBUG_REPORT_CALLBACK_RESOURCE_HPP
 
