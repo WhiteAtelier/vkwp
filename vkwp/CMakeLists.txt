@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Shirao Shotaro, WhiteAtelier
+# SPDX-License-Identifier: MIT
+#
+# See the LICENSE file in the project root for the full license text.
 
 option(VKWP_SUPPORT_GLFW_SURFACE "GLFW surface support." )
 if (WIN32)
@@ -10,7 +14,7 @@ vkwp_add_library(vkwp
     LIBRARIES
         spdlog::spdlog
         Vulkan::Vulkan
-   
+
     SOURCES
         acceleration_structure_khr.cpp
         buffer.cpp

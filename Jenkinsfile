@@ -1,5 +1,8 @@
-// エージェントには distbuilder, CMake, C++20 対応コンパイラ, Vulkan 1.4 SDK, Doxygen が必要です.
-// テスト結果の記録には Jenkins の JUnit Plugin が必要です.
+// Copyright (c) 2026 Shirao Shotaro, WhiteAtelier
+// SPDX-License-Identifier: MIT
+//
+// See the LICENSE file in the project root for the full license text.
+
 def runCommand(String command) {
     if (isUnix()) {
         sh command

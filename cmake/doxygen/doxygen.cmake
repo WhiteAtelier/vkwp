@@ -1,5 +1,7 @@
-
-# https://qiita.com/yoyomion/items/16d152421ef4f7bfc8ac
+# Copyright (c) 2026 Shirao Shotaro, WhiteAtelier
+# SPDX-License-Identifier: MIT
+#
+# See the LICENSE file in the project root for the full license text.
 
 function(regist_doxygen_files ARG_FILES)
     if (NOT ${VKWP_BUILD_DOCS})

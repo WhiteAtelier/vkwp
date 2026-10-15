@@ -1,6 +1,10 @@
+# Copyright (c) 2026 Shirao Shotaro, WhiteAtelier
+# SPDX-License-Identifier: MIT
+#
+# See the LICENSE file in the project root for the full license text.
 
 # =============================================================================================== #
-# 
+#
 # vkwp_add_library
 #
 # - LIBRARIES (multi)
@@ -176,7 +180,7 @@ function(vkwp_add_library ARG_TARGET_NAME)
             foreach (rel_source_file IN LISTS ARG_SOURCES)
                 # 絶対パス
                 file(REAL_PATH "src/${rel_source_file}" abs_source_file)
-                
+
                 # フィルタ文字列
                 string(REPLACE "/" "\\" rel_source_file "${rel_source_file}")
                 string(REPLACE "${source_filter_root}\\" "" rel_source_file "${rel_source_file}")
@@ -197,7 +201,7 @@ function(vkwp_add_library ARG_TARGET_NAME)
             foreach (rel_header_file IN LISTS ARG_HEADERS)
                 # 絶対パス
                 file(REAL_PATH "include/${rel_header_file}" abs_header_file)
-                
+
                 # フィルタ文字列
                 string(REPLACE "/" "\\" rel_header_file "${rel_header_file}")
                 string(REPLACE "${headers_filter_root}\\" "" rel_header_file "${rel_header_file}")
@@ -234,7 +238,7 @@ function(vkwp_add_library ARG_TARGET_NAME)
                     message(DEBUG "TEST: ${abs_test_file}")
                 endif()
             endforeach()
-        endif()  
+        endif()
 
         # --- Add executable ---
         add_executable(${ARG_TARGET_NAME}-test)
@@ -268,7 +272,7 @@ function(vkwp_add_library ARG_TARGET_NAME)
                 foreach (rel_test_file IN LISTS ARG_TESTS)
                     # 絶対パス
                     file(REAL_PATH "test/${rel_test_file}" abs_test_file)
-                    
+
                     # フィルタ文字列
                     string(REPLACE "/" "\\" rel_test_file "${rel_test_file}")
                     cmake_path(GET rel_test_file PARENT_PATH rel_test_file)
@@ -329,7 +333,7 @@ endfunction()
 
 
 # =============================================================================================== #
-# 
+#
 # vkwp_add_executable
 #
 # - LIBRARIES (multi)
@@ -376,7 +380,7 @@ function(vkwp_add_executable ARG_TARGET_NAME)
     if (DEFINED ARG_TARGET_FOLDER)
         set(TARGET_FOLDER "${ARG_TARGET_FOLDER}/executables")
     endif()
-    
+
     set(TEST_TARGET_FOLDER "tests")
     if (DEFINED ARG_TARGET_FOLDER)
         set(TEST_TARGET_FOLDER "${ARG_TARGET_FOLDER}/tests")
@@ -465,7 +469,7 @@ function(vkwp_add_executable ARG_TARGET_NAME)
             foreach (rel_source_file IN LISTS ARG_SOURCES)
                 # 絶対パス
                 file(REAL_PATH "src/${rel_source_file}" abs_source_file)
-                
+
                 # フィルタ文字列
                 string(REPLACE "/" "\\" rel_source_file "${rel_source_file}")
                 string(REPLACE "${sources_filter_root}\\" "" rel_source_file "${rel_source_file}")
@@ -508,8 +512,8 @@ function(vkwp_add_executable ARG_TARGET_NAME)
                     message(STATUS "TEST: ${abs_test_file}")
                 endif()
             endforeach()
-        endif()  
-        
+        endif()
+
         find_package(GTest REQUIRED)
         include(GoogleTest)
 
@@ -535,7 +539,7 @@ function(vkwp_add_executable ARG_TARGET_NAME)
                     ${ARG_ABS_TESTS}
             )
         endif()
-    
+
         # --- filters
         if (MSVC)
             # ARG_TESTS を見て, test/ を付加する
@@ -543,7 +547,7 @@ function(vkwp_add_executable ARG_TARGET_NAME)
                 foreach (rel_test_file IN LISTS ARG_TESTS)
                     # 絶対パス
                     file(REAL_PATH "test/${rel_test_file}" abs_test_file)
-                    
+
                     # フィルタ文字列
                     string(REPLACE "/" "\\" rel_test_file "${rel_test_file}")
                     cmake_path(GET rel_test_file PARENT_PATH rel_test_file)

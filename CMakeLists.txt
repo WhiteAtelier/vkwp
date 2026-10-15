@@ -1,8 +1,13 @@
+# Copyright (c) 2026 Shirao Shotaro, WhiteAtelier
+# SPDX-License-Identifier: MIT
+#
+# See the LICENSE file in the project root for the full license text.
+
 cmake_minimum_required(VERSION 3.23)
 
 project(vkwp
     VERSION
-        2.4.1
+        2.5.0
     DESCRIPTION
         "Vulkan Wrapper"
     LANGUAGES

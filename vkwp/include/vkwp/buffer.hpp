@@ -1,3 +1,8 @@
+// Copyright 2026 Shirao Shotaro, WhiteAtelier
+// SPDX-License-Identifier: MIT
+//
+// See the LICENSE file in the project root for the full license text.
+
 #ifndef VKWP_BUFFER_HPP
 #define VKWP_BUFFER_HPP
 
