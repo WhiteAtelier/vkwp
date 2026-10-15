@@ -49,6 +49,8 @@ Copyright (c) 2026 Shirao Shotaro, WhiteAtelier
 
 See the LICENSE file in the project root for the full license text.
 
+Third parties using this library **must use version 2.5.0 or later**, to which the MIT License applies.
+
 ## Requirements
 
 - C++20 or later
