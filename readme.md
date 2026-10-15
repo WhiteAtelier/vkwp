@@ -4,7 +4,7 @@ Vulkan API Wrapper.
 
 ## Features
 
-- Destroy in constructor.
+- Destroy in destructor.
 - Uncopyable, Movable instance.
 - Move assignable instance.
 - Valid/Invalid container.
@@ -60,7 +60,6 @@ Third parties using this library **must use version 2.5.0 or later**, to which t
 - Vulkan
   - [https://vulkan.lunarg.com/](https://vulkan.lunarg.com/)
 - gabime/spdlog
-  - Optional, With: `VKWP_SPDLOG_LOGGING=ON`
   - [https://github.com/gabime/spdlog](https://github.com/gabime/spdlog)
 - glfw/glfw
   - Optional, With: `VKWP_SUPPORT_GLFW_SURFACE=ON`
@@ -72,6 +71,7 @@ Third parties using this library **must use version 2.5.0 or later**, to which t
   - [https://github.com/google/googletest](https://github.com/google/googletest)
 - doxygen
   - With: `VKWP_BUILD_DOCS=ON`
+  - Only the executable is used; no linking is required.
   - [https://doxygen.nl/](https://doxygen.nl/)
 
 ### gabime/spdlog License
@@ -134,13 +134,37 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+### glfw/glfw
+
+Copyright (c) 2002-2006 Marcus Geelnard
+
+Copyright (c) 2006-2019 Camilla Löwy
+
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would
+   be appreciated but is not required.
+
+2. Altered source versions must be plainly marked as such, and must not
+   be misrepresented as being the original software.
+
+3. This notice may not be removed or altered from any source
+   distribution.
+
 ## Build
 
 ### CMake Options
 
 | Option                     | Type   | Default          | Description                            |
 | -------------------------- | ------ | ---------------- | -------------------------------------- |
-| VKWP_SPDLOG_LOGGING        | BOOL   | `OFF`            | Use spdlog for logging.                |
 | VKWP_SUPPORT_GLFW_SURFACE  | BOOL   | `OFF`            | glfw surface support.                  |
 | VKWP_SUPPORT_WIN32_SURFACE | BOOL   | `OFF`            | win32 surface support. (Windows only.) |
 | VKWP_BUILD_TESTS           | BOOL   | `OFF`            | Build test projects.                   |
