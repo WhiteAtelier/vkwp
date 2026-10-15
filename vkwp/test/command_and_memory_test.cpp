@@ -361,11 +361,14 @@ TEST(VulkanFunctionsCommandTest, CommandPoolAndBuffersForwardArgumentsAndFree)
                                                                                allocate_args);
             ASSERT_EQ(command_buffers.size(), 2u);
             const VkCommandBufferInheritanceInfo inheritance_info{
-                .sType       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
-                .pNext       = nullptr,
-                .renderPass  = nullptr,
-                .subpass     = 3,
-                .framebuffer = nullptr,
+                .sType                = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO,
+                .pNext                = nullptr,
+                .renderPass           = nullptr,
+                .subpass              = 3,
+                .framebuffer          = nullptr,
+                .occlusionQueryEnable = VK_FALSE,
+                .queryFlags           = 0,
+                .pipelineStatistics   = 0,
             };
             command_buffers[0].beginCommandBuffer(inheritance_info,
                                                   VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT,
@@ -395,16 +398,18 @@ TEST(VulkanFunctionsDescriptorTest, DescriptorSetsForwardLayoutsAndFreeBeforePoo
 
     {
         const VkDescriptorSetLayoutBinding binding0{
-            .binding         = 0,
-            .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .descriptorCount = 1,
-            .stageFlags      = VK_SHADER_STAGE_COMPUTE_BIT,
+            .binding            = 0,
+            .descriptorType     = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            .descriptorCount    = 1,
+            .stageFlags         = VK_SHADER_STAGE_COMPUTE_BIT,
+            .pImmutableSamplers = nullptr,
         };
         const VkDescriptorSetLayoutBinding binding1{
-            .binding         = 1,
-            .descriptorType  = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-            .descriptorCount = 1,
-            .stageFlags      = VK_SHADER_STAGE_COMPUTE_BIT,
+            .binding            = 1,
+            .descriptorType     = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            .descriptorCount    = 1,
+            .stageFlags         = VK_SHADER_STAGE_COMPUTE_BIT,
+            .pImmutableSamplers = nullptr,
         };
         const vkwp::DescriptorSetLayout::OptionalCreateArgs layout_args{
             .functions = &functions,

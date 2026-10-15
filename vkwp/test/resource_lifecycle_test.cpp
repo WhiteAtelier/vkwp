@@ -527,9 +527,38 @@ TEST(VulkanFunctionsResourceTest, RenderPassAndFramebufferForwardCreateInfoAndDe
     functions.vkCreateFramebuffer        = &createFramebuffer;
     functions.vkDestroyFramebuffer       = &destroyFramebuffer;
     const auto                    device = vkwp::Device::importExternal("device", state.device, &functions);
-    const VkAttachmentDescription attachment{ .format = VK_FORMAT_R8G8B8A8_UNORM };
-    const VkSubpassDescription    subpass{ .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS };
-    const VkSubpassDependency     dependency{ .srcSubpass = VK_SUBPASS_EXTERNAL, .dstSubpass = 0 };
+    const VkAttachmentDescription attachment{
+        .flags          = 0,
+        .format         = VK_FORMAT_R8G8B8A8_UNORM,
+        .samples        = static_cast<VkSampleCountFlagBits>(0),
+        .loadOp         = VK_ATTACHMENT_LOAD_OP_LOAD,
+        .storeOp        = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_LOAD,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout    = VK_IMAGE_LAYOUT_UNDEFINED,
+    };
+    const VkSubpassDescription subpass{
+        .flags                   = 0,
+        .pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .inputAttachmentCount    = 0,
+        .pInputAttachments       = nullptr,
+        .colorAttachmentCount    = 0,
+        .pColorAttachments       = nullptr,
+        .pResolveAttachments     = nullptr,
+        .pDepthStencilAttachment = nullptr,
+        .preserveAttachmentCount = 0,
+        .pPreserveAttachments    = nullptr,
+    };
+    const VkSubpassDependency dependency{
+        .srcSubpass      = VK_SUBPASS_EXTERNAL,
+        .dstSubpass      = 0,
+        .srcStageMask    = 0,
+        .dstStageMask    = 0,
+        .srcAccessMask   = 0,
+        .dstAccessMask   = 0,
+        .dependencyFlags = 0,
+    };
     {
         const vkwp::RenderPass::OptionalCreateArgs render_pass_args{
             .functions = &functions,
