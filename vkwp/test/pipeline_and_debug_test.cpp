@@ -593,9 +593,16 @@ TEST(VulkanFunctionsSwapchainTest, CreateOperationsAndDestroyForwardAllArguments
         const auto images    = swapchain.getSwapchainImages();
         EXPECT_EQ(images, std::vector<VkImage>(swapchain_state.images.begin(), swapchain_state.images.end()));
         VkHdrMetadataEXT metadata{
-            .sType        = VK_STRUCTURE_TYPE_HDR_METADATA_EXT,
-            .maxLuminance = 1000.0f,
-            .minLuminance = 0.1f,
+            .sType                     = VK_STRUCTURE_TYPE_HDR_METADATA_EXT,
+            .pNext                     = nullptr,
+            .displayPrimaryRed         = { 0.0f, 0.0f },
+            .displayPrimaryGreen       = { 0.0f, 0.0f },
+            .displayPrimaryBlue        = { 0.0f, 0.0f },
+            .whitePoint                = { 0.0f, 0.0f },
+            .maxLuminance              = 1000.0f,
+            .minLuminance              = 0.1f,
+            .maxContentLightLevel      = 0.0f,
+            .maxFrameAverageLightLevel = 0.0f,
         };
         swapchain.setHdrMetadata(metadata);
     }
@@ -656,7 +663,16 @@ TEST(VulkanFunctionsSwapchainTest, InvalidObjectRejectsFunctionPointerOperations
 {
     vkwp::SwapchainKHR     swapchain;
     const VkHdrMetadataEXT metadata{
-        .sType = VK_STRUCTURE_TYPE_HDR_METADATA_EXT,
+        .sType                     = VK_STRUCTURE_TYPE_HDR_METADATA_EXT,
+        .pNext                     = nullptr,
+        .displayPrimaryRed         = { 0.0f, 0.0f },
+        .displayPrimaryGreen       = { 0.0f, 0.0f },
+        .displayPrimaryBlue        = { 0.0f, 0.0f },
+        .whitePoint                = { 0.0f, 0.0f },
+        .maxLuminance              = 0.0f,
+        .minLuminance              = 0.0f,
+        .maxContentLightLevel      = 0.0f,
+        .maxFrameAverageLightLevel = 0.0f,
     };
     EXPECT_THROW(swapchain.setHdrMetadata(metadata), std::runtime_error);
     EXPECT_THROW(static_cast<void>(swapchain.getSwapchainImages()), std::runtime_error);
