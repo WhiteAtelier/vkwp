@@ -10,7 +10,15 @@ import subprocess
 import sys
 
 SOURCE_SUFFIXES = {".cpp", ".hpp"}
-TARGET_DIRECTORIES = ("vkwp", )
+TARGET_DIRECTORIES = ("vkwp",)
+
+LICENSE_HEADER = """\
+// Copyright 2026 Shirao Shotaro, WhiteAtelier
+// SPDX-License-Identifier: MIT
+//
+// See the LICENSE file in the project root for the full license text.
+
+"""
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -40,6 +48,16 @@ def find_source_files(root_directory: Path) -> list[Path]:
     return sorted(source_files)
 
 
+def ensure_license_header(source_file: Path) -> None:
+    """ライセンス表記がなければ追記し, 既存の表記が一致しない場合は警告します."""
+    content = source_file.read_text(encoding="utf-8")
+    if not content.startswith("//"):
+        with source_file.open("w", encoding="utf-8", newline="\r\n") as stream:
+            stream.write(LICENSE_HEADER + content)
+    elif not content.startswith(LICENSE_HEADER):
+        print(f"WARNING: {source_file}: ファイル先頭が LICENSE_HEADER と一致しません.")
+
+
 def main() -> int:
     """対象ファイルの一覧表示, または clang-format による整形を実行します."""
     arguments = parse_arguments()
@@ -59,6 +77,7 @@ def main() -> int:
     failed_files: list[Path] = []
     for source_file in source_files:
         print(f"Formatting: {source_file.relative_to(root_directory)}")
+        ensure_license_header(source_file)
         result = subprocess.run(
             ["clang-format", "-i", str(source_file)],
             check=False,
