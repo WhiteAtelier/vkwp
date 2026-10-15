@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.23)
 
 project(vkwp
     VERSION
-        2.4.0
+        2.4.1
     DESCRIPTION
         "Vulkan Wrapper"
     LANGUAGES
