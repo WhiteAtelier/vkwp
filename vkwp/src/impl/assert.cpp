@@ -3,16 +3,16 @@
 //
 // See the LICENSE file in the project root for the full license text.
 
-﻿#include "assert.hpp"
+#include "assert.hpp"
 
 #include <spdlog/spdlog.h>
 
 #include <sstream>
 
-    vkwp::impl::CodingError::CodingError(const std::string & expr,
-                                         const std::string & filename,
-                                         const int           line,
-                                         const std::string & funcname)
+vkwp::impl::CodingError::CodingError(const std::string & expr,
+                                     const std::string & filename,
+                                     const int           line,
+                                     const std::string & funcname)
     : expr_{ expr }
     , filename_{ filename }
     , line_{ line }
