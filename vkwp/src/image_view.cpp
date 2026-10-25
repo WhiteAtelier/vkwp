@@ -43,7 +43,7 @@ vkwp::ImageView::importExternal(std::string label, const Device & device, const 
 vkwp::ImageView
 vkwp::ImageView::create(std::string                     label,
                         const Device &                  device,
-                        const Image &                   image,
+                        const VkImage &                 image,
                         const VkImageViewType           view_type,
                         const VkFormat                  format,
                         const VkImageSubresourceRange & subresource_range)
@@ -61,7 +61,7 @@ vkwp::ImageView::create(std::string                     label,
 vkwp::ImageView
 vkwp::ImageView::create(std::string                     label,
                         const Device &                  device,
-                        const Image &                   image,
+                        const VkImage &                 image,
                         const VkImageViewType           view_type,
                         const VkFormat                  format,
                         const VkImageSubresourceRange & subresource_range,
