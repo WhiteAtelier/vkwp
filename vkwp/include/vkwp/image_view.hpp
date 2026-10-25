@@ -43,7 +43,7 @@ public:
     static ImageView
     create(std::string                     label,
            const Device &                  device,
-           const Image &                   image,
+           const VkImage &                 image,
            const VkImageViewType           view_type,
            const VkFormat                  format,
            const VkImageSubresourceRange & subresource_range);
@@ -52,7 +52,7 @@ public:
     static ImageView
     create(std::string                     label,
            const Device &                  device,
-           const Image &                   image,
+           const VkImage &                 image,
            const VkImageViewType           view_type,
            const VkFormat                  format,
            const VkImageSubresourceRange & subresource_range,
