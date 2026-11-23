@@ -59,3 +59,7 @@ add_subdirectory(vkwp)
 
 add_doxygen_target()
 export_config()
+
+if (VKWP_IS_MASTER_PROJECT AND VKWP_INSTALL)
+    include(cmake/cpack.cmake)
+endif()

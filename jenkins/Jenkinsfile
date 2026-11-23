@@ -83,6 +83,15 @@ pipeline {
                             archiveArtifacts artifacts: 'install/jenkins/**', fingerprint: true
                         }
                     }
+
+                    stage('Package') {
+                        steps {
+                            script {
+                                runCommand('cpack --config build/jenkins/CPackConfig.cmake -C Release')
+                            }
+                            archiveArtifacts artifacts: 'build/jenkins/packages/*.tar.gz', fingerprint: true
+                        }
+                    }
                 }
             }
         }
