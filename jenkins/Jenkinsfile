@@ -86,10 +86,13 @@ pipeline {
 
                     stage('Package') {
                         steps {
-                            script {
-                                runCommand('cpack --config build/jenkins/CPackConfig.cmake -C Release')
+                            dir('cpack') {
+                                deleteDir()
                             }
-                            archiveArtifacts artifacts: 'build/jenkins/packages/*.tar.gz', fingerprint: true
+                            script {
+                                runCommand('cpack --config build/jenkins/CPackConfig.cmake -C Release -B cpack')
+                            }
+                            archiveArtifacts artifacts: 'cpack/*.tar.gz', fingerprint: true
                         }
                     }
                 }
