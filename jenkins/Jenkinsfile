@@ -26,27 +26,10 @@ pipeline {
                         name 'PLATFORM'
                         values 'windows', 'linux'
                     }
-                    axis {
-                        name 'ARCH'
-                        values 'x86_64', 'arm64'
-                    }
-                }
-
-                excludes {
-                    exclude {
-                        axis {
-                            name 'PLATFORM'
-                            values 'windows'
-                        }
-                        axis {
-                            name 'ARCH'
-                            values 'arm64'
-                        }
-                    }
                 }
 
                 agent {
-                    label "vulkan && cpp && ${PLATFORM} && ${ARCH}"
+                    label "vulkan && cpp && ${PLATFORM} && x86_64"
                 }
 
                 stages {
