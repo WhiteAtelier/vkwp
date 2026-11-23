@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.23)
 
 project(vkwp
     VERSION
-        2.5.1
+        2.5.2
     DESCRIPTION
         "Vulkan Wrapper"
     LANGUAGES
@@ -59,3 +59,7 @@ add_subdirectory(vkwp)
 
 add_doxygen_target()
 export_config()
+
+if (VKWP_IS_MASTER_PROJECT AND VKWP_INSTALL)
+    include(cmake/cpack.cmake)
+endif()

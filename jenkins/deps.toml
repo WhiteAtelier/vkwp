@@ -1,0 +1,14 @@
+
+cxx_standard = "20"
+
+[gabime.spdlog]
+version = "1.17.0"
+options.disable_default_logger = false
+options.use_fmt = false
+options.shared = false
+
+[google.googletest]
+version = "1.17.0"
+options.build_gmock = false
+options.shared = false
+options.use_absl_and_re2 = false

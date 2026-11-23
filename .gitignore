@@ -6,3 +6,4 @@ out/
 CMakeUserPresets.json
 deps.full.toml
 __pycache__/
+/cpack/
