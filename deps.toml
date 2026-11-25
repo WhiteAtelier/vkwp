@@ -3,3 +3,6 @@ cxx_standard = "20"
 [google.googletest]
 
 [gabime.spdlog]
+
+[glfw.glfw]
+options.buildForX11 = false

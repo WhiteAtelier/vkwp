@@ -13,11 +13,11 @@
 
 #include <string>
 
-#if defined(VKWP_USE_GLFW_SURFACE)
+#if VKWP_SUPPORT_GLFW_SURFACE && defined(VKWP_USE_GLFW_SURFACE)
 struct GLFWwindow;
 #endif
 
-#if defined(_WIN32) && defined(VKWP_USE_WIN32_SURFACE)
+#if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && defined(VKWP_USE_WIN32_SURFACE)
 #    include <Windows.h>
 #endif
 
@@ -35,7 +35,7 @@ public:
     static SurfaceKHR
     importExternal(std::string label, const Instance & instance, const VkSurfaceKHR external);
 
-#if defined(VKWP_USE_GLFW_SURFACE)
+#if VKWP_SUPPORT_GLFW_SURFACE && defined(VKWP_USE_GLFW_SURFACE)
     [[nodiscard]]
     static SurfaceKHR
     createGLFWSurfaceKHR(std::string             label,
@@ -44,7 +44,7 @@ public:
                          const VulkanFunctions * functions = nullptr);
 #endif
 
-#if defined(_WIN32) && defined(VKWP_USE_WIN32_SURFACE)
+#if VKWP_SUPPORT_WIN32_SURFACE && defined(_WIN32) && defined(VKWP_USE_WIN32_SURFACE)
     struct OptionalCreateArgsWin32
     {
         const void *                 p_next    = nullptr;
@@ -59,6 +59,30 @@ public:
                           const HINSTANCE                 h_instance,
                           const HWND                      hwnd,
                           const OptionalCreateArgsWin32 & opt_args = {});
+#endif
+
+#if VKWP_SUPPORT_WAYLAND_SURFACE && defined(VKWP_USE_WAYLAND_SURFACE)
+    struct OptionalCreateArgsWayland
+    {
+        const void *                   p_next    = nullptr;
+        VkWaylandSurfaceCreateFlagsKHR flags     = 0;
+        const VulkanFunctions *        functions = nullptr;
+    };
+
+    [[nodiscard]]
+    static SurfaceKHR
+    createWaylandSurfaceKHR(std::string label,
+                            const Instance & instance,
+                            struct wl_display * const display,
+                            struct wl_surface * const surface);
+
+    [[nodiscard]]
+    static SurfaceKHR
+    createWaylandSurfaceKHR(std::string                       label,
+                            const Instance &                  instance,
+                            struct wl_display * const         display,
+                            struct wl_surface * const         surface,
+                            const OptionalCreateArgsWayland & opt_args);
 #endif
 };
 

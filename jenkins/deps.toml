@@ -12,3 +12,9 @@ version = "1.17.0"
 options.build_gmock = false
 options.shared = false
 options.use_absl_and_re2 = false
+
+[glfw.glfw]
+version = "3.5.1"
+options.shared = false
+options.buildForX11 = false
+options.buildForWayland = true

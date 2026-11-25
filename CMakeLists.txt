@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.23)
 
 project(vkwp
     VERSION
-        2.5.2
+        2.6.0
     DESCRIPTION
         "Vulkan Wrapper"
     LANGUAGES
@@ -20,9 +20,22 @@ else()
     set(VKWP_IS_MASTER_PROJECT OFF)
 endif()
 
-option(VKWP_BUILD_TESTS "Build test project."  OFF)
-option(VKWP_BUILD_DOCS  "Build documentation." OFF)
-option(VKWP_INSTALL     "Install the project." ${VKWP_IS_MASTER_PROJECT})
+option(VKWP_BUILD_TESTS          "Build test project."   OFF)
+option(VKWP_BUILD_DOCS           "Build documentation."  OFF)
+option(VKWP_INSTALL              "Install the project."  ${VKWP_IS_MASTER_PROJECT})
+option(VKWP_SUPPORT_GLFW_SURFACE "GLFW surface support." OFF)
+
+if (WIN32)
+    option(VKWP_SUPPORT_WIN32_SURFACE "WIN32 surface support." OFF)
+else()
+    set(VKWP_SUPPORT_WIN32_SURFACE OFF)
+endif()
+
+if (LINUX)
+    option(VKWP_SUPPORT_WAYLAND_SURFACE "Wayland surface support." OFF)
+else()
+    set(VKWP_SUPPORT_WAYLAND_SURFACE OFF)
+endif()
 
 include(cmake/doxygen/doxygen.cmake)
 include(cmake/utils.cmake)
@@ -30,6 +43,11 @@ include(cmake/utils.cmake)
 set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Debug postfix")
 
 # Dependency
+if (VKWP_SUPPORT_GLFW_SURFACE)
+    find_package(glfw3  REQUIRED)
+    find_package(OpenGL REQUIRED)
+endif()
+
 if (VKWP_BUILD_TESTS)
     enable_testing()
     find_package(GTest REQUIRED)

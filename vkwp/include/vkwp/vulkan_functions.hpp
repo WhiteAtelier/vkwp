@@ -127,6 +127,10 @@ struct VulkanFunctions
     VKWP_VULKAN_FUNCTION(vkUnmapMemory);
     VKWP_VULKAN_FUNCTION(vkWaitForFences);
 
+#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
+    VKWP_VULKAN_FUNCTION(vkCreateWaylandSurfaceKHR);
+#endif
+
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
     VKWP_VULKAN_FUNCTION(vkCreateWin32SurfaceKHR);
     VKWP_VULKAN_FUNCTION(vkGetMemoryWin32HandlePropertiesKHR);

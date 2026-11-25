@@ -3,13 +3,6 @@
 #
 # See the LICENSE file in the project root for the full license text.
 
-option(VKWP_SUPPORT_GLFW_SURFACE "GLFW surface support." )
-if (WIN32)
-    option(VKWP_SUPPORT_WIN32_SURFACE "WIN32 surface support." OFF)
-else()
-    set(VKWP_SUPPORT_WIN32_SURFACE OFF)
-endif()
-
 vkwp_add_library(vkwp
     LIBRARIES
         spdlog::spdlog
@@ -96,6 +89,7 @@ vkwp_add_library(vkwp
         main.cpp
         core_test.cpp
         resource_lifecycle_test.cpp
+        surface_khr_test.cpp
         command_and_memory_test.cpp
         pipeline_and_debug_test.cpp
         vulkan_error_test.cpp
@@ -103,7 +97,6 @@ vkwp_add_library(vkwp
 )
 
 if (${VKWP_SUPPORT_GLFW_SURFACE})
-    find_package(glfw3 REQUIRED)
     target_link_libraries(vkwp
         PRIVATE
             glfw
@@ -114,10 +107,12 @@ target_compile_definitions(vkwp
     PUBLIC
         VKWP_SUPPORT_GLFW_SURFACE=$<BOOL:${VKWP_SUPPORT_GLFW_SURFACE}>
         VKWP_SUPPORT_WIN32_SURFACE=$<BOOL:${VKWP_SUPPORT_WIN32_SURFACE}>
+        VKWP_SUPPORT_WAYLAND_SURFACE=$<BOOL:${VKWP_SUPPORT_WAYLAND_SURFACE}>
 )
 
 target_compile_definitions(vkwp
     PRIVATE
         VKWP_USE_GLFW_SURFACE
         VKWP_USE_WIN32_SURFACE
+        VKWP_USE_WAYLAND_SURFACE
 )

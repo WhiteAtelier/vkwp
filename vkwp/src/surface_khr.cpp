@@ -94,3 +94,44 @@ vkwp::SurfaceKHR::createWin32SurfaceKHR(std::string                     label,
     return ret;
 }
 #endif
+
+#if VKWP_SUPPORT_WAYLAND_SURFACE && defined(VKWP_USE_WAYLAND_SURFACE)
+/* STATIC */
+vkwp::SurfaceKHR
+vkwp::SurfaceKHR::createWaylandSurfaceKHR(std::string label,
+                                        const Instance & instance,
+                                        struct wl_display * const display,
+                                        struct wl_surface * const surface)
+{
+    return createWaylandSurfaceKHR(std::move(label), instance, display, surface, {});
+}
+
+/* STATIC */
+vkwp::SurfaceKHR
+vkwp::SurfaceKHR::createWaylandSurfaceKHR(std::string                       label,
+                                        const Instance &                  instance,
+                                        struct wl_display * const         display,
+                                        struct wl_surface * const         surface,
+                                        const OptionalCreateArgsWayland & opt_args)
+{
+    SurfaceKHR ret{ std::move(label) };
+    VkWaylandSurfaceCreateInfoKHR ci{
+        .sType   = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
+        .pNext   = opt_args.p_next,
+        .flags   = opt_args.flags,
+        .display = display,
+        .surface = surface,
+    };
+    auto * const create_fn = (opt_args.functions != nullptr && opt_args.functions->vkCreateWaylandSurfaceKHR != nullptr)
+                                ? opt_args.functions->vkCreateWaylandSurfaceKHR
+                                : vkCreateWaylandSurfaceKHR;
+    auto * const destroy_fn = (opt_args.functions != nullptr && opt_args.functions->vkDestroySurfaceKHR != nullptr)
+                                ? opt_args.functions->vkDestroySurfaceKHR
+                                : vkDestroySurfaceKHR;
+
+    VulkanError::check(
+        create_fn(instance, &ci, nullptr, ret._reset(destroy_fn, instance)),
+        "Failed to vkCreateWaylandSurfaceKHR().");
+    return ret;
+}
+#endif

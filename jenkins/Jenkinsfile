@@ -26,6 +26,41 @@ pipeline {
                         name 'PLATFORM'
                         values 'windows', 'linux'
                     }
+                    axis {
+                        name 'GLFW_SURFACE'
+                        values 'ON', 'OFF'
+                    }
+                    axis {
+                        name 'WIN32_SURFACE'
+                        values 'ON', 'OFF'
+                    }
+                    axis {
+                        name 'WAYLAND_SURFACE'
+                        values 'ON', 'OFF'
+                    }
+                }
+
+                excludes {
+                    exclude {
+                        axis {
+                            name 'PLATFORM'
+                            values 'windows'
+                        }
+                        axis {
+                            name 'WAYLAND_SURFACE'
+                            values 'ON'
+                        }
+                    }
+                    exclude {
+                        axis {
+                            name 'PLATFORM'
+                            values 'linux'
+                        }
+                        axis {
+                            name 'WIN32_SURFACE'
+                            values 'ON'
+                        }
+                    }
                 }
 
                 agent {
@@ -45,7 +80,7 @@ pipeline {
                         steps {
                             script {
                                 // default の依存設定を利用し, 出力先をワークスペース内に統一します.
-                                runCommand('cmake --preset default -B build/jenkins -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install/jenkins -DVKWP_BUILD_TESTS=ON -DVKWP_BUILD_DOCS=ON -DVKWP_INSTALL=ON')
+                                runCommand("cmake --preset default -B build/jenkins -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install/jenkins -DVKWP_BUILD_TESTS=ON -DVKWP_BUILD_DOCS=ON -DVKWP_INSTALL=ON -DVKWP_SUPPORT_GLFW_SURFACE=${GLFW_SURFACE} -DVKWP_SUPPORT_WIN32_SURFACE=${WIN32_SURFACE} -DVKWP_SUPPORT_WAYLAND_SURFACE=${WAYLAND_SURFACE}")
                             }
                         }
                     }
